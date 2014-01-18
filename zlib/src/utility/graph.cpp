@@ -546,6 +546,7 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
   // okay
   if (dep == V()) {
     isSubgraphOf2(g, res);
+    return;
   }
 
   // enumeration
