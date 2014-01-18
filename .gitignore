@@ -1,5 +1,9 @@
 nodesever/node_modules/
 
+### zhe fan ###
+data/*
+
+
 ### OSX Global Ignore ###
 
 .DS_Store
