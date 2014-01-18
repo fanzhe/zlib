@@ -1,7 +1,7 @@
 nodesever/node_modules/
 
 ### zhe fan ###
-data/*
+data/
 
 
 ### OSX Global Ignore ###
