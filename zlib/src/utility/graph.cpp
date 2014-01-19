@@ -239,6 +239,8 @@ bool GRAPH::edge(VertexID v, VertexID w) {
   return getELabel(v, w) != NO_EDGE;
 }
 
+// make empty of the most basic data structure
+// for subIso or eqvCls, please use their corresponding API
 int GRAPH::makeEmpty() {
 #ifdef ADJMATRIX
   int nElem = Vcnt * Vcnt;
@@ -524,15 +526,94 @@ void GRAPH::initSubIso() {
 
 void GRAPH::clearSubIso() {
   // end of subIso
-  delete []M;
-  delete []col;
-  delete []row;
-  delete []row_col_next_one;
-  delete []cnt_ones_of_row;
+  delete[] M;
+  delete[] col;
+  delete[] row;
+  delete[] row_col_next_one;
+  delete[] cnt_ones_of_row;
+}
+
+void GRAPH::resetEqvCls() {
+  for (int i = 0; i < eqv_cls.size(); i++) {
+    eqv_cls[i].clear();
+  }
+}
+
+void GRAPH::clearEqvCls() {
+  for (int i = 0; i < eqv_cls.size(); i++) {
+    eqv_cls[i].clear();
+  }
+  eqv_cls.clear();
+}
+
+void GRAPH::initEqvCls(int _size) {
+  eqv_cls.resize(_size);
+}
+
+bool GRAPH::shareSameNeighbor(VertexID u, VertexID v) {
+  if (getDegree(u) != getDegree(v)) {
+    return false;
+  }
+
+  for (int i = 0; i < getDegree(u); i++) {
+    VertexID nu = _adjList[u][i].v;
+    bool flg = false;
+    for (int j = 0; j < getDegree(v); j++) {
+      VertexID nv = _adjList[v][j].v;
+      if (nu == nv || nu == u) {
+        flg = true;
+        break;
+      }
+    }
+    if (flg == false) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void GRAPH::updateEqvCls(VertexID u, VertexID v) {
+  eqv_cls[u].insert(v);
+  eqv_cls[v].insert(u);
+
+  for (set<VertexID>::iterator it = eqv_cls[u].begin(); it != eqv_cls[u].end();
+      it++) {
+    if (*it != v && *it != u)
+      updateEqvCls(*it, v);
+  }
+
+  for (set<VertexID>::iterator it = eqv_cls[v].begin(); it != eqv_cls[v].end();
+      it++) {
+    if (*it != u && *it != v)
+      updateEqvCls(*it, u);
+  }
 }
 
 void GRAPH::genEqvCls() {
   // TODO
+  // initialize eqv_cls
+  for (int i = 0; i < V(); i++) {
+    eqv_cls[i].insert(i);
+  }
+
+  for (int i = 0; i < V(); i++) {
+    VertexID u = i;
+    for (int j = 0; j < V() && i != j; j++) {
+      VertexID v = j;
+
+      // u and v share the same label
+      if (getLabel(u) != getLabel(v))
+        continue;
+
+      // u and v share the same neighbor vertexes
+      if (shareSameNeighbor(u, v)) {
+        updateEqvCls(u, v);
+      } else {
+        continue;
+      }
+    }
+  }
 }
 
 void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {

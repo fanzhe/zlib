@@ -45,12 +45,12 @@ class TestSubIso {
   }
 
   void testSubIso() {
-    for (int i = 0; i < g_cnt; i++) {
-      GRAPH* g = graphDB[i];
-      for (int j = 0; j < q_cnt; j++) {
-        GRAPH* q = queryDB[j];
-        SubIso subIso(q, g);
-        subIso.isSubIso();
+    for (int i = 0; i < q_cnt; i++) {
+      GRAPH* q = queryDB[i];
+      for (int j = 0; j < g_cnt; j++) {
+        GRAPH* g = graphDB[j];
+        SubIso* subIso = new SubIso(q, g);
+        subIso->isSubIso();
       }
     }
   }

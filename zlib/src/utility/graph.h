@@ -85,6 +85,10 @@ class GRAPH {
   VertexLabelMap vlabels_map;
   VertexLabelMapCnt vlabels_map_cnt;
 
+  // -------- for equivalent class -------
+  vector< set<VertexID> > eqv_cls;
+  // -------------------------------------
+
   // -------- for subiso --------
   int* M; // for query graph
   int* col;
@@ -140,6 +144,11 @@ class GRAPH {
   void resetSubIso(GRAPH* g);
 
   void genEqvCls();
+  bool shareSameNeighbor(VertexID u, VertexID v);
+  void updateEqvCls(VertexID u, VertexID v);
+  void resetEqvCls();
+  void clearEqvCls();
+  void initEqvCls(int _size);
 };
 
 #endif

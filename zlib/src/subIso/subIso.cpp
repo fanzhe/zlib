@@ -51,6 +51,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
   GRAPH* cm = new GRAPH();
 
   q->initSubIso();
+  cm->initEqvCls(q->V());
 
   // for each starting vertex
   for (set<VertexID>::iterator it = rootVertexSet.begin();
@@ -71,6 +72,10 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
   }
 
   q->clearSubIso();
+  cm->clearEqvCls();
+
+  delete cr;
+  delete cm;
 }
 
 bool SubIso::isMapped(VertexLabelMapCnt& vlabels_map_cnt) {
@@ -140,7 +145,7 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
     ifHasCm.insert(dfs_code.hashCode());
 
     // TODO
-    // we may insert all the size-V() subgraph of into ifHasCm
+    // we may further insert all the size-V() subgraph of cm into ifHasCm
 
     return true;
   } else {
@@ -175,15 +180,25 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     // generate cm
     cr->getInducedSubGraph(canMatVertex, cm);
 
-    // if cm is judged before
+    // if cm is judged before by minDFSCode
     if (!isCanMatChecked(cm)) {
       cout << "cm is checked" << endl;
       cm->makeEmpty();
       return;
     }
 
-    // generate equivalent class for cm by BFS
+    cout << "============= can match vertex: =============" << endl;
+    printVector(canMatVertex);
+
+    cout << "------------- can match: -------------" << endl;
+    cm->printGraphNew(cout);
+
+    // generate equivalent class of cm
+    cm->resetEqvCls();
     cm->genEqvCls();
+
+    cout << "------------- Eqv Cls --------------" << endl;
+    printVectorSet(cm->eqv_cls);
 
     // do matching
     doMatch(canMatVertex, cm);
@@ -217,19 +232,11 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
       genCanMatch(dep + 1, cr, canMatVertex, cm);
       q->vlabels_map_cnt[v_l]++;
     }
-
   }
-
 }
 
 void SubIso::doMatch(vector<VertexID>& canMatVertex, GRAPH* cm) {
-  cout << "============= can match vertex: =============" << endl;
-  printVector(canMatVertex);
-
-  cout << "------------- can match: -------------" << endl;
-  cm->printGraphNew(cout);
-
-  // reset subIso: initialize M, col, row, ...
+  // reset subIso: initialize M, col, row, eqv_cls...
   q->resetSubIso(cm);
 
   // match (q, cm)

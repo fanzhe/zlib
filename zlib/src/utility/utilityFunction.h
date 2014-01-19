@@ -34,6 +34,19 @@ void printVector(vector<T>& _vec) {
 }
 
 template<class T>
+void printVectorSet(vector<set<T> >& _vec_set) {
+  for (int i = 0; i < _vec_set.size(); i++) {
+    cout << i << ": ";
+    for (typename set<T>::iterator it = _vec_set[i].begin();
+        it != _vec_set[i].end(); it++) {
+      cout << *it << ", ";
+    }
+    cout << endl;
+  }
+  cout << endl;
+}
+
+template<class T>
 void printMatrix(T* _vec, int _size) {
   for (int i = 0; i < _size; i++) {
     for (int j = 0; j < _size; j++) {
@@ -42,8 +55,6 @@ void printMatrix(T* _vec, int _size) {
     cout << endl;
   }
 }
-
-
 
 template<class T>
 void printArray(T* _vec, int _size) {
