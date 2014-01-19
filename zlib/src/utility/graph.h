@@ -85,13 +85,13 @@ class GRAPH {
   VertexLabelMap vlabels_map;
   VertexLabelMapCnt vlabels_map_cnt;
 
-  // ----------------
+  // -------- for subiso --------
   int* M; // for query graph
   int* col;
   int* row;
   VertexID* row_col_next_one;
   int* cnt_ones_of_row;
-  // ----------------
+  // ----------------------------
 
   GRAPH();
   GRAPH(int V);
@@ -130,13 +130,16 @@ class GRAPH {
   void getInducedSubGraph(set<int>& vertex, GRAPH* _g);
   void getInducedSubGraph(vector<int>& vertex, GRAPH* _g);
 
-  void initSubIso(GRAPH* g);
+  void initSubIso();
+  void clearSubIso();
   bool isSubgraphOf(GRAPH* g);  // g and g' are of same size
   void isSubgraphOf1(int dep, GRAPH* g, int& res);
   void isSubgraphOf2(GRAPH* g, int& res);
   void initM(int* M, GRAPH* g);
   void cnt_ones_of_row_function(GRAPH* g);
   void resetSubIso(GRAPH* g);
+
+  void genEqvCls();
 };
 
 #endif

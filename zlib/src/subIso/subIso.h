@@ -31,7 +31,7 @@ class SubIso {
   void doSubIso();
   bool isSubIso();
   bool isMapped(VertexLabelMapCnt& _vertex_map_cnt);
-  bool isCmChecked(GRAPH* g);
+  bool isCanMatChecked(GRAPH* g);
 };
 
 #endif

@@ -50,7 +50,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
   GRAPH* cr = new GRAPH();
   GRAPH* cm = new GRAPH();
 
-  q->initSubIso(cm);
+  q->initSubIso();
 
   // for each starting vertex
   for (set<VertexID>::iterator it = rootVertexSet.begin();
@@ -70,6 +70,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
     cr->makeEmpty();
   }
 
+  q->clearSubIso();
 }
 
 bool SubIso::isMapped(VertexLabelMapCnt& vlabels_map_cnt) {
@@ -127,7 +128,7 @@ void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
   genCanMatch(0 + 1, cr, canMatVertex, cm);
 }
 
-bool SubIso::isCmChecked(GRAPH* cm) {
+bool SubIso::isCanMatChecked(GRAPH* cm) {
   GraphToMinDFSCode mindfs;
 
   GSPAN::DFSCode dfs_code;
@@ -164,7 +165,7 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
   ifHasString.insert(str);
 
   if (dep == q->V()) {
-    // TODO condition
+    // condition
     // judge if all labels are covered
     if (!isMapped(q->vlabels_map_cnt)) {
       cout << "genCanMatch returns false" << endl;
@@ -175,13 +176,19 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     cr->getInducedSubGraph(canMatVertex, cm);
 
     // if cm is judged before
-    if (!isCmChecked(cm)) {
+    if (!isCanMatChecked(cm)) {
       cout << "cm is checked" << endl;
       cm->makeEmpty();
       return;
     }
 
+    // generate equivalent class for cm by BFS
+    cm->genEqvCls();
+
+    // do matching
     doMatch(canMatVertex, cm);
+
+    // reset cm for next match
     cm->makeEmpty();
   }
 
@@ -222,9 +229,10 @@ void SubIso::doMatch(vector<VertexID>& canMatVertex, GRAPH* cm) {
   cout << "------------- can match: -------------" << endl;
   cm->printGraphNew(cout);
 
-  // TODO
-  // match (q, cm)
+  // reset subIso: initialize M, col, row, ...
   q->resetSubIso(cm);
+
+  // match (q, cm)
   q->isSubgraphOf(cm);
 }
 

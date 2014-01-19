@@ -4,7 +4,6 @@
 #include <iostream>
 #include <map>
 #include <set>
-#include <utility>
 
 #include "utilityFunction.h"
 
@@ -241,9 +240,9 @@ bool GRAPH::edge(VertexID v, VertexID w) {
 }
 
 int GRAPH::makeEmpty() {
+#ifdef ADJMATRIX
   int nElem = Vcnt * Vcnt;
 
-#ifdef ADJMATRIX
   for (int i = 0; i < nElem; i++) {
     _adj[i] = NO_EDGE;
   }
@@ -403,8 +402,6 @@ void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
   cout << "end BFS" << endl;
 }
 
-// TODO
-//
 void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
@@ -439,8 +436,6 @@ void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
   _ind_g->setVertexLabelMapCnt();
 }
 
-// TODO
-//
 void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
@@ -513,14 +508,13 @@ void GRAPH::resetSubIso(GRAPH* g) {
   printMatrix(M, V());
 
   setArray(row, V(), 0);
-  setArray(row_col_next_one, V()*V(), 0);
+  setArray(row_col_next_one, V() * V(), 0);
 
   cnt_ones_of_row_function(g);
 }
 
-void GRAPH::initSubIso(GRAPH* g) {
-  // TODO
-  // initialization
+void GRAPH::initSubIso() {
+  // begin of subIso
   M = new int[V() * V()];
   col = new int[V()];
   row = new int[V()];
@@ -528,12 +522,24 @@ void GRAPH::initSubIso(GRAPH* g) {
   cnt_ones_of_row = new int[V()];
 }
 
+void GRAPH::clearSubIso() {
+  // end of subIso
+  delete []M;
+  delete []col;
+  delete []row;
+  delete []row_col_next_one;
+  delete []cnt_ones_of_row;
+}
+
+void GRAPH::genEqvCls() {
+  // TODO
+}
+
 void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
   cout << "=========== print array col ==============" << endl;
   printArray(col, V());
 
   // real thing
-
 
 }
 
@@ -561,7 +567,6 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
     }
     // else continue
   }
-
 }
 
 /**
@@ -574,6 +579,4 @@ bool GRAPH::isSubgraphOf(GRAPH* g) {
   isSubgraphOf1(0, g, res);
   return (res == 0);
 }
-
-
 
