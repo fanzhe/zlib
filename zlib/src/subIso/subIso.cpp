@@ -142,6 +142,7 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
   mindfs.ConvertGRAPH(dfs_code);
 
   if (ifHasCm.find(dfs_code.hashCode()) == ifHasCm.end()) {
+
     ifHasCm.insert(dfs_code.hashCode());
 
     // TODO
@@ -236,7 +237,7 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
 }
 
 void SubIso::doMatch(vector<VertexID>& canMatVertex, GRAPH* cm) {
-  // reset subIso: initialize M, col, row, eqv_cls...
+  // reset subIso: initialize M, col, row ...
   q->resetSubIso(cm);
 
   // match (q, cm)

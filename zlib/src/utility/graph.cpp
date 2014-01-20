@@ -620,6 +620,7 @@ void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
   cout << "=========== print array col ==============" << endl;
   printArray(col, V());
 
+  // TODO
   // real thing
 
 }
@@ -639,6 +640,9 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
   // enumeration
   for (int i = 0; i < cnt_ones_of_row[dep]; i++) {
     int j = row_col_next_one[MATRIX_INDEX(dep, i, V())];
+
+    // TODO
+    // use equivalent class
 
     if (row[j] == 0) {
       row[j] = 1;
