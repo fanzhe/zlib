@@ -510,6 +510,8 @@ void GRAPH::resetSubIso(GRAPH* g) {
   printMatrix(M, V());
 
   setArray(row, V(), 0);
+  setArray(col, V(), -1);
+  setArray(col1, V(), -1);
   setArray(row_col_next_one, V() * V(), 0);
 
   cnt_ones_of_row_function(g);
@@ -519,6 +521,7 @@ void GRAPH::initSubIso() {
   // begin of subIso
   M = new int[V() * V()];
   col = new int[V()];
+  col1 = new int[V()];
   row = new int[V()];
   row_col_next_one = new VertexID[V() * V()];
   cnt_ones_of_row = new int[V()];
@@ -528,6 +531,7 @@ void GRAPH::clearSubIso() {
   // end of subIso
   delete[] M;
   delete[] col;
+  delete[] col1;
   delete[] row;
   delete[] row_col_next_one;
   delete[] cnt_ones_of_row;
@@ -560,7 +564,7 @@ bool GRAPH::shareSameNeighbor(VertexID u, VertexID v) {
     bool flg = false;
     for (int j = 0; j < getDegree(v); j++) {
       VertexID nv = _adjList[v][j].v;
-      if (nu == nv || nu == u) {
+      if (nu == nv || nu == v) {
         flg = true;
         break;
       }
@@ -577,21 +581,28 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
   eqv_cls[u].insert(v);
   eqv_cls[v].insert(u);
 
+  // if u and v share the same equivalent class
+  if (twoSetsAreEqual(eqv_cls[u], eqv_cls[v])) {
+    return;
+  }
+
   for (set<VertexID>::iterator it = eqv_cls[u].begin(); it != eqv_cls[u].end();
       it++) {
-    if (*it != v && *it != u)
+    if (*it != v && *it != u) {
       updateEqvCls(*it, v);
+    }
   }
 
   for (set<VertexID>::iterator it = eqv_cls[v].begin(); it != eqv_cls[v].end();
       it++) {
-    if (*it != u && *it != v)
+    if (*it != u && *it != v) {
+      cout << "*it: " << *it << ", u: " << u << endl;
       updateEqvCls(*it, u);
+    }
   }
 }
 
 void GRAPH::genEqvCls() {
-  // TODO
   // initialize eqv_cls
   for (int i = 0; i < V(); i++) {
     eqv_cls[i].insert(i);
@@ -599,11 +610,12 @@ void GRAPH::genEqvCls() {
 
   for (int i = 0; i < V(); i++) {
     VertexID u = i;
-    for (int j = 0; j < V() && i != j; j++) {
+    for (int j = 0; j < V(); j++) {
       VertexID v = j;
 
+      // u < v; and
       // u and v share the same label
-      if (getLabel(u) != getLabel(v))
+      if (u >= v || getLabel(u) != getLabel(v))
         continue;
 
       // u and v share the same neighbor vertexes
@@ -617,8 +629,8 @@ void GRAPH::genEqvCls() {
 }
 
 void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
-  cout << "=========== print array col ==============" << endl;
-  printArray(col, V());
+  cout << "=========== query vertex ==============" << endl;
+  printArray(col1, V());
 
   // TODO
   // real thing
@@ -641,14 +653,53 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
   for (int i = 0; i < cnt_ones_of_row[dep]; i++) {
     int j = row_col_next_one[MATRIX_INDEX(dep, i, V())];
 
-    // TODO
-    // use equivalent class
-
     if (row[j] == 0) {
+      // ------------- use equivalent class ---------------
+      if (g->eqv_cls[j].size() > 1) {
+        bool flg = true;
+        for (set<VertexID>::iterator it = g->eqv_cls[j].begin();
+            it != g->eqv_cls[j].end(); it++) {
+          if (*it < j) {
+            // exists un-cover
+            if (row[*it] == 0) {
+              flg = false;
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+
+        if (flg == false) {
+          continue;
+        } else {
+          // full cover
+          flg = true;
+          for (set<VertexID>::iterator it = g->eqv_cls[j].begin();
+              it != g->eqv_cls[j].end(); it++) {
+            if (*it < j) {
+              if (j < *it) {
+                flg = false;
+                break;
+              }
+            } else {
+              break;
+            }
+          }
+          if (flg == false) {
+            continue;
+          }
+        }
+      }
+      // -------------------------------------------------
+
+      // move on
       row[j] = 1;
       col[dep] = j;
+      col1[j] = dep;
       isSubgraphOf1(dep + 1, g, res);
       row[j] = 0;
+      col[dep] = col1[j] = -1;
     }
     // else continue
   }

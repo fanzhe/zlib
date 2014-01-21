@@ -98,6 +98,39 @@ void vectorToString(vector<T>& _vec, int _size, string& _str) {
   setToString(_set, _str);
 }
 
+template<class T>
+void twoSetsIntersection(set<T> a, set<T> b, set<T>& c) {
+  typename set<T>::iterator it1 = a.begin();
+  typename set<T>::iterator it2 = b.begin();
+  for (; it1 != a.end() && it2 != b.end();) {
+    if (*it1 < *it2)
+      ++it1;
+    else if (*it2 < *it1)
+      ++it2;
+    else {
+      c.insert(*it1);
+      ++it1;
+      ++it2;
+    }
+  }
+}
+
+
+template<class T>
+bool twoSetsAreEqual(set<T> a, set<T> b) {
+  if (a.size() != b.size())
+    return false;
+
+  typename set<T>::iterator it1 = a.begin();
+  typename set<T>::iterator it2 = b.begin();
+  for (; it1 != a.end() && it2 != b.end(); it1++, it2++) {
+    if (*it1 != *it2)
+      return false;
+  }
+
+  return true;
+}
+
 void setVertexNeighborToSet(set<VertexID>& _set, VertexID v, GRAPH* g);
 
 #endif

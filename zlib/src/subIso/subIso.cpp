@@ -141,6 +141,9 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
   mindfs.ConvertGRAPH(dfs_code);
 
+  cout << "============= hash code ============" << endl;
+  cout << dfs_code.hashCode() << endl;
+
   if (ifHasCm.find(dfs_code.hashCode()) == ifHasCm.end()) {
 
     ifHasCm.insert(dfs_code.hashCode());
@@ -181,18 +184,18 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     // generate cm
     cr->getInducedSubGraph(canMatVertex, cm);
 
-    // if cm is judged before by minDFSCode
-    if (!isCanMatChecked(cm)) {
-      cout << "cm is checked" << endl;
-      cm->makeEmpty();
-      return;
-    }
-
     cout << "============= can match vertex: =============" << endl;
     printVector(canMatVertex);
 
     cout << "------------- can match: -------------" << endl;
     cm->printGraphNew(cout);
+
+    // if cm is judged before by minDFSCode
+    if (!isCanMatChecked(cm)) {
+      cout << "!!!!!!!!!!!! cm is checked !!!!!!!!!!! " << endl;
+      cm->makeEmpty();
+      return;
+    }
 
     // generate equivalent class of cm
     cm->resetEqvCls();

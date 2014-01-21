@@ -92,6 +92,7 @@ class GRAPH {
   // -------- for subiso --------
   int* M; // for query graph
   int* col;
+  int* col1;
   int* row;
   VertexID* row_col_next_one;
   int* cnt_ones_of_row;
