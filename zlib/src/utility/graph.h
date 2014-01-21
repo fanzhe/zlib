@@ -86,11 +86,11 @@ class GRAPH {
   VertexLabelMapCnt vlabels_map_cnt;
 
   // -------- for equivalent class -------
-  vector< set<VertexID> > eqv_cls;
+  vector<set<VertexID> > eqv_cls;
   // -------------------------------------
 
   // -------- for subiso --------
-  int* M; // for query graph
+  int* M;  // for query graph
   int* col;
   int* col1;
   int* row;
@@ -105,14 +105,12 @@ class GRAPH {
   int V();
   int E();
 
-  void setV(int V);
-
 #ifdef ADJMATRIX
   int ADJ(VertexID row, VertexID col) const;
 #endif
 
+  void setV(int V);
   void setLabel(VertexID v, VertexLabel label);
-
   void setELabel(VertexID u, VertexID v, VertexLabel label);
   void setGraphId(GraphID id);
 
@@ -125,16 +123,16 @@ class GRAPH {
   void printGraphNew(std::ostream& out);
   int makeEmpty();
 
+  // for generating candidate region
   void setVertexLabelMap();
   void setVertexLabelMapCnt();
-
   void BFS(VertexID start_v, int lens, set<int>& visit_v);
   void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                     VertexLabelMapCnt& _vertex_label_map_cnt);
-
   void getInducedSubGraph(set<int>& vertex, GRAPH* _g);
   void getInducedSubGraph(vector<int>& vertex, GRAPH* _g);
 
+  // for matching
   void initSubIso();
   void clearSubIso();
   bool isSubgraphOf(GRAPH* g);  // g and g' are of same size
@@ -144,12 +142,16 @@ class GRAPH {
   void cnt_ones_of_row_function(GRAPH* g);
   void resetSubIso(GRAPH* g);
 
+  // for generating equivalent class
   void genEqvCls();
   bool shareSameNeighbor(VertexID u, VertexID v);
   void updateEqvCls(VertexID u, VertexID v);
   void resetEqvCls();
   void clearEqvCls();
   void initEqvCls(int _size);
+
+  // for generating selective size-k subgraphs
+
 };
 
 #endif
