@@ -144,9 +144,9 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
   cout << "============= hash code ============" << endl;
   cout << dfs_code.hashCode() << endl;
 
-  if (ifHasCm.find(dfs_code.hashCode()) == ifHasCm.end()) {
+  if (cache.ifHasCm.find(dfs_code.hashCode()) == cache.ifHasCm.end()) {
 
-    ifHasCm.insert(dfs_code.hashCode());
+    cache.ifHasCm.insert(dfs_code.hashCode());
 
     // TODO
     // we may further insert all the size-V() subgraph of cm into ifHasCm
@@ -167,11 +167,11 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
 //  cout << "canonical string: " << str << endl;
 
   // has already check this combination
-  if (ifHasString.find(str) != ifHasString.end()) {
+  if (cache.ifHasString.find(str) != cache.ifHasString.end()) {
     return;
   }
 
-  ifHasString.insert(str);
+  cache.ifHasString.insert(str);
 
   if (dep == q->V()) {
     // condition

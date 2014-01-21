@@ -6,6 +6,8 @@
 #include <set>
 #include <string>
 
+#include "cache.h"
+
 #include "../utility/graph.h"
 #include "../utility/GlobalDefinition.h"
 
@@ -16,8 +18,9 @@ class SubIso {
   GRAPH* g;
   bool res;
 
-  set<string> ifHasString;
-  set<HashCode> ifHasCm;
+//  set<string> ifHasString;
+//  set<HashCode> ifHasCm;
+  Cache cache;
 
  public:
   SubIso(GRAPH* _q, GRAPH* _g);
