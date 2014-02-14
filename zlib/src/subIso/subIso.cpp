@@ -220,7 +220,7 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     printVectorSet(cm->eqv_cls);
 
     // do matching
-    doMatch(canMatVertex, cm);
+    doMatch(cm);
 
     // reset cm for next match
     cm->makeEmpty();
@@ -254,7 +254,7 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
   }
 }
 
-void SubIso::doMatch(vector<VertexID>& canMatVertex, GRAPH* cm) {
+void SubIso::doMatch(GRAPH* cm) {
   // reset subIso: initialize M, col, row ...
   q->resetSubIso(cm);
 

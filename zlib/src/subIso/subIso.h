@@ -31,7 +31,7 @@ class SubIso {
   bool genCanReg(VertexID r_vertex, GRAPH* cr);
   void genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm);
   void genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canVertex, GRAPH* cm);
-  void doMatch(vector<VertexID>& canMatVertex, GRAPH* cm);
+  void doMatch(GRAPH* cm);
   void doSubIso();
   bool isSubIso();
   bool isMapped(VertexLabelMapCnt& _vertex_map_cnt);
