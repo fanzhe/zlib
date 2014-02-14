@@ -596,7 +596,7 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
   for (set<VertexID>::iterator it = eqv_cls[v].begin(); it != eqv_cls[v].end();
       it++) {
     if (*it != u && *it != v) {
-      cout << "*it: " << *it << ", u: " << u << endl;
+//      cout << "*it: " << *it << ", u: " << u << endl;
       updateEqvCls(*it, u);
     }
   }
