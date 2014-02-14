@@ -8,9 +8,11 @@
 
 * Customized depth first search on a graph.
 
+* Enumeration of all subgraphs of a graph with pre-defined size. 
+
 * Equivalent class of a graph.
 
 * Subgraph isomorphism testing (Turbo + Ullmann) between two graphs. 
 
-* Cyclic group based encryption for subIso (under construction).
+* Cyclic group based encryption for subIso (TBA).
 
