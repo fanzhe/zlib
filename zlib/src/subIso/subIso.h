@@ -1,15 +1,16 @@
 #ifndef ISSUBISO_H
 #define ISSUBISO_H
 
-#include <iostream>
-#include <map>
 #include <set>
-#include <string>
+#include <vector>
 
+#include "../utility/GlobalDefinition.h"
 #include "cache.h"
 
-#include "../utility/graph.h"
-#include "../utility/GlobalDefinition.h"
+class GRAPH;
+namespace GSPAN {
+struct DFSCode;
+} /* namespace GSPAN */
 
 class SubIso {
  protected:
@@ -35,6 +36,7 @@ class SubIso {
   bool isSubIso();
   bool isMapped(VertexLabelMapCnt& _vertex_map_cnt);
   bool isCanMatChecked(GRAPH* g);
+  void cacheAllSubOf(GSPAN::DFSCode& dfs_code);
 };
 
 #endif

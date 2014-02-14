@@ -3,7 +3,6 @@
 #include <utility>
 #include <vector>
 
-#include "../gSpan/gspan.h"
 #include "../minDFS/GraphToMinDFSCode.h"
 #include "../utility/utilityFunction.h"
 
@@ -133,6 +132,22 @@ void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
   genCanMatch(0 + 1, cr, canMatVertex, cm);
 }
 
+void SubIso::cacheAllSubOf(GSPAN::DFSCode& dfs_code) {
+  SubGraphGen* sg = new SubGraphGen();
+
+  // generate all subgraphs of dfs_code
+  sg->Start(dfs_code);
+
+  for (int i = 0; i < sg->Size(); i++) {
+    if (sg->Subgraphs[i].nodeCount() == q->V()) {
+      // cache the hash codes of subgraphs with size q->V()
+      cache.ifHasCm.insert(sg->Subgraphs[i].hashCode());
+    }
+  }
+
+  delete sg;
+}
+
 bool SubIso::isCanMatChecked(GRAPH* cm) {
   GraphToMinDFSCode mindfs;
 
@@ -148,8 +163,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
     cache.ifHasCm.insert(dfs_code.hashCode());
 
-    // TODO
-    // we may further insert all the size-V() subgraph of cm into ifHasCm
+    // we further cache all the size-V() subgraph of cm into ifHasCm
+    cacheAllSubOf(dfs_code);
 
     return true;
   } else {
