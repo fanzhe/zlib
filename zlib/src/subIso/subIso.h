@@ -17,7 +17,7 @@ class SubIso {
   VertexLabel start_label;
   GRAPH* q;
   GRAPH* g;
-  bool res;
+  bool response;
 
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;
@@ -28,7 +28,7 @@ class SubIso {
   void calVertexLabelMap();
   bool isVisited(vector<int>& path, int dep, int v);
   void genAllCanReg(set<VertexID>& rootVertexSet);
-  bool genCanReg(VertexID r_vertex, GRAPH* cr);
+  bool genCanReg(VertexID& r_vertex, GRAPH* cr);
   void genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm);
   void genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canVertex, GRAPH* cm);
   void doMatch(GRAPH* cm);

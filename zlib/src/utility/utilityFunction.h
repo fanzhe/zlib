@@ -19,8 +19,10 @@ template<class T>
 void printSet(set<T>& _set) {
   cout << "set size: " << _set.size();
   cout << endl << "set elements: ";
+  int _cnt = 0;
   for (typename set<T>::iterator it = _set.begin(); it != _set.end(); it++) {
     cout << *it << " ";
+    if (_cnt++ % 100 == 0) cout << endl;
   }
   cout << endl;
 }

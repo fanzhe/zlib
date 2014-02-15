@@ -292,7 +292,7 @@ void GRAPH::setVertexLabelMapCnt() {
 void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                          VertexLabelMapCnt& _vertex_label_map_cnt) {
   cout << "start BFS new " << endl;
-  cout << "hop size" << hops << endl;
+  cout << "hop size " << hops << endl;
 
   VertexLabel _u_l = _vlabels[start_v];
   _vertex_label_map_cnt[_u_l]--;
@@ -307,8 +307,8 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
   // for each hop
   for (int cnt_hops = 0; cnt_hops < hops; cnt_hops++) {
 
-    cout << "hop - vertex: ";
-    printSet(nodes);
+    cout << "hop " << cnt_hops + 1 << endl;
+
     if (nodes.size() == 0) {
       cout << "end BFS" << endl;
       return;
@@ -346,6 +346,7 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
         next_nodes.insert(u);
       }
     }
+    printSet(next_nodes);
     // nodes = next_nodes;
     nodes = next_nodes;
     it_begin = nodes.begin();
@@ -438,9 +439,10 @@ void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
   _ind_g->setVertexLabelMapCnt();
 }
 
-void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g) {
+void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g, VertexID& r_vertex) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
+  VertexID _r_vertex = r_vertex;
 
   // set vertex
   VertexID _new_v_id = 0;
@@ -449,6 +451,10 @@ void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g) {
     VertexID u = *it;
     VertexLabel u_l = getLabel(u);
     g_to_ind_v[u] = _new_v_id;
+
+    // re-set r_vertex
+    if (u == _r_vertex) r_vertex = _new_v_id;
+
     _ind_g->setLabel(_new_v_id++, u_l);
   }
 
@@ -632,9 +638,19 @@ void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
   cout << "=========== query vertex ==============" << endl;
   printArray(col1, V());
 
-  // TODO
-  // real thing
-
+  // TODO real thing
+  for (int i = 0; i < V(); i++) {
+    for (int j = 0; j < V(); j++) {
+      if (i != j && edge(i, j)) {
+        VertexID _i = col[i];
+        VertexID _j = col[j];
+        if (g->edge(_i, _j)) {
+          return;
+        }
+      }
+    }
+  }
+  res = 0;
 }
 
 void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
@@ -651,16 +667,20 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
 
   // enumeration
   for (int i = 0; i < cnt_ones_of_row[dep]; i++) {
+    // for each vertex of g.
     int j = row_col_next_one[MATRIX_INDEX(dep, i, V())];
 
+    // j is not covered
     if (row[j] == 0) {
       // ------------- use equivalent class ---------------
       if (g->eqv_cls[j].size() > 1) {
         bool flg = true;
         for (set<VertexID>::iterator it = g->eqv_cls[j].begin();
             it != g->eqv_cls[j].end(); it++) {
+          // exists un-covered vertex *it s.t.
+          // (1) *it is equivalent to j;
+          // (2) order, i.e., *it < j.
           if (*it < j) {
-            // exists un-cover
             if (row[*it] == 0) {
               flg = false;
               break;
@@ -672,23 +692,6 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
 
         if (flg == false) {
           continue;
-        } else {
-          // full cover
-          flg = true;
-          for (set<VertexID>::iterator it = g->eqv_cls[j].begin();
-              it != g->eqv_cls[j].end(); it++) {
-            if (*it < j) {
-              if (j < *it) {
-                flg = false;
-                break;
-              }
-            } else {
-              break;
-            }
-          }
-          if (flg == false) {
-            continue;
-          }
         }
       }
       // -------------------------------------------------
@@ -701,14 +704,15 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
       row[j] = 0;
       col[dep] = col1[j] = -1;
     }
-    // else continue
   }
 }
 
 /**
  * q and g are of the same size
  * a very naive solution for
- * preserving the privacy of q
+ * preserving the privacy of q.
+ *
+ * ps: q's structure is not known.
  */
 bool GRAPH::isSubgraphOf(GRAPH* g) {
   int res = 1;

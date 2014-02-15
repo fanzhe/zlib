@@ -65,7 +65,7 @@ void testSubIso(int argc, char** argv) {
 
 int main(int argc, char** argv) {
 //	test input multiple vertex label graph
-  testInput(argc, argv);
+//  testInput(argc, argv);
 //  test SubGen
 //  testSubGen(argc, argv);
 
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 //  testMinDFS(argc, argv);
 
 //  test subIso
-//  testSubIso(argc, argv);
+  testSubIso(argc, argv);
 
   return 0;
 }

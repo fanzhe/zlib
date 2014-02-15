@@ -31,14 +31,14 @@ class TestSubIso {
 
     for (int i = 0; i < g_cnt; i++) {
       GRAPH *g = new GRAPH();
-      q_reader.GetNextGraph(*g);
+      q_reader.GetNextGraph_MultiVertexLabel(*g);
 
       queryDB[i] = g;
     }
 
     for (int i = 0; i < g_cnt; i++) {
       GRAPH *g = new GRAPH();
-      g_reader.GetNextGraph(*g);
+      g_reader.GetNextGraph_MultiVertexLabel(*g);
 
       graphDB[i] = g;
     }
@@ -50,7 +50,7 @@ class TestSubIso {
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
         SubIso* subIso = new SubIso(q, g);
-        subIso->isSubIso();
+        cout << "response: " << subIso->isSubIso() << endl;
       }
     }
   }
