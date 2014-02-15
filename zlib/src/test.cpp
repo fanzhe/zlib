@@ -1,11 +1,25 @@
+#include <cstdlib>
 #include <iostream>
 
-//#include "GraphToMinDFSCode.h"
-#include "Test/testMinDFSCode.h"
-#include "Test/testSubIso.h"
-#include "Test/testSubGen.h"
+#include "test/testInput.h"
+#include "test/testMinDFSCode.h"
+#include "test/testSubGen.h"
+#include "test/testSubIso.h"
 
 using namespace std;
+
+void testInput(int argc, char** argv) {
+  if (argc < 2) {
+    cout << "please input" << endl;
+    return;
+  }
+
+  TestInput* g_test = new TestInput(atoi(argv[2]));
+
+  g_test->loadFromInputFile(argv[1]);
+
+  delete g_test;
+}
 
 void testSubGen(int argc, char** argv) {
   if (argc < 2) {
@@ -39,9 +53,9 @@ void testMinDFS(int argc, char** argv) {
 
 void testSubIso(int argc, char** argv) {
   if (argc < 4) {
-      cout << "please input" << endl;
-      return;
-    }
+    cout << "please input" << endl;
+    return;
+  }
   TestSubIso* g_test = new TestSubIso(atoi(argv[2]), atoi(argv[4]));
 
   g_test->loadFromInputFile(argv[1], argv[3]);
@@ -50,6 +64,8 @@ void testSubIso(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+//	test input multiple vertex label graph
+  testInput(argc, argv);
 //  test SubGen
 //  testSubGen(argc, argv);
 
@@ -57,7 +73,7 @@ int main(int argc, char** argv) {
 //  testMinDFS(argc, argv);
 
 //  test subIso
-  testSubIso(argc, argv);
+//  testSubIso(argc, argv);
 
   return 0;
 }

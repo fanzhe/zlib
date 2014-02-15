@@ -58,8 +58,20 @@ class InputReader {
   InputReader(const char* input_file_name);
   ~InputReader();
 
+  void _New_Graph_Original(GRAPH& graph, vector<RawVertex>& v_list,
+                           vector<RawEdge>& e_list);
+  void _New_Graph(GRAPH& graph, vector<RawVertex>& v_list,
+                  vector<RawEdge>& e_list,
+                  map<VertexLabel, int>& label_count_map);
+  void EndOfFile(GRAPH& graph, vector<RawVertex>& v_list,
+                 vector<RawEdge>& e_list,
+                 map<VertexLabel, int>& label_count_map);
+  void EndOfFile_Original(GRAPH& graph, vector<RawVertex>& v_list,
+                          vector<RawEdge>& e_list);
   bool GetNextGraph(GRAPH& graph);
   bool GetNextGraph_Original(GRAPH& graph);
+  bool GetNextGraph_MultiVertexLabel(GRAPH& graph);
+  bool GetNextGraph_MultiVertexLabel_Original(GRAPH& graph);
 
  public:
   char m_FileName[256];
