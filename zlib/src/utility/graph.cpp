@@ -289,6 +289,79 @@ void GRAPH::setVertexLabelMapCnt() {
   }
 }
 
+/*
+ * TODO: not finish.
+ */
+void GRAPH::BFSwithConstForInducedSubgraph(
+    VertexID& r_vertex, int hops, VertexLabelMapCnt& _vertex_label_map_cnt,
+    GRAPH* ind_g) {
+  cout << "start BFS new " << endl;
+  cout << "hop size " << hops << endl;
+
+  VertexID start_v = r_vertex;
+  VertexLabel _u_l = _vlabels[start_v];
+  _vertex_label_map_cnt[_u_l]--;
+
+  set<VertexID> visit_v;
+  visit_v.insert(start_v);
+
+  set<int> nodes;
+  nodes.insert(start_v);
+
+  set<int>::iterator it_begin = nodes.begin();
+  set<int>::iterator it_end = nodes.end();
+
+  // for each hop
+  for (int cnt_hops = 0; cnt_hops < hops; cnt_hops++) {
+
+    cout << "hop " << cnt_hops + 1 << endl;
+
+    if (nodes.size() == 0) {
+      cout << "end BFS" << endl;
+      return;
+    }
+
+    set<int> next_nodes;
+
+    // for each node v
+    for (set<int>::iterator it = it_begin; it != it_end; it++) {
+      int v = *it;
+
+      // for each incident node u of v
+      for (int j = 0; j < getDegree(v); j++) {
+        int u = _adjList[v][j].v;
+
+        // u is visited
+        if (visit_v.find(u) != visit_v.end()) {
+          continue;
+        }
+
+        // u's label is not contained
+        VertexLabel _u_l = _vlabels[u];
+        if (_vertex_label_map_cnt.find(_u_l) == _vertex_label_map_cnt.end()) {
+          continue;
+        }
+
+        // update the label map cnt
+        if (_vertex_label_map_cnt[_u_l] > 0) {
+          _vertex_label_map_cnt[_u_l]--;
+        }
+
+        // u is what we want,
+        // add u to next_nodes for iteration
+        visit_v.insert(u);
+        next_nodes.insert(u);
+      }
+    }
+    printSet(next_nodes);
+    // nodes = next_nodes;
+    nodes = next_nodes;
+    it_begin = nodes.begin();
+    it_end = nodes.end();
+  }
+  cout << "end BFS new" << endl;
+}
+
 void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                          VertexLabelMapCnt& _vertex_label_map_cnt) {
   cout << "start BFS new " << endl;
@@ -439,7 +512,8 @@ void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
   _ind_g->setVertexLabelMapCnt();
 }
 
-void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g, VertexID& r_vertex) {
+void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g,
+                               VertexID& r_vertex) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
   VertexID _r_vertex = r_vertex;
@@ -453,7 +527,8 @@ void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g, VertexID& r_vert
     g_to_ind_v[u] = _new_v_id;
 
     // re-set r_vertex
-    if (u == _r_vertex) r_vertex = _new_v_id;
+    if (u == _r_vertex)
+      r_vertex = _new_v_id;
 
     _ind_g->setLabel(_new_v_id++, u_l);
   }
@@ -462,14 +537,28 @@ void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g, VertexID& r_vert
   int e_id = 0;
   for (set<int>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
-    for (set<int>::iterator it1 = vertex.begin(); it1 != vertex.end(); it1++) {
-      VertexID v = *it1;
-      if (!edge(u, v) || u <= v)
-        continue;
 
-      _ind_g->insert(
-          Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+    // for each u's neighbor v
+    for (int i = 0; i < getDegree(u); i++) {
+      VertexID v = _adjList[u][i].v;
+      // v is in set vertex
+      if (vertex.find(v) != vertex.end()) {
+        // (u, v) is not inserted in _ind_g
+        if(!_ind_g->edge(g_to_ind_v[u], g_to_ind_v[v])) {
+            _ind_g->insert(
+                Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+        }
+      }
     }
+
+//    for (set<int>::iterator it1 = vertex.begin(); it1 != vertex.end(); it1++) {
+//      VertexID v = *it1;
+//      if (!edge(u, v) || u <= v)
+//        continue;
+//
+//      _ind_g->insert(
+//          Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+//    }
   }
 
   // set the vertex label map of the induced subgraph

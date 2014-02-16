@@ -129,6 +129,9 @@ class GRAPH {
   void BFS(VertexID start_v, int lens, set<int>& visit_v);
   void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                     VertexLabelMapCnt& _vertex_label_map_cnt);
+  void BFSwithConstForInducedSubgraph(VertexID& r_vertex, int hops,
+                                      VertexLabelMapCnt& _vertex_label_map_cnt,
+                                      GRAPH* ind_g);
   void getInducedSubGraph(set<int>& vertex, GRAPH* _g, VertexID& r_vertex);
   void getInducedSubGraph(vector<int>& vertex, GRAPH* _g);
 

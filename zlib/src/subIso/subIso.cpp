@@ -120,7 +120,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
   cout << endl << "************** Candidate Region: ***************" << endl;
-//  cr->printGraphNew(cout);
+  cr->printGraphNew(cout);
 
   return true;
 }
@@ -207,6 +207,8 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     }
 
     // generate cm
+    // It is okay to use getInducedSubgraph()
+    // as the size of canMatVertex is small, e.g., 10
     cr->getInducedSubGraph(canMatVertex, cm);
 
     cout << "============= can match vertex: =============" << endl;
