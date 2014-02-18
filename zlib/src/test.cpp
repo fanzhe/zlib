@@ -5,6 +5,7 @@
 #include "test/testMinDFSCode.h"
 #include "test/testSubGen.h"
 #include "test/testSubIso.h"
+#include "test/testVFLib.h"
 
 using namespace std;
 
@@ -63,7 +64,22 @@ void testSubIso(int argc, char** argv) {
   g_test->testSubIso();
 }
 
+void testVF(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+
+  TestVFLib* g_test = new TestVFLib(atoi(argv[2]), atoi(argv[4]));
+
+  g_test->loadFromInputFile(argv[1], argv[3]);
+
+  g_test->testSubIso();
+}
+
 int main(int argc, char** argv) {
+//  test VFLib
+  testVF(argc, argv);
 //	test input multiple vertex label graph
 //  testInput(argc, argv);
 //  test SubGen
@@ -73,7 +89,7 @@ int main(int argc, char** argv) {
 //  testMinDFS(argc, argv);
 
 //  test subIso
-  testSubIso(argc, argv);
+//  testSubIso(argc, argv);
 
   return 0;
 }

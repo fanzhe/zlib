@@ -544,9 +544,9 @@ void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g,
       // v is in set vertex
       if (vertex.find(v) != vertex.end()) {
         // (u, v) is not inserted in _ind_g
-        if(!_ind_g->edge(g_to_ind_v[u], g_to_ind_v[v])) {
-            _ind_g->insert(
-                Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+        if (!_ind_g->edge(g_to_ind_v[u], g_to_ind_v[v])) {
+          _ind_g->insert(
+              Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
         }
       }
     }
@@ -807,5 +807,56 @@ bool GRAPH::isSubgraphOf(GRAPH* g) {
   int res = 1;
   isSubgraphOf1(0, g, res);
   return (res == 0);
+}
+
+bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
+  NodeCompare node_compare;
+
+  int n;
+
+  ARGEdit iso_test_ed;
+  ARGEdit sub_iso_test_ed;
+
+  for (VertexID i = 0; i < V(); i++) {
+    sub_iso_test_ed.InsertNode((void*) (getLabel(i)));
+  }
+  for (VertexID i = 0; i < V(); i++) {
+    for (VertexID j = i + 1; j < V(); j++) {
+      if (edge(i, j)) {
+        sub_iso_test_ed.InsertEdge(i, j, (void*) (getELabel(i, j)));
+        sub_iso_test_ed.InsertEdge(j, i, (void*) (getELabel(j, i)));
+      }
+    }
+  }
+
+  Graph sub_iso_test_graph(&sub_iso_test_ed);
+  sub_iso_test_graph.SetNodeComparator(&node_compare);
+  sub_iso_test_graph.SetEdgeComparator(&node_compare);
+
+  for (VertexID i = 0; i < g->V(); i++) {
+    iso_test_ed.InsertNode((void*) (g->getLabel(i)));
+  }
+  for (VertexID i = 0; i < g->V(); i++) {
+    for (VertexID j = i + 1; j < g->V(); j++) {
+      if (g->edge(i, j)) {
+        iso_test_ed.InsertEdge(i, j, (void*) (g->getELabel(i, j)));
+        iso_test_ed.InsertEdge(j, i, (void*) (g->getELabel(j, i)));
+      }
+    }
+  }
+
+  Graph iso_test_graph(&iso_test_ed);
+  iso_test_graph.SetNodeComparator(&node_compare);
+  iso_test_graph.SetEdgeComparator(&node_compare);
+
+  VF2MonoState sub_state(&sub_iso_test_graph, &iso_test_graph);
+  node_id ni1[g->maximum_vertex];
+  node_id ni2[g->maximum_vertex];
+
+  if (match(&sub_state, &n, ni1, ni2)) {
+    return true;
+  }
+
+  return false;
 }
 

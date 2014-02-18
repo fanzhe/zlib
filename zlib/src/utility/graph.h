@@ -1,12 +1,22 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+//#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <set>
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <cstdio>
 
 #include "GlobalDefinition.h"
+
+#include "../vflib/argedit.h"
+#include "../vflib/argraph.h"
+#include "../vflib/match.h"
+#include "../vflib/ull_sub_state.h"
+#include "../vflib/vf_sub_state.h"
+#include "../vflib/vf2_sub_state.h"
+#include "../vflib/vf2_mono_state.h"
 //#include "ECVector.h"
 
 using namespace std;
@@ -144,6 +154,18 @@ class GRAPH {
   void initM(int* M, GRAPH* g);
   void cnt_ones_of_row_function(GRAPH* g);
   void resetSubIso(GRAPH* g);
+
+  // for VFLib
+  bool isSubgrpahOfByVF2(GRAPH* g);
+  class NodeCompare : public AttrComparator {
+   public:
+    virtual bool compatible(void *attr1, void *attr2) {
+      int a = *((int*) (&attr1));
+      int b = *((int*) (&attr2));
+//      cout << "a: " << a << " b: " << b << endl;
+      return a == b;
+    }
+  };
 
   // for generating equivalent class
   void genEqvCls();
