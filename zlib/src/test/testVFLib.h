@@ -1,8 +1,11 @@
 #ifndef TESTVFLIB_H
 #define TESTVFLIB_H
 
-#include <stdio.h>
+//#include <stdio.h>
 
+#include "../utility/graph.h"
+#include "../utility/GlobalDefinition.h"
+#include "../utility/InputReader.h"
 #include "../vflib/argedit.h"
 #include "../vflib/argraph.h"
 #include "../vflib/match.h"
@@ -13,12 +16,14 @@ class TestVFLib {
  public:
   vector<GRAPH*> graphDB, queryDB;
   int g_cnt, q_cnt;
+  int cnt_res;
 
   TestVFLib(int _q_cnt, int _g_cnt) {
     g_cnt = _g_cnt;
     q_cnt = _q_cnt;
     graphDB.resize(g_cnt);
     queryDB.resize(q_cnt);
+    cnt_res = 0;
   }
 
   ~TestVFLib() {
@@ -33,7 +38,7 @@ class TestVFLib {
     InputReader q_reader(input_q_file_name);
     InputReader g_reader(input_g_file_name);
 
-    for (int i = 0; i < g_cnt; i++) {
+    for (int i = 0; i < q_cnt; i++) {
       GRAPH *g = new GRAPH();
       q_reader.GetNextGraph_MultiVertexLabel(*g);
 
@@ -74,16 +79,18 @@ class TestVFLib {
   void testSubIso() {
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
-      q->printGraphNew(cout);
+//      q->printGraphNew(cout);
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
-        g->printGraphNew(cout);
+//        g->printGraphNew(cout);
 
         bool res = q->isSubgrpahOfByVF2(g);
-        cout << "Is q subgraph of g? " << res << endl;
-
+        cout << i << " " << j << " " << res << endl;
+        if (res)
+          cnt_res++;
       }
     }
+    cout << "total:" << cnt_res << endl;
   }
 
 };

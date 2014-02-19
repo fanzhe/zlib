@@ -75,7 +75,7 @@ void testVF(int argc, char** argv) {
   g_test->loadFromInputFile(argv[1], argv[3]);
 
   g_test->testSubIso();
-  g_test->testIndSub();
+//  g_test->testIndSub();
 }
 
 int main(int argc, char** argv) {

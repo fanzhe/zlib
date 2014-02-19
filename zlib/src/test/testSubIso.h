@@ -9,12 +9,14 @@ class TestSubIso {
  public:
   vector<GRAPH*> graphDB, queryDB;
   int g_cnt, q_cnt;
+  int cnt_res;
 
   TestSubIso(int _q_cnt, int _g_cnt) {
     g_cnt = _g_cnt;
     q_cnt = _q_cnt;
     graphDB.resize(g_cnt);
     queryDB.resize(q_cnt);
+    cnt_res = 0;
   }
 
   ~TestSubIso() {
@@ -29,7 +31,7 @@ class TestSubIso {
     InputReader q_reader(input_q_file_name);
     InputReader g_reader(input_g_file_name);
 
-    for (int i = 0; i < g_cnt; i++) {
+    for (int i = 0; i < q_cnt; i++) {
       GRAPH *g = new GRAPH();
       q_reader.GetNextGraph_MultiVertexLabel(*g);
 
@@ -49,14 +51,17 @@ class TestSubIso {
       GRAPH* q = queryDB[i];
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
-//        g->printGraphNew(cout);
-        cout << "|g| = " << g->V() << endl;
         SubIso* subIso = new SubIso(q, g);
-        cout << "response: " << subIso->isSubIso() << endl;
-//        delete g;
+        bool res = subIso->isSubIso();
+        if (res) {
+          cnt_res++;
+        }
+        cout << i << " " << j << " " << res << endl;
+        delete subIso;
       }
-//      delete q;
     }
+
+    cout << "total: " << cnt_res << endl;
   }
 
 };

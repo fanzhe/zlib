@@ -26,6 +26,7 @@ class SubIso {
  public:
   SubIso(GRAPH* _q, GRAPH* _g);
   void calVertexLabelMap();
+  void clearVertexLabelMap();
   bool isVisited(vector<int>& path, int dep, int v);
   void genAllCanReg(set<VertexID>& rootVertexSet);
   bool genCanReg(VertexID& r_vertex, GRAPH* cr);

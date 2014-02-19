@@ -8,6 +8,10 @@ class Cache {
   set<string> ifHasString;
   set<HashCode> ifHasCm;
   set<VertexID> ifRootVertex;
+
+  int cnt_cr;
+  int cnt_cm;
+  int cnt_cm_p;
 };
 
 #endif

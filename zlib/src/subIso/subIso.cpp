@@ -29,14 +29,20 @@ bool SubIso::isVisited(vector<int>& canMatVertex, int dep, int v) {
   return isFind;
 }
 
+void SubIso::clearVertexLabelMap() {
+  q->vlabels_map.clear();
+  q->vlabels_map_cnt.clear();
+
+  g->vlabels_map.clear();
+  g->vlabels_map_cnt.clear();
+}
+
 void SubIso::calVertexLabelMap() {
   q->setVertexLabelMap();
   q->setVertexLabelMapCnt();
 
 //  cout << "++++++++++ query graph +++++++++++" << endl;
 //  q->printGraphNew(cout);
-
-  cout << endl;
 
   g->setVertexLabelMap();
   g->setVertexLabelMapCnt();
@@ -51,6 +57,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
 
   q->initSubIso();
   cm->initEqvCls(q->V());
+  cache.cnt_cm = cache.cnt_cr = cache.cnt_cm_p = 0;
 
   cout << "|CR| = " << rootVertexSet.size() << endl;
   // for each starting vertex
@@ -67,8 +74,9 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
     // find cm
     genAllCanMatch(r_vertex, cr, cm);
 
-//     if (response) break;
-    cout << "res: " << response << endl;
+    if (response) {
+      break;
+    }
 
     // reset cr, we do not set cr's eqv. cls.
     cr->makeEmpty();
@@ -99,7 +107,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cout << "generate cr" << endl;
 //  cout << "root vertex: " << r_vertex << endl;
 
-  // BFS to gen can. reg.
+// BFS to gen can. reg.
   set<VertexID> visit_v;
   q->setVertexLabelMapCnt();
   g->BFSwithConst(r_vertex, q->V(), visit_v, q->vlabels_map_cnt, cache);
@@ -107,9 +115,9 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
 
-  // judge the situation of map cnt of q
+// judge the situation of map cnt of q
   if (!isMapped(q->vlabels_map_cnt)) {
-    cout << "genCanReg returns false" << endl;
+//    cout << "genCanReg returns false" << endl;
     return false;
   }
 
@@ -122,6 +130,14 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cout << endl << "************** Candidate Region: ***************" << endl;
 //  cout << "root: " << r_vertex << endl;
 //  cr->printGraphNew(cout);
+  cr->printGraphPartial(cout);
+
+  cr->initEqvCls(cr->V());
+  cout << "test??" << endl;
+  cr->genEqvCls();
+  cout << "test~!~" << endl;
+  printVectorSet(cr->eqv_cls);
+  cr->clearEqvCls();
 
   return true;
 }
@@ -184,7 +200,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
 void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
                          GRAPH* cm) {
-  if (response) return;
+  if (response)
+    return;
 
   // generate set canonical label
   string str;
@@ -222,9 +239,11 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     if (!isCanMatChecked(cm)) {
 //      cout << "!!!!!!!!!!!! cm is checked !!!!!!!!!!! " << endl;
       cm->makeEmpty();
+//      cout << "-" << cache.cnt_cm_p++ << endl;
       return;
     }
 
+//    cout << "+" << cache.cnt_cm++ << endl;
     // generate equivalent class of cm
     cm->resetEqvCls();
     cm->genEqvCls();
@@ -272,15 +291,16 @@ void SubIso::doMatch(GRAPH* cm) {
   q->resetSubIso(cm);
 
   // match (q, cm)
-  if(q->isSubgraphOf(cm)) {
+  if (q->isSubgraphOf(cm)) {
     // sub iso
     response = true;
+//    cm->printGraphNew(cout);
   }
 }
 
 void SubIso::doSubIso() {
   if (g->vlabels_map_cnt.find(start_label) == g->vlabels_map_cnt.end()) {
-    cout << "no Can. Reg." << endl;
+//    cout << "no Can. Reg." << endl;
     return;
   }
 
@@ -295,6 +315,8 @@ bool SubIso::isSubIso() {
   calVertexLabelMap();
 
   doSubIso();
+
+  clearVertexLabelMap();
 
   return response;
 }

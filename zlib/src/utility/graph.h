@@ -132,6 +132,7 @@ class GRAPH {
   bool edge(VertexID v, VertexID w);
   int getDegree(VertexID v);
   void printGraphNew(std::ostream& out);
+  void printGraphPartial(std::ostream& out);
   int makeEmpty();
 
   // for generating candidate region

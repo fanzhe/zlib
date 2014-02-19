@@ -193,6 +193,15 @@ void GRAPH::setGraphId(GraphID id) {
   graphId = id;
 }
 
+void GRAPH::printGraphPartial(std::ostream& out) {
+  cout << "vertex label map cnt: " << endl;
+  for (VertexLabelMapCnt::iterator it = vlabels_map_cnt.begin();
+      it != vlabels_map_cnt.end(); it++) {
+    VertexLabel _v_lable = it->first;
+    cout << _v_lable << ": " << it->second << endl;
+  }
+}
+
 void GRAPH::printGraphNew(std::ostream& out) {
   out << "-1 " << graphId << endl;
 
@@ -417,10 +426,10 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
           continue;
         }
 
-          // update the label map cnt
-          if (_vertex_label_map_cnt[_u_l] > 0) {
-            _vertex_label_map_cnt[_u_l]--;
-          }
+        // update the label map cnt
+        if (_vertex_label_map_cnt[_u_l] > 0) {
+          _vertex_label_map_cnt[_u_l]--;
+        }
 
         // u is what we want,
         // add u to next_nodes for iteration
@@ -698,6 +707,7 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
     }
   }
 
+  cout << "???" << endl;
   for (set<VertexID>::iterator it = eqv_cls[v].begin(); it != eqv_cls[v].end();
       it++) {
     if (*it != u && *it != v) {
@@ -708,7 +718,7 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
 }
 
 void GRAPH::genEqvCls() {
-  ASSERT(eqv_cls.size() > 0);
+  ASSERT(eqv_cls.size() == V());
 
   // initialize eqv_cls
   for (int i = 0; i < V(); i++) {
@@ -745,7 +755,7 @@ void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
       if (i != j && edge(i, j)) {
         VertexID _i = col[i];
         VertexID _j = col[j];
-        if (g->edge(_i, _j)) {
+        if (!g->edge(_i, _j)) {
           return;
         }
       }

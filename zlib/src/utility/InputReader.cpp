@@ -233,6 +233,9 @@ bool InputReader::GetNextGraph_MultiVertexLabel(GRAPH& graph) {
       m_InputStream >> _v;
       m_InputStream >> edge.label;
 
+      // TODO set all edge label as the same
+      edge.label = 0;
+
       for (int i = 0; i < original_new_map[_u].size(); i++) {
         _n_u = original_new_map[_u][i];
         for (int j = 0; j < original_new_map[_v].size(); j++) {
