@@ -261,6 +261,9 @@ int GRAPH::makeEmpty() {
   Ecnt = 0;
   graphId = INVALID_GRAPH_ID;
 
+  vlabels_map.clear();
+  vlabels_map_cnt.clear();
+
   return 0;
 }
 
@@ -363,9 +366,10 @@ void GRAPH::BFSwithConstForInducedSubgraph(
 }
 
 void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
-                         VertexLabelMapCnt& _vertex_label_map_cnt) {
-  cout << "start BFS new " << endl;
-  cout << "hop size " << hops << endl;
+                         VertexLabelMapCnt& _vertex_label_map_cnt,
+                         Cache& cache) {
+//  cout << "start BFS new " << endl;
+//  cout << "hop size " << hops << endl;
 
   VertexLabel _u_l = _vlabels[start_v];
   _vertex_label_map_cnt[_u_l]--;
@@ -380,10 +384,10 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
   // for each hop
   for (int cnt_hops = 0; cnt_hops < hops; cnt_hops++) {
 
-    cout << "hop " << cnt_hops + 1 << endl;
+//    cout << "hop " << cnt_hops + 1 << endl;
 
     if (nodes.size() == 0) {
-      cout << "end BFS" << endl;
+//      cout << "end BFS" << endl;
       return;
     }
 
@@ -408,10 +412,15 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
           continue;
         }
 
-        // update the label map cnt
-        if (_vertex_label_map_cnt[_u_l] > 0) {
-          _vertex_label_map_cnt[_u_l]--;
+        // u is the root vertex of previous matching
+        if (cache.ifRootVertex.find(u) != cache.ifRootVertex.end()) {
+          continue;
         }
+
+          // update the label map cnt
+          if (_vertex_label_map_cnt[_u_l] > 0) {
+            _vertex_label_map_cnt[_u_l]--;
+          }
 
         // u is what we want,
         // add u to next_nodes for iteration
@@ -419,13 +428,13 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
         next_nodes.insert(u);
       }
     }
-    printSet(next_nodes);
+//    printSet(next_nodes);
     // nodes = next_nodes;
     nodes = next_nodes;
     it_begin = nodes.begin();
     it_end = nodes.end();
   }
-  cout << "end BFS new" << endl;
+//  cout << "end BFS new" << endl;
 }
 
 void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
@@ -478,14 +487,15 @@ void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
   cout << "end BFS" << endl;
 }
 
-void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
+void GRAPH::getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _ind_g) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
 
   // set vertex
   VertexID _new_v_id = 0;
   map<VertexID, VertexID> g_to_ind_v;
-  for (vector<int>::iterator it = vertex.begin(); it != vertex.end(); it++) {
+  for (vector<VertexID>::iterator it = vertex.begin(); it != vertex.end();
+      it++) {
     VertexID u = *it;
     VertexLabel u_l = getLabel(u);
     g_to_ind_v[u] = _new_v_id;
@@ -494,9 +504,10 @@ void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
 
   // set edge
   int e_id = 0;
-  for (vector<int>::iterator it = vertex.begin(); it != vertex.end(); it++) {
+  for (vector<VertexID>::iterator it = vertex.begin(); it != vertex.end();
+      it++) {
     VertexID u = *it;
-    for (vector<int>::iterator it1 = vertex.begin(); it1 != vertex.end();
+    for (vector<VertexID>::iterator it1 = vertex.begin(); it1 != vertex.end();
         it1++) {
       VertexID v = *it1;
       if (!edge(u, v) || u <= v)
@@ -512,7 +523,7 @@ void GRAPH::getInducedSubGraph(vector<int>& vertex, GRAPH* _ind_g) {
   _ind_g->setVertexLabelMapCnt();
 }
 
-void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g,
+void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
                                VertexID& r_vertex) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
@@ -521,7 +532,7 @@ void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g,
   // set vertex
   VertexID _new_v_id = 0;
   map<VertexID, VertexID> g_to_ind_v;
-  for (set<int>::iterator it = vertex.begin(); it != vertex.end(); it++) {
+  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
     VertexLabel u_l = getLabel(u);
     g_to_ind_v[u] = _new_v_id;
@@ -535,7 +546,7 @@ void GRAPH::getInducedSubGraph(set<int>& vertex, GRAPH* _ind_g,
 
   // set edge
   int e_id = 0;
-  for (set<int>::iterator it = vertex.begin(); it != vertex.end(); it++) {
+  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
 
     // for each u's neighbor v
@@ -601,8 +612,8 @@ void GRAPH::resetSubIso(GRAPH* g) {
   ASSERT(V() == g->V());
 
   initM(M, g);
-  cout << "=========== M ==============" << endl;
-  printMatrix(M, V());
+//  cout << "=========== M ==============" << endl;
+//  printMatrix(M, V());
 
   setArray(row, V(), 0);
   setArray(col, V(), -1);
@@ -633,16 +644,15 @@ void GRAPH::clearSubIso() {
 }
 
 void GRAPH::resetEqvCls() {
+  ASSERT(eqv_cls.size() > 0);
+
   for (int i = 0; i < eqv_cls.size(); i++) {
     eqv_cls[i].clear();
   }
 }
 
 void GRAPH::clearEqvCls() {
-  for (int i = 0; i < eqv_cls.size(); i++) {
-    eqv_cls[i].clear();
-  }
-  eqv_cls.clear();
+  clearVectorSet(eqv_cls);
 }
 
 void GRAPH::initEqvCls(int _size) {
@@ -698,6 +708,8 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
 }
 
 void GRAPH::genEqvCls() {
+  ASSERT(eqv_cls.size() > 0);
+
   // initialize eqv_cls
   for (int i = 0; i < V(); i++) {
     eqv_cls[i].insert(i);
@@ -724,8 +736,8 @@ void GRAPH::genEqvCls() {
 }
 
 void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
-  cout << "=========== query vertex ==============" << endl;
-  printArray(col1, V());
+//  cout << "=========== query vertex ==============" << endl;
+//  printArray(col1, V());
 
   // TODO real thing
   for (int i = 0; i < V(); i++) {

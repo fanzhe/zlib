@@ -48,6 +48,29 @@ class TestVFLib {
     }
   }
 
+  void testIndSub() {
+    for (int i = 0; i < q_cnt; i++) {
+      GRAPH* q = queryDB[i];
+      q->printGraphNew(cout);
+      for (int j = 0; j < g_cnt; j++) {
+        GRAPH* g = graphDB[j];
+        g->printGraphNew(cout);
+
+        GRAPH* indsg = new GRAPH();
+        set<VertexID> _inds;
+        _inds.insert(1);
+        _inds.insert(4);
+        _inds.insert(3);
+        _inds.insert(5);
+        int n = 0;
+
+        g->getInducedSubGraph(_inds, indsg, n);
+        cout << "+++++++++" << endl;
+        indsg->printGraphNew(cout);
+      }
+    }
+  }
+
   void testSubIso() {
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
@@ -56,9 +79,9 @@ class TestVFLib {
         GRAPH* g = graphDB[j];
         g->printGraphNew(cout);
 
-        SubIso* subIso = new SubIso(q, g);
         bool res = q->isSubgrpahOfByVF2(g);
-        cout << "Is q \subset g? " << res << endl;
+        cout << "Is q subgraph of g? " << res << endl;
+
       }
     }
   }

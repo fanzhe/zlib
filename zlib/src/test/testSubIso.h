@@ -49,9 +49,13 @@ class TestSubIso {
       GRAPH* q = queryDB[i];
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
+//        g->printGraphNew(cout);
+        cout << "|g| = " << g->V() << endl;
         SubIso* subIso = new SubIso(q, g);
         cout << "response: " << subIso->isSubIso() << endl;
+//        delete g;
       }
+//      delete q;
     }
   }
 

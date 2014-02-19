@@ -49,6 +49,15 @@ void printVectorSet(vector<set<T> >& _vec_set) {
 }
 
 template<class T>
+void clearVectorSet(vector< set<T> >& _vec_set) {
+  for (int i = 0; i < _vec_set.size(); i++) {
+    _vec_set[i].clear();
+  }
+  _vec_set.clear();
+}
+
+
+template<class T>
 void printMatrix(T* _vec, int _size) {
   for (int i = 0; i < _size; i++) {
     for (int j = 0; j < _size; j++) {

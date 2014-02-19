@@ -33,7 +33,7 @@ void SubIso::calVertexLabelMap() {
   q->setVertexLabelMap();
   q->setVertexLabelMapCnt();
 
-  cout << "++++++++++ query graph +++++++++++" << endl;
+//  cout << "++++++++++ query graph +++++++++++" << endl;
 //  q->printGraphNew(cout);
 
   cout << endl;
@@ -41,7 +41,7 @@ void SubIso::calVertexLabelMap() {
   g->setVertexLabelMap();
   g->setVertexLabelMapCnt();
 
-  cout << "---------- graph data ------------" << endl;
+//  cout << "---------- graph data ------------" << endl;
 //  g->printGraphNew(cout);
 }
 
@@ -52,31 +52,33 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
   q->initSubIso();
   cm->initEqvCls(q->V());
 
-  cout << "number of cr. " << rootVertexSet.size() << endl;
+  cout << "|CR| = " << rootVertexSet.size() << endl;
   // for each starting vertex
   for (set<VertexID>::iterator it = rootVertexSet.begin();
       it != rootVertexSet.end(); it++) {
 
     VertexID r_vertex = *it;
 
-    // TODO remove redundant r_vertex
-
-    // gen Cand. Reg.
+    // gen cr
     if (!genCanReg(r_vertex, cr)) {
       continue;
     }
 
-    // find Cand. Match
+    // find cm
     genAllCanMatch(r_vertex, cr, cm);
 
-    if (response) break;
+//     if (response) break;
+    cout << "res: " << response << endl;
 
-    // reset Cand. Reg.
+    // reset cr, we do not set cr's eqv. cls.
     cr->makeEmpty();
+
+    cache.ifRootVertex.insert(r_vertex);
   }
 
   q->clearSubIso();
   cm->clearEqvCls();
+  cm->makeEmpty();
 
   delete cr;
   delete cm;
@@ -94,17 +96,15 @@ bool SubIso::isMapped(VertexLabelMapCnt& vlabels_map_cnt) {
 }
 
 bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
-  cout << "generate cr" << endl;
-  // BFS with q->Vcnt hops
-  cout << "root vertex: " << endl;
-  cout << r_vertex << endl;
+//  cout << "generate cr" << endl;
+//  cout << "root vertex: " << r_vertex << endl;
 
   // BFS to gen can. reg.
   set<VertexID> visit_v;
   q->setVertexLabelMapCnt();
-  g->BFSwithConst(r_vertex, q->V(), visit_v, q->vlabels_map_cnt);
+  g->BFSwithConst(r_vertex, q->V(), visit_v, q->vlabels_map_cnt, cache);
 
-  cout << "number of vertex in cr: " << visit_v.size() << endl;
+  cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
 
   // judge the situation of map cnt of q
@@ -116,17 +116,18 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // generate Can. Reg. by induced subgraph of g
   // (1) already set the vertex label map
   // (2) need to re-set the r_vertex
-  cout << "generate induced subgraph of cr" << endl;
+//  cout << "generate induced subgraph of cr" << endl;
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
-  cout << endl << "************** Candidate Region: ***************" << endl;
-  cr->printGraphNew(cout);
+//  cout << endl << "************** Candidate Region: ***************" << endl;
+//  cout << "root: " << r_vertex << endl;
+//  cr->printGraphNew(cout);
 
   return true;
 }
 
 void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
-  cout << "generate all cm" << endl;
+//  cout << "generate all cm" << endl;
   vector<VertexID> canMatVertex;
   canMatVertex.resize(q->V());
 
@@ -137,14 +138,14 @@ void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
   canMatVertex[0] = r_vertex;  // set
   q->vlabels_map_cnt[cr->getLabel(r_vertex)]--;  // set
 
-  cout << "start generate cm" << endl;
+//  cout << "start generate cm" << endl;
   genCanMatch(0 + 1, cr, canMatVertex, cm);
 }
 
 void SubIso::cacheAllSubOf(GSPAN::DFSCode& dfs_code) {
   SubGraphGen* sg = new SubGraphGen();
-
   // generate all subgraphs of dfs_code
+
   sg->Start(dfs_code);
 
   for (int i = 0; i < sg->Size(); i++) {
@@ -165,8 +166,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
   mindfs.ConvertGRAPH(dfs_code);
 
-  cout << "============= hash code ============" << endl;
-  cout << dfs_code.hashCode() << endl;
+//  cout << "============= hash code ============" << endl;
+//  cout << dfs_code.hashCode() << endl;
 
   if (cache.ifHasCm.find(dfs_code.hashCode()) == cache.ifHasCm.end()) {
 
@@ -211,15 +212,15 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     // as the size of canMatVertex is small, e.g., 10
     cr->getInducedSubGraph(canMatVertex, cm);
 
-    cout << "============= can match vertex: =============" << endl;
-    printVector(canMatVertex);
+//    cout << "============= can match vertex: =============" << endl;
+//    printVector(canMatVertex);
 
-    cout << "------------- can match: -------------" << endl;
-    cm->printGraphNew(cout);
+//    cout << "------------- can match: -------------" << endl;
+//    cm->printGraphNew(cout);
 
     // if cm is judged before by minDFSCode
     if (!isCanMatChecked(cm)) {
-      cout << "!!!!!!!!!!!! cm is checked !!!!!!!!!!! " << endl;
+//      cout << "!!!!!!!!!!!! cm is checked !!!!!!!!!!! " << endl;
       cm->makeEmpty();
       return;
     }
@@ -228,8 +229,8 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     cm->resetEqvCls();
     cm->genEqvCls();
 
-    cout << "------------- Eqv Cls --------------" << endl;
-    printVectorSet(cm->eqv_cls);
+//    cout << "------------- Eqv Cls --------------" << endl;
+//    printVectorSet(cm->eqv_cls);
 
     // do matching
     doMatch(cm);

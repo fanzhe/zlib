@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "GlobalDefinition.h"
+#include "../subIso/cache.h"
 
 #include "../vflib/argedit.h"
 #include "../vflib/argraph.h"
@@ -138,12 +139,13 @@ class GRAPH {
   void setVertexLabelMapCnt();
   void BFS(VertexID start_v, int lens, set<int>& visit_v);
   void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
-                    VertexLabelMapCnt& _vertex_label_map_cnt);
+                    VertexLabelMapCnt& _vertex_label_map_cnt,
+                    Cache& cache);
   void BFSwithConstForInducedSubgraph(VertexID& r_vertex, int hops,
                                       VertexLabelMapCnt& _vertex_label_map_cnt,
                                       GRAPH* ind_g);
-  void getInducedSubGraph(set<int>& vertex, GRAPH* _g, VertexID& r_vertex);
-  void getInducedSubGraph(vector<int>& vertex, GRAPH* _g);
+  void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _g, VertexID& r_vertex);
+  void getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _g);
 
   // for matching
   void initSubIso();

@@ -75,11 +75,12 @@ void testVF(int argc, char** argv) {
   g_test->loadFromInputFile(argv[1], argv[3]);
 
   g_test->testSubIso();
+  g_test->testIndSub();
 }
 
 int main(int argc, char** argv) {
 //  test VFLib
-  testVF(argc, argv);
+//  testVF(argc, argv);
 //	test input multiple vertex label graph
 //  testInput(argc, argv);
 //  test SubGen
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
 //  testMinDFS(argc, argv);
 
 //  test subIso
-//  testSubIso(argc, argv);
+  testSubIso(argc, argv);
 
   return 0;
 }

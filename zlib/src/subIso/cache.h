@@ -7,6 +7,7 @@ class Cache {
  public:
   set<string> ifHasString;
   set<HashCode> ifHasCm;
+  set<VertexID> ifRootVertex;
 };
 
 #endif
