@@ -658,14 +658,20 @@ void GRAPH::resetEqvCls() {
   for (int i = 0; i < eqv_cls.size(); i++) {
     eqv_cls[i].clear();
   }
+
+  eqv_cls_aux->MakeEmpty();
 }
 
 void GRAPH::clearEqvCls() {
   clearVectorSet(eqv_cls);
+  delete eqv_cls_aux;
 }
 
 void GRAPH::initEqvCls(int _size) {
+  ASSERT(_size > 0);
+
   eqv_cls.resize(_size);
+  eqv_cls_aux = new DisjointSets(_size);
 }
 
 bool GRAPH::shareSameNeighbor(VertexID u, VertexID v) {
@@ -707,7 +713,6 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
     }
   }
 
-  cout << "???" << endl;
   for (set<VertexID>::iterator it = eqv_cls[v].begin(); it != eqv_cls[v].end();
       it++) {
     if (*it != u && *it != v) {
@@ -719,6 +724,7 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
 
 void GRAPH::genEqvCls() {
   ASSERT(eqv_cls.size() == V());
+  ASSERT(eqv_cls_aux->NumElements() == V());
 
   // initialize eqv_cls
   for (int i = 0; i < V(); i++) {
@@ -737,12 +743,27 @@ void GRAPH::genEqvCls() {
 
       // u and v share the same neighbor vertexes
       if (shareSameNeighbor(u, v)) {
-        updateEqvCls(u, v);
+//        updateEqvCls(u, v);
+        eqv_cls_aux->Union(eqv_cls_aux->FindSet(u), eqv_cls_aux->FindSet(v));
       } else {
         continue;
       }
     }
   }
+
+  // collect equivalent class
+  map<VertexID, set<VertexID> > _map;
+  for (int i = 0; i < V(); i++) {
+    _map[eqv_cls_aux->FindSet(i)].insert(i);
+  }
+
+  for (int i = 0; i < V(); i++) {
+    for (set<VertexID>::iterator it = _map[eqv_cls_aux->FindSet(i)].begin();
+        it != _map[eqv_cls_aux->FindSet(i)].end(); it++) {
+      eqv_cls[i].insert(*it);
+    }
+  }
+
 }
 
 void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {

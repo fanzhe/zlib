@@ -59,7 +59,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
   cm->initEqvCls(q->V());
   cache.cnt_cm = cache.cnt_cr = cache.cnt_cm_p = 0;
 
-  cout << "|CR| = " << rootVertexSet.size() << endl;
+//  cout << "|CR| = " << rootVertexSet.size() << endl;
   // for each starting vertex
   for (set<VertexID>::iterator it = rootVertexSet.begin();
       it != rootVertexSet.end(); it++) {
@@ -112,7 +112,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   q->setVertexLabelMapCnt();
   g->BFSwithConst(r_vertex, q->V(), visit_v, q->vlabels_map_cnt, cache);
 
-  cout << "|cr_i|: " << visit_v.size() << endl;
+//  cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
 
 // judge the situation of map cnt of q
@@ -130,14 +130,14 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cout << endl << "************** Candidate Region: ***************" << endl;
 //  cout << "root: " << r_vertex << endl;
 //  cr->printGraphNew(cout);
-  cr->printGraphPartial(cout);
+//  cr->printGraphPartial(cout);
 
-  cr->initEqvCls(cr->V());
-  cout << "test??" << endl;
-  cr->genEqvCls();
-  cout << "test~!~" << endl;
-  printVectorSet(cr->eqv_cls);
-  cr->clearEqvCls();
+//  cr->initEqvCls(cr->V());
+//  cout << "test??" << endl;
+//  cr->genEqvCls();
+//  cout << "test~!~" << endl;
+//  printVectorSet(cr->eqv_cls);
+//  cr->clearEqvCls();
 
   return true;
 }

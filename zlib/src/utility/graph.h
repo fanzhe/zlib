@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "GlobalDefinition.h"
+#include "DisjointSets.h"
 #include "../subIso/cache.h"
 
 #include "../vflib/argedit.h"
@@ -98,6 +99,7 @@ class GRAPH {
 
   // -------- for equivalent class -------
   vector<set<VertexID> > eqv_cls;
+  DisjointSets* eqv_cls_aux;
   // -------------------------------------
 
   // -------- for subiso --------
