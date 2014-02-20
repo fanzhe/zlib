@@ -136,6 +136,8 @@ class GRAPH {
   void printGraphNew(std::ostream& out);
   void printGraphPartial(std::ostream& out);
   int makeEmpty();
+  void removeEdge(VertexID v, VertexID w);
+  void removeVexAllEdges(VertexID u);
 
   // for generating candidate region
   void setVertexLabelMap();
@@ -173,6 +175,7 @@ class GRAPH {
   };
 
   // for generating equivalent class
+  void reduceByEqvCls(VertexID& r_vertex, VertexLabelMapCnt& _vertex_label_map_cnt);
   void genEqvCls();
   bool shareSameNeighbor(VertexID u, VertexID v);
   void updateEqvCls(VertexID u, VertexID v);

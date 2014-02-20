@@ -85,7 +85,7 @@ class TestVFLib {
 //        g->printGraphNew(cout);
 
         bool res = q->isSubgrpahOfByVF2(g);
-        cout << i << " " << j << " " << res << endl;
+//        cout << i << " " << j << " " << res << endl;
         if (res)
           cnt_res++;
       }

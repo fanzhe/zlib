@@ -302,7 +302,7 @@ void GRAPH::setVertexLabelMapCnt() {
 }
 
 /*
- * TODO: not finish.
+ *
  */
 void GRAPH::BFSwithConstForInducedSubgraph(
     VertexID& r_vertex, int hops, VertexLabelMapCnt& _vertex_label_map_cnt,
@@ -591,9 +591,9 @@ void GRAPH::initM(int* M, GRAPH* g) {
     VertexID u_q = i;
     VertexLabel u_q_l = getLabel(u_q);
 
-    for (int j = 0; j < V(); j++) {
+    for (int j = 0; j < g->V(); j++) {
       VertexID u_g = j;
-      VertexLabel u_g_l = getLabel(u_g);
+      VertexLabel u_g_l = g->getLabel(u_g);
 
       if (u_q_l == u_g_l) {
         M[MATRIX_INDEX(u_q, u_g, V())] = 1;
@@ -654,6 +654,7 @@ void GRAPH::clearSubIso() {
 
 void GRAPH::resetEqvCls() {
   ASSERT(eqv_cls.size() > 0);
+  ASSERT(eqv_cls_aux->NumElements() > 0);
 
   for (int i = 0; i < eqv_cls.size(); i++) {
     eqv_cls[i].clear();
@@ -663,6 +664,9 @@ void GRAPH::resetEqvCls() {
 }
 
 void GRAPH::clearEqvCls() {
+  ASSERT(eqv_cls.size() > 0);
+  ASSERT(eqv_cls_aux->NumElements() > 0);
+
   clearVectorSet(eqv_cls);
   delete eqv_cls_aux;
 }
@@ -722,6 +726,57 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
   }
 }
 
+void GRAPH::reduceByEqvCls(VertexID& r_vertex,
+                           VertexLabelMapCnt& _vertex_label_map_cnt) {
+  ASSERT(eqv_cls.size() == V());
+  ASSERT(eqv_cls_aux->NumElements() == V());
+
+  map<VertexID, set<VertexID> > _map;
+  for (int i = 0; i < V(); i++) {
+    _map[eqv_cls_aux->FindSet(i)].insert(i);
+  }
+
+  // for each disjoint set
+  for (map<VertexID, set<VertexID> >::iterator it = _map.begin();
+      it != _map.end(); it++) {
+    VertexID _root = it->first;
+    set<VertexID>& _ds = it->second;
+    int _lable_cnt = _vertex_label_map_cnt[getLabel(_root)];
+    bool _is = false;
+
+    // disjoint set size is smaller
+    if (_ds.size() < _lable_cnt)
+      continue;
+
+    // r_vertex is in this disjoint set
+    if (_ds.find(r_vertex) != _ds.end())
+      _is = true;
+
+    // remove edges
+    int _rm_cnt = 0;
+    for (set<VertexID>::iterator it1 = _ds.begin(); it1 != _ds.end(); it1++) {
+      if (_ds.size() - _rm_cnt == _lable_cnt) {
+        break;
+      } else {
+        VertexID u = *it1;
+        if (u == _root)
+          continue;
+
+        // remove all u's edges
+        removeVexAllEdges(u);
+
+        // removed
+        _rm_cnt++;
+      }
+    }
+
+    // re-set r_vertex
+    if (_is) {
+      r_vertex = _root;
+    }
+  }
+}
+
 void GRAPH::genEqvCls() {
   ASSERT(eqv_cls.size() == V());
   ASSERT(eqv_cls_aux->NumElements() == V());
@@ -731,14 +786,15 @@ void GRAPH::genEqvCls() {
     eqv_cls[i].insert(i);
   }
 
+  // bigO(Deg*V)
   for (int i = 0; i < V(); i++) {
     VertexID u = i;
-    for (int j = 0; j < V(); j++) {
-      VertexID v = j;
+    for (int j = 0; j < getDegree(u); j++) {
+      VertexID v = _adjList[u][j].v;
 
-      // u < v; and
       // u and v share the same label
-      if (u >= v || getLabel(u) != getLabel(v))
+      // note the order
+      if (u > v || getLabel(u) != getLabel(v))
         continue;
 
       // u and v share the same neighbor vertexes
@@ -770,7 +826,7 @@ void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
 //  cout << "=========== query vertex ==============" << endl;
 //  printArray(col1, V());
 
-  // TODO real thing
+  // real thing
   for (int i = 0; i < V(); i++) {
     for (int j = 0; j < V(); j++) {
       if (i != j && edge(i, j)) {
@@ -901,5 +957,35 @@ bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
   }
 
   return false;
+}
+
+void GRAPH::removeVexAllEdges(VertexID u) {
+  vector<AdjElement> _local_adjList = _adjList[u];
+
+  // for all u's neighbor vertices
+  for (int i = 0; i < _local_adjList.size(); i++) {
+    VertexID v = u;
+    VertexID w = _local_adjList[i].v;
+
+    removeEdge(v, w);
+  }
+}
+
+void GRAPH::removeEdge(VertexID v, VertexID w) {
+  for (vector<AdjElement>::iterator it = _adjList[v].begin();
+      it != _adjList[v].end(); it++) {
+    if ((*it).v == w) {
+      _adjList[v].erase(it);
+      break;
+    }
+  }
+
+  for (vector<AdjElement>::iterator it = _adjList[w].begin();
+      it != _adjList[w].end(); it++) {
+    if ((*it).v == v) {
+      _adjList[w].erase(it);
+      break;
+    }
+  }
 }
 

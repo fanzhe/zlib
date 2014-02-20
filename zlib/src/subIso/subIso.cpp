@@ -41,14 +41,8 @@ void SubIso::calVertexLabelMap() {
   q->setVertexLabelMap();
   q->setVertexLabelMapCnt();
 
-//  cout << "++++++++++ query graph +++++++++++" << endl;
-//  q->printGraphNew(cout);
-
   g->setVertexLabelMap();
   g->setVertexLabelMapCnt();
-
-//  cout << "---------- graph data ------------" << endl;
-//  g->printGraphNew(cout);
 }
 
 void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
@@ -59,14 +53,16 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
   cm->initEqvCls(q->V());
   cache.cnt_cm = cache.cnt_cr = cache.cnt_cm_p = 0;
 
-//  cout << "|CR| = " << rootVertexSet.size() << endl;
+  cout << "|CR| = " << rootVertexSet.size() << endl;
   // for each starting vertex
   for (set<VertexID>::iterator it = rootVertexSet.begin();
       it != rootVertexSet.end(); it++) {
 
     VertexID r_vertex = *it;
+//    cout << endl << "original root: " << r_vertex << endl;
+    cache.ifRootVertex.insert(r_vertex);
 
-    // gen cr
+    // generate cr
     if (!genCanReg(r_vertex, cr)) {
       continue;
     }
@@ -80,8 +76,6 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
 
     // reset cr, we do not set cr's eqv. cls.
     cr->makeEmpty();
-
-    cache.ifRootVertex.insert(r_vertex);
   }
 
   q->clearSubIso();
@@ -110,9 +104,9 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 // BFS to gen can. reg.
   set<VertexID> visit_v;
   q->setVertexLabelMapCnt();
-  g->BFSwithConst(r_vertex, q->V(), visit_v, q->vlabels_map_cnt, cache);
+  g->BFSwithConst(r_vertex, q->V() - 1, visit_v, q->vlabels_map_cnt, cache);
 
-//  cout << "|cr_i|: " << visit_v.size() << endl;
+  cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
 
 // judge the situation of map cnt of q
@@ -124,21 +118,23 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // generate Can. Reg. by induced subgraph of g
   // (1) already set the vertex label map
   // (2) need to re-set the r_vertex
-//  cout << "generate induced subgraph of cr" << endl;
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
-//  cout << endl << "************** Candidate Region: ***************" << endl;
-//  cout << "root: " << r_vertex << endl;
+//  cout << "root vertext: " << r_vertex << endl;
+//  cout << "************** Candidate Region: ***************" << endl;
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
-//  cr->initEqvCls(cr->V());
-//  cout << "test??" << endl;
-//  cr->genEqvCls();
-//  cout << "test~!~" << endl;
+  // TODO equ_cls for cr.
+  // to reduce |cr|.
+  cr->initEqvCls(cr->V());
+  cr->genEqvCls();
+//  q->setVertexLabelMapCnt();
+  cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
 //  printVectorSet(cr->eqv_cls);
-//  cr->clearEqvCls();
+  cr->clearEqvCls();
 
+//  cr->printGraphNew(cout);
   return true;
 }
 
@@ -146,6 +142,7 @@ void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
 //  cout << "generate all cm" << endl;
   vector<VertexID> canMatVertex;
   canMatVertex.resize(q->V());
+  cache.ifHasString.clear();
 
   // generate all Can. Match by DFS-like traversal on cr
   // (1). q.V() vertexes
@@ -223,17 +220,13 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
       cout << "genCanMatch returns false" << endl;
       return;
     }
+//    cout << "============= can match vertex: =============" << endl;
+//    printVector(canMatVertex);
 
     // generate cm
     // It is okay to use getInducedSubgraph()
     // as the size of canMatVertex is small, e.g., 10
     cr->getInducedSubGraph(canMatVertex, cm);
-
-//    cout << "============= can match vertex: =============" << endl;
-//    printVector(canMatVertex);
-
-//    cout << "------------- can match: -------------" << endl;
-//    cm->printGraphNew(cout);
 
     // if cm is judged before by minDFSCode
     if (!isCanMatChecked(cm)) {
@@ -248,6 +241,8 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     cm->resetEqvCls();
     cm->genEqvCls();
 
+//    cout << "------------- can match: -------------" << endl;
+//    cm->printGraphNew(cout);
 //    cout << "------------- Eqv Cls --------------" << endl;
 //    printVectorSet(cm->eqv_cls);
 
