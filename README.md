@@ -14,5 +14,6 @@
 
 * Subgraph isomorphism testing (Turbo + Ullmann) between two graphs. 
 
-* Cyclic group based encryption for subIso (TBA).
+* Integration of VFLib (http://www.cs.sunysb.edu/~algorith/implement/vflib/implement.shtml).
 
+* Cyclic group based encryption for subIso (TBA).
