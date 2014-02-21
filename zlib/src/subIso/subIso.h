@@ -18,6 +18,7 @@ class SubIso {
   GRAPH* q;
   GRAPH* g;
   bool response;
+  int tree_height;
 
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;

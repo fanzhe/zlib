@@ -10,11 +10,13 @@ SubIso::SubIso(GRAPH* _q, GRAPH* _g)
     : q(_q),
       g(_g) {
   /**
+   * TODO: use BFS on q to determine the
    * start label, which is the same to that
    * of the first vertex of the query by default
    */
-  start_label = q->getLabel(0);
   response = false;
+  start_label = q->getLabel(q->getMinTreeHeight());
+  tree_height = q->min_tree_height - 1;
 }
 
 bool SubIso::isVisited(vector<int>& canMatVertex, int dep, int v) {
@@ -60,7 +62,9 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
 
     VertexID r_vertex = *it;
 //    cout << endl << "original root: " << r_vertex << endl;
-    cache.ifRootVertex.insert(r_vertex);
+
+    // TODO: cannot use this ifRootVertex cache
+//    cache.ifRootVertex.insert(r_vertex);
 
     // generate cr
     if (!genCanReg(r_vertex, cr)) {
@@ -104,7 +108,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 // BFS to gen can. reg.
   set<VertexID> visit_v;
   q->setVertexLabelMapCnt();
-  g->BFSwithConst(r_vertex, q->V() - 1, visit_v, q->vlabels_map_cnt, cache);
+  g->BFSwithConst(r_vertex, tree_height, visit_v, q->vlabels_map_cnt, cache);
 
   cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
@@ -120,9 +124,9 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // (2) need to re-set the r_vertex
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
-//  cout << "root vertext: " << r_vertex << endl;
-//  cout << "************** Candidate Region: ***************" << endl;
-//  cr->printGraphNew(cout);
+//  cout << "root vertex: " << r_vertex << endl;
+  cout << "************** Candidate Region: ***************" << endl;
+  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
   // TODO equ_cls for cr.

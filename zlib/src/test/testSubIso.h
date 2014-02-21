@@ -49,20 +49,21 @@ class TestSubIso {
   void debugSubIso() {
       for (int i = 0; i < q_cnt; i++) {
         GRAPH* q = queryDB[i];
+        cout << "q" << i << endl;
         for (int j = 0; j < g_cnt; j++) {
 
-  //        if (i != 0 || j != 50)
-  //          continue;
+//          if (i != 4 || j != 13)
+//            continue;
 
-  //        cout << "-----------query graph----------" << endl;
-  //        q->printGraphNew(cout);
+//          cout << "-----------query graph----------" << endl;
+//          q->printGraphNew(cout);
 
 
           GRAPH* g = graphDB[j];
           SubIso* subIso = new SubIso(q, g);
 
-  //        cout << "-----------graph data----------" << endl;
-  //        g->printGraphNew(cout);
+//          cout << "-----------graph data----------" << endl;
+//          g->printGraphNew(cout);
 
           bool res1 = subIso->isSubIso();
           if (res1) {

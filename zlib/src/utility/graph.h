@@ -93,6 +93,7 @@ class GRAPH {
 //  ECVector<ECVector<AdjElement> > _adjList;
   vector<vector<AdjElement> > _adjList;
   int maximum_vertex;
+  int min_tree_height;
 
   VertexLabelMap vlabels_map;
   VertexLabelMapCnt vlabels_map_cnt;
@@ -142,6 +143,8 @@ class GRAPH {
   // for generating candidate region
   void setVertexLabelMap();
   void setVertexLabelMapCnt();
+  VertexID getMinTreeHeight();
+  int getMinTreeHeight2(VertexID start_v);
   void BFS(VertexID start_v, int lens, set<int>& visit_v);
   void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                     VertexLabelMapCnt& _vertex_label_map_cnt,

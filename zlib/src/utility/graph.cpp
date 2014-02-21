@@ -374,6 +374,67 @@ void GRAPH::BFSwithConstForInducedSubgraph(
   cout << "end BFS new" << endl;
 }
 
+int GRAPH::getMinTreeHeight2(VertexID start_v) {
+  int _min_tree_height = 0;
+
+  set<VertexID> visit_v;
+  visit_v.insert(start_v);
+
+  set<VertexID> nodes;
+  nodes.insert(start_v);
+
+  set<VertexID>::iterator it_begin = nodes.begin();
+  set<VertexID>::iterator it_end = nodes.end();
+
+  // for each hop
+  while (nodes.size() != 0) {
+    set<VertexID> next_nodes;
+
+    // for each node v
+    for (set<VertexID>::iterator it = it_begin; it != it_end; it++) {
+      VertexID v = *it;
+
+      // for each incident node u of v
+      for (int j = 0; j < getDegree(v); j++) {
+        VertexID u = _adjList[v][j].v;
+
+        // u is visited
+        if (visit_v.find(u) != visit_v.end()) {
+          continue;
+        }
+
+        // u is what we want,
+        // add u to next_nodes for iteration
+        visit_v.insert(u);
+        next_nodes.insert(u);
+      }
+    }
+    // nodes = next_nodes;
+    nodes = next_nodes;
+    it_begin = nodes.begin();
+    it_end = nodes.end();
+    _min_tree_height++;
+  }
+  return _min_tree_height;
+}
+
+VertexID GRAPH::getMinTreeHeight() {
+  min_tree_height = V() + 1;
+  VertexID start_v;
+  for (int i = 0; i < V(); i++) {
+    int _min = getMinTreeHeight2(i);
+    if (min_tree_height > _min) {
+      start_v = i;
+      min_tree_height = _min;
+    }
+  }
+
+  printGraphNew(cout);
+  cout << "start_v: " << start_v << endl;
+  cout << "min_tree_height: " << min_tree_height << endl;
+  return start_v;
+}
+
 void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                          VertexLabelMapCnt& _vertex_label_map_cnt,
                          Cache& cache) {
