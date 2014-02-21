@@ -125,20 +125,23 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
 //  cout << "root vertex: " << r_vertex << endl;
-  cout << "************** Candidate Region: ***************" << endl;
-  cr->printGraphNew(cout);
+//  cout << "************** Candidate Region: ***************" << endl;
+//  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
   // TODO equ_cls for cr.
   // to reduce |cr|.
   cr->initEqvCls(cr->V());
   cr->genEqvCls();
-//  q->setVertexLabelMapCnt();
+  q->setVertexLabelMapCnt();
+
+  cout << "before: " << cr->E() << endl;
   cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
+  cout << "after: " << cr->E() << endl;
+
 //  printVectorSet(cr->eqv_cls);
   cr->clearEqvCls();
 
-//  cr->printGraphNew(cout);
   return true;
 }
 

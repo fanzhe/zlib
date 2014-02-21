@@ -429,9 +429,9 @@ VertexID GRAPH::getMinTreeHeight() {
     }
   }
 
-  printGraphNew(cout);
-  cout << "start_v: " << start_v << endl;
-  cout << "min_tree_height: " << min_tree_height << endl;
+//  printGraphNew(cout);
+//  cout << "start_v: " << start_v << endl;
+//  cout << "min_tree_height: " << min_tree_height << endl;
   return start_v;
 }
 
@@ -1029,6 +1029,7 @@ void GRAPH::removeVexAllEdges(VertexID u) {
     VertexID w = _local_adjList[i].v;
 
     removeEdge(v, w);
+    Ecnt--;
   }
 }
 
