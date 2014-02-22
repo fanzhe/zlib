@@ -101,6 +101,7 @@ class GRAPH {
   // -------- for equivalent class -------
   vector<set<VertexID> > eqv_cls;
   DisjointSets* eqv_cls_aux;
+  bool eqv_cls_flg;
   // -------------------------------------
 
   // -------- for subiso --------

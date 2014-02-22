@@ -88,6 +88,7 @@ class TestSubIso {
   void testSubIso() {
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
+      cout << "q:" << i << endl;
       for (int j = 0; j < g_cnt; j++) {
 
         GRAPH* g = graphDB[j];

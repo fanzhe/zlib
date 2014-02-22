@@ -722,6 +722,7 @@ void GRAPH::resetEqvCls() {
   }
 
   eqv_cls_aux->MakeEmpty();
+  eqv_cls_flg = false;
 }
 
 void GRAPH::clearEqvCls() {
@@ -737,9 +738,14 @@ void GRAPH::initEqvCls(int _size) {
 
   eqv_cls.resize(_size);
   eqv_cls_aux = new DisjointSets(_size);
+  eqv_cls_flg = false;
 }
 
 bool GRAPH::shareSameNeighbor(VertexID u, VertexID v) {
+  if (getDegree(u) == 0 || getDegree(v) == 0) {
+    return false;
+  }
+
   if (getDegree(u) != getDegree(v)) {
     return false;
   }
@@ -825,6 +831,9 @@ void GRAPH::reduceByEqvCls(VertexID& r_vertex,
 
         // remove all u's edges
         removeVexAllEdges(u);
+
+        // update
+        eqv_cls_flg = true;
 
         // removed
         _rm_cnt++;

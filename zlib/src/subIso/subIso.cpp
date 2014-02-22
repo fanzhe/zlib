@@ -63,10 +63,10 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
     VertexID r_vertex = *it;
 //    cout << endl << "original root: " << r_vertex << endl;
 
-    // TODO: cannot use this ifRootVertex cache
+// TODO: cannot use this ifRootVertex cache
 //    cache.ifRootVertex.insert(r_vertex);
 
-    // generate cr
+// generate cr
     if (!genCanReg(r_vertex, cr)) {
       continue;
     }
@@ -102,10 +102,8 @@ bool SubIso::isMapped(VertexLabelMapCnt& vlabels_map_cnt) {
 }
 
 bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
-//  cout << "generate cr" << endl;
-//  cout << "root vertex: " << r_vertex << endl;
 
-// BFS to gen can. reg.
+  // BFS to gen can. reg.
   set<VertexID> visit_v;
   q->setVertexLabelMapCnt();
   g->BFSwithConst(r_vertex, tree_height, visit_v, q->vlabels_map_cnt, cache);
@@ -119,7 +117,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
     return false;
   }
 
-  // generate Can. Reg. by induced subgraph of g
+  // generate cr by induced subgraph of g
   // (1) already set the vertex label map
   // (2) need to re-set the r_vertex
   g->getInducedSubGraph(visit_v, cr, r_vertex);
@@ -129,24 +127,44 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
-  // TODO equ_cls for cr.
-  // to reduce |cr|.
-  cr->initEqvCls(cr->V());
-  cr->genEqvCls();
-  q->setVertexLabelMapCnt();
-
-  cout << "before: " << cr->E() << endl;
-  cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
-  cout << "after: " << cr->E() << endl;
-
-//  printVectorSet(cr->eqv_cls);
-  cr->clearEqvCls();
-
+  // generate eqv_cls for cr
+  // deduce the edges of cr by eqv_cls
+  canRegEqvCls(cr, r_vertex);
   return true;
 }
 
+void SubIso::canRegEqvCls(GRAPH* cr, VertexID& r_vertex) {
+  // TODO equ_cls for cr.
+  // to reduce |cr|.
+
+  // initialize
+  cr->initEqvCls(cr->V());
+
+  cr->genEqvCls();
+  q->setVertexLabelMapCnt();
+//  cout << "+ before: " << cr->E() << endl;
+  cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
+//  cout << "+ after: " << cr->E() << endl;
+//  printVectorSet(cr->eqv_cls);
+
+  while (cr->eqv_cls_flg == true) {
+    // re-set the paras
+    cr->resetEqvCls();
+
+    cr->genEqvCls();
+    q->setVertexLabelMapCnt();
+//    cout << "q: " << q->vlabels_map_cnt[11] << endl;
+//    cout << "r before: " << cr->E() << endl;
+    cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
+//    cout << "r after: " << cr->E() << endl;
+    //  printVectorSet(cr->eqv_cls);
+  }
+
+  // clear
+  cr->clearEqvCls();
+}
+
 void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
-//  cout << "generate all cm" << endl;
   vector<VertexID> canMatVertex;
   canMatVertex.resize(q->V());
   cache.ifHasString.clear();
@@ -158,7 +176,6 @@ void SubIso::genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm) {
   canMatVertex[0] = r_vertex;  // set
   q->vlabels_map_cnt[cr->getLabel(r_vertex)]--;  // set
 
-//  cout << "start generate cm" << endl;
   genCanMatch(0 + 1, cr, canMatVertex, cm);
 }
 
@@ -296,7 +313,6 @@ void SubIso::doMatch(GRAPH* cm) {
   if (q->isSubgraphOf(cm)) {
     // sub iso
     response = true;
-//    cm->printGraphNew(cout);
   }
 }
 
