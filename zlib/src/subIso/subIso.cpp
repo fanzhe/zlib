@@ -108,7 +108,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   q->setVertexLabelMapCnt();
   g->BFSwithConst(r_vertex, tree_height, visit_v, q->vlabels_map_cnt, cache);
 
-  cout << "|cr_i|: " << visit_v.size() << endl;
+//  cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
 
 // judge the situation of map cnt of q
@@ -130,6 +130,8 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
   canRegEqvCls(cr, r_vertex);
+
+  cout << "|V(cr_i)|: " << cr->V() << " |E(cr_i)|: " << cr->E() << endl;
   return true;
 }
 
@@ -269,6 +271,7 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
 //    cm->printGraphNew(cout);
 //    cout << "------------- Eqv Cls --------------" << endl;
 //    printVectorSet(cm->eqv_cls);
+    cout << "|V(cm)|: " << cm->V() << " |E(cm)|: " << cm->E() << endl;
 
     // do matching
     doMatch(cm);
