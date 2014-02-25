@@ -52,7 +52,7 @@ class TestSubIso {
         cout << "q" << i << endl;
         for (int j = 0; j < g_cnt; j++) {
 
-//          if (i != 4 || j != 13)
+//          if (i != 12 || j != 43)
 //            continue;
 
 //          cout << "-----------query graph----------" << endl;

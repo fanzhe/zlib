@@ -19,6 +19,7 @@ class SubIso {
   GRAPH* g;
   bool response;
   int tree_height;
+  int cnt_cm;
 
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;
@@ -32,6 +33,7 @@ class SubIso {
   void genAllCanReg(set<VertexID>& rootVertexSet);
   bool genCanReg(VertexID& r_vertex, GRAPH* cr);
   void canRegEqvCls(GRAPH* cr, VertexID& r_vertex);
+  void canRegReduce(GRAPH* cr, VertexID& r_vertex);
   void genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm);
   void genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canVertex, GRAPH* cm);
   void doMatch(GRAPH* cm);

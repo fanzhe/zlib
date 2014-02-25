@@ -283,19 +283,29 @@ int GRAPH::getDegree(VertexID v) {
 }
 
 void GRAPH::setVertexLabelMap() {
+  vlabels_map.clear();
+
   for (int i = 0; i < Vcnt; i++) {
+    if (getDegree(i) == 0)
+      continue;
     VertexLabel _v_label = _vlabels[i];
     vlabels_map[_v_label].insert(i);
   }
 }
 
 void GRAPH::setVertexLabelMapCnt() {
+  vlabels_map_cnt.clear();
+
   for (int i = 0; i < Vcnt; i++) {
+    if (getDegree(i) == 0)
+      continue;
     VertexLabel _v_label = _vlabels[i];
     vlabels_map_cnt[_v_label] = 0;
   }
 
   for (int i = 0; i < Vcnt; i++) {
+    if (getDegree(i) == 0)
+      continue;
     VertexLabel _v_label = _vlabels[i];
     vlabels_map_cnt[_v_label]++;
   }
