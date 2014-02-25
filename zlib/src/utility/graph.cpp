@@ -66,6 +66,16 @@ int GRAPH::V() {
   return Vcnt;
 }
 
+int GRAPH::VnI() {
+  int _cnt = 0;
+  for (int i = 0; i < V(); i++) {
+    if (getDegree(i) > 0) {
+      _cnt++;
+    }
+  }
+  return _cnt;
+}
+
 int GRAPH::E() {
   return Ecnt;
 }
@@ -294,8 +304,6 @@ void GRAPH::setVertexLabelMap() {
 }
 
 void GRAPH::setVertexLabelMapCnt() {
-  vlabels_map_cnt.clear();
-
   for (int i = 0; i < Vcnt; i++) {
     if (getDegree(i) == 0)
       continue;
@@ -451,8 +459,12 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
 //  cout << "start BFS new " << endl;
 //  cout << "hop size " << hops << endl;
 
-  VertexLabel _u_l = _vlabels[start_v];
-  _vertex_label_map_cnt[_u_l]--;
+  VertexLabel _start_v_l = _vlabels[start_v];
+  bool isSingle = false;
+  if (_vertex_label_map_cnt[_start_v_l] == 1) {
+    isSingle = true;
+  }
+  _vertex_label_map_cnt[_start_v_l]--;
   visit_v.insert(start_v);
 
   set<int> nodes;
@@ -489,6 +501,11 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
         // u's label is not contained
         VertexLabel _u_l = _vlabels[u];
         if (_vertex_label_map_cnt.find(_u_l) == _vertex_label_map_cnt.end()) {
+          continue;
+        }
+
+        // single
+        if (isSingle == true && _u_l == _start_v_l) {
           continue;
         }
 

@@ -118,6 +118,7 @@ class GRAPH {
   ~GRAPH();
 
   int V();
+  int VnI();
   int E();
 
 #ifdef ADJMATRIX

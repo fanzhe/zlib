@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <ctime>
 
 #include "GlobalDefinition.h"
 //#include "graph.h"
@@ -143,5 +144,6 @@ bool twoSetsAreEqual(set<T> a, set<T> b) {
 }
 
 void setVertexNeighborToSet(set<VertexID>& _set, VertexID v, GRAPH* g);
+double gettime (clock_t s, clock_t e);
 
 #endif

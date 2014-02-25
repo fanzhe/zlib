@@ -17,3 +17,7 @@ string convertInt(int number) {
   ss << number;  //add number to the stream
   return ss.str();  //return a string with the contents of the stream
 }
+
+double gettime (clock_t s, clock_t e) {
+  return ((double)(e - s)) / CLOCKS_PER_SEC;
+}
