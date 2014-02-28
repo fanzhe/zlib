@@ -145,5 +145,5 @@ bool twoSetsAreEqual(set<T> a, set<T> b) {
 
 void setVertexNeighborToSet(set<VertexID>& _set, VertexID v, GRAPH* g);
 double gettime (clock_t s, clock_t e);
-
+long long sumUpVertexLabelCnt(VertexLabelMapCnt);
 #endif

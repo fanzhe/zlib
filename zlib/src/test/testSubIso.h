@@ -89,6 +89,9 @@ class TestSubIso {
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
       cout << "q:" << i << endl;
+//      if (i != 3) {
+//        continue;
+//      }
       for (int j = 0; j < g_cnt; j++) {
 
         GRAPH* g = graphDB[j];
@@ -102,7 +105,7 @@ class TestSubIso {
       }
     }
 
-    cout << "total: " << cnt_res1 << " vs. " << cnt_res2 << endl;
+    cout << "total: " << cnt_res1 << endl;
   }
 
 };

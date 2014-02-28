@@ -36,6 +36,7 @@ class SubIso {
   bool isVisited(vector<int>& path, int dep, int v);
   void genAllCanReg(set<VertexID>& rootVertexSet);
   bool genCanReg(VertexID& r_vertex, GRAPH* cr);
+  bool predictCR(GRAPH* cr, long long limit);
   void canRegEqvCls(GRAPH* cr, VertexID& r_vertex);
   void canRegReduce(GRAPH* cr, VertexID& r_vertex);
   void genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm);

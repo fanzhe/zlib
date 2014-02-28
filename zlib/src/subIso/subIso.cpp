@@ -1,9 +1,15 @@
 #include "subIso.h"
 
+#include <sys/types.h>
+#include <ctime>
+#include <iostream>
+#include <map>
+#include <string>
 #include <utility>
-#include <vector>
 
+#include "../gSpan/gspan.h"
 #include "../minDFS/GraphToMinDFSCode.h"
+#include "../utility/graph.h"
 #include "../utility/utilityFunction.h"
 
 SubIso::SubIso(GRAPH* _q, GRAPH* _g)
@@ -73,6 +79,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
     // generate cr
     _s = clock();
     if (!genCanReg(r_vertex, cr)) {
+      cr->makeEmpty();
       continue;
     }
     _e = clock();
@@ -140,24 +147,43 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // (2) need to re-set the r_vertex
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
+  if (!predictCR(cr, 100000)) {
+//    cout << "---------skipped!-------" << endl;
+    return false;
+  }
+
 //  cout << "root vertex: " << r_vertex << endl;
 //  cout << "************** Candidate Region: ***************" << endl;
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
-  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
   canRegEqvCls(cr, r_vertex);
 //  cout << " ~~~~~~~~~~ before:" << r_vertex << "~~~~~~~~~~~~~~" << endl;
 //  cr->printGraphNew(cout);
-  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   canRegReduce(cr, r_vertex);
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
-  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  if (!predictCR(cr, 10000)) {
+//    cout << "---------skipped!-------" << endl;
+    return false;
+  }
   return true;
+}
+
+bool SubIso::predictCR(GRAPH* cr, long long limit) {
+  cr->setVertexLabelMapCnt();
+  long long cnt = sumUpVertexLabelCnt(cr->vlabels_map_cnt);
+  if (cnt > limit) {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {

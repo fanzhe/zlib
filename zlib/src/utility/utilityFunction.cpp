@@ -21,3 +21,11 @@ string convertInt(int number) {
 double gettime (clock_t s, clock_t e) {
   return ((double)(e - s)) / CLOCKS_PER_SEC;
 }
+
+long long sumUpVertexLabelCnt(VertexLabelMapCnt _a) {
+  long long res = 1;
+  for (VertexLabelMapCnt::iterator it = _a.begin(); it != _a.end(); it++) {
+    res *= it->second;
+  }
+  return res;
+}
