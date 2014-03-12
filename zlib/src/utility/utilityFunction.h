@@ -8,6 +8,7 @@
 #include <vector>
 #include <sstream>
 #include <ctime>
+#include <map>
 
 #include "GlobalDefinition.h"
 //#include "graph.h"
@@ -16,6 +17,15 @@ class GRAPH;
 
 using namespace std;
 
+template<class T1, class T2>
+void printMapTT(map<T1, T2>& _map) {
+  for (typename map<T1, T2>::iterator it = _map.begin(); it != _map.end();
+      it++) {
+    cout << it->first << " " << it->second;
+    cout << endl;
+  }
+}
+
 template<class T>
 void printSet(set<T>& _set) {
   cout << "set size: " << _set.size();
@@ -23,7 +33,8 @@ void printSet(set<T>& _set) {
   int _cnt = 0;
   for (typename set<T>::iterator it = _set.begin(); it != _set.end(); it++) {
     cout << *it << " ";
-    if (_cnt++ % 100 == 0) cout << endl;
+    if (_cnt++ % 100 == 0)
+      cout << endl;
   }
   cout << endl;
 }
@@ -50,13 +61,12 @@ void printVectorSet(vector<set<T> >& _vec_set) {
 }
 
 template<class T>
-void clearVectorSet(vector< set<T> >& _vec_set) {
+void clearVectorSet(vector<set<T> >& _vec_set) {
   for (int i = 0; i < _vec_set.size(); i++) {
     _vec_set[i].clear();
   }
   _vec_set.clear();
 }
-
 
 template<class T>
 void printMatrix(T* _vec, int _size) {
@@ -127,7 +137,6 @@ void twoSetsIntersection(set<T> a, set<T> b, set<T>& c) {
   }
 }
 
-
 template<class T>
 bool twoSetsAreEqual(set<T> a, set<T> b) {
   if (a.size() != b.size())
@@ -144,6 +153,6 @@ bool twoSetsAreEqual(set<T> a, set<T> b) {
 }
 
 void setVertexNeighborToSet(set<VertexID>& _set, VertexID v, GRAPH* g);
-double gettime (clock_t s, clock_t e);
+double gettime(clock_t s, clock_t e);
 long long sumUpVertexLabelCnt(VertexLabelMapCnt);
 #endif

@@ -47,10 +47,10 @@ class TestSubIso {
   }
 
   void debugSubIso() {
-      for (int i = 0; i < q_cnt; i++) {
-        GRAPH* q = queryDB[i];
-        cout << "q" << i << endl;
-        for (int j = 0; j < g_cnt; j++) {
+    for (int i = 0; i < q_cnt; i++) {
+      GRAPH* q = queryDB[i];
+      cout << "q" << i << endl;
+      for (int j = 0; j < g_cnt; j++) {
 
 //          if (i != 12 || j != 43)
 //            continue;
@@ -58,43 +58,43 @@ class TestSubIso {
 //          cout << "-----------query graph----------" << endl;
 //          q->printGraphNew(cout);
 
-
-          GRAPH* g = graphDB[j];
-          SubIso* subIso = new SubIso(q, g);
+        GRAPH* g = graphDB[j];
+        SubIso* subIso = new SubIso(q, g);
 
 //          cout << "-----------graph data----------" << endl;
 //          g->printGraphNew(cout);
 
-          bool res1 = subIso->isSubIso();
-          if (res1) {
-            cnt_res1++;
-          }
-          bool res2 = q->isSubgrpahOfByVF2(g);
-          if (res2) {
-            cnt_res2++;
-          }
-  //        cout << i << " " << j << " " << res << endl;
-
-          if (res1 != res2) {
-            cout << i << " " << j << " " << res1 << " " << res2 << endl;
-          }
-          delete subIso;
+        bool res1 = subIso->isSubIso();
+        if (res1) {
+          cnt_res1++;
         }
-      }
+        bool res2 = q->isSubgrpahOfByVF2(g);
+        if (res2) {
+          cnt_res2++;
+        }
+        //        cout << i << " " << j << " " << res << endl;
 
-      cout << "total: " << cnt_res1 << " vs. " << cnt_res2 << endl;
+        if (res1 != res2) {
+          cout << i << " " << j << " " << res1 << " " << res2 << endl;
+        }
+        delete subIso;
+      }
     }
+
+    cout << "total: " << cnt_res1 << " vs. " << cnt_res2 << endl;
+  }
 
   void testSubIso() {
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
-      cout << "q:" << i << endl;
+      cout << "q:" << i << " |V|: " << q->Vcnt << " |E|: " << q->Ecnt;
 //      if (i != 3) {
 //        continue;
 //      }
       for (int j = 0; j < g_cnt; j++) {
 
         GRAPH* g = graphDB[j];
+        cout << " === g:" << j << " |V|: " << g->Vcnt << " |E|: " << g->Ecnt << endl;
         SubIso* subIso = new SubIso(q, g);
 
         bool res1 = subIso->isSubIso();

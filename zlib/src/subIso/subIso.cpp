@@ -83,19 +83,23 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
       continue;
     }
     _e = clock();
-    cout << "cr_time: " << gettime(_s, _e) << endl;
+    cr_time = gettime(_s, _e);
 
     // find cm
     _s = clock();
     genAllCanMatch(r_vertex, cr, cm);
     _e = clock();
+    cm_time = gettime(_s, _e);
+
+    cout << "cr_time: " << cr_time << endl;
+    cout << "cm_time: " << cm_time << endl;
     cout << "match_time: " << match_time << endl;
     cout << "enum_cm_time: " << enum_cm_time << endl;
-    cout << "cm_time: " << gettime(_s, _e) << endl;
+
     // TODO try a new DFS by the set of labels.
 
 //    cout << cnt_cm << endl;
-    cnt_cm = match_time = enum_cm_time = 0;
+    cnt_cm = cr_time = cm_time = match_time = enum_cm_time = 0;
 
     if (response) {
       break;
@@ -147,32 +151,33 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // (2) need to re-set the r_vertex
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
-  if (!predictCR(cr, 100000)) {
+//  if (!predictCR(cr, 100000)) {
 //    cout << "---------skipped!-------" << endl;
-    return false;
-  }
+//    return false;
+//  }
 
 //  cout << "root vertex: " << r_vertex << endl;
 //  cout << "************** Candidate Region: ***************" << endl;
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
-//  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
   canRegEqvCls(cr, r_vertex);
 //  cout << " ~~~~~~~~~~ before:" << r_vertex << "~~~~~~~~~~~~~~" << endl;
 //  cr->printGraphNew(cout);
-//  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   canRegReduce(cr, r_vertex);
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
-//  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
-  if (!predictCR(cr, 10000)) {
+  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  printMapTT(cr->vlabels_map_cnt);
+//  if (!predictCR(cr, 10000)) {
 //    cout << "---------skipped!-------" << endl;
-    return false;
-  }
+//    return false;
+//  }
   return true;
 }
 
@@ -256,6 +261,9 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
       }
     }
   }
+
+  cr->setVertexLabelMap();
+  cr->setVertexLabelMapCnt();
 }
 
 void SubIso::canRegEqvCls(GRAPH* cr, VertexID& r_vertex) {
