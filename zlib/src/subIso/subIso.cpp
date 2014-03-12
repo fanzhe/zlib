@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <algorithm>
 
 #include "../gSpan/gspan.h"
 #include "../minDFS/GraphToMinDFSCode.h"
@@ -55,7 +56,7 @@ void SubIso::calVertexLabelMap() {
   g->setVertexLabelMapCnt();
 }
 
-void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
+void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
   GRAPH* cr = new GRAPH();
   GRAPH* cm = new GRAPH();
 
@@ -67,10 +68,9 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
 
 //  cout << "|CR| = " << rootVertexSet.size() << endl;
   // for each starting vertex
-  for (set<VertexID>::iterator it = rootVertexSet.begin();
-      it != rootVertexSet.end(); it++) {
+  for (int i = 0; i < rootVertex.size(); i++) {
 
-    VertexID r_vertex = *it;
+    VertexID r_vertex = rootVertex[i].u;
     cout << endl << "original root: " << r_vertex << " " << g->getDegree(r_vertex) << endl;
 
     // cannot use this ifRootVertex cache
@@ -162,13 +162,13 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
-  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
   canRegEqvCls(cr, r_vertex);
 //  cout << " ~~~~~~~~~~ before:" << r_vertex << "~~~~~~~~~~~~~~" << endl;
 //  cr->printGraphNew(cout);
-  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   canRegReduce(cr, r_vertex);
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
@@ -466,13 +466,33 @@ void SubIso::doMatch(GRAPH* cm) {
   }
 }
 
+void SubIso::sortRootVertex(set<VertexID>& rootVertexOrig,
+                            vector<VertexWDeg>& rootVertexNew) {
+  // initialize the vector
+  int i = 0;
+  for (set<VertexID>::iterator it = rootVertexOrig.begin();
+      it != rootVertexOrig.end(); it++) {
+    rootVertexNew[i].u = *it;
+    rootVertexNew[i].deg = g->getDegree(*it);
+    i++;
+  }
+
+  sort(rootVertexNew.begin(), rootVertexNew.end());
+}
+
 void SubIso::doSubIso() {
   if (g->vlabels_map_cnt.find(start_label) == g->vlabels_map_cnt.end()) {
 //    cout << "no Can. Reg." << endl;
     return;
   }
 
-  genAllCanReg(g->vlabels_map[start_label]);
+  // TODO sort the root vertex
+  vector<VertexWDeg> rootVertex;
+  rootVertex.resize(g->vlabels_map[start_label].size());
+
+  sortRootVertex(g->vlabels_map[start_label], rootVertex);
+
+  genAllCanReg(rootVertex);
 }
 
 bool SubIso::isSubIso() {

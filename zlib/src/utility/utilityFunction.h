@@ -17,6 +17,17 @@ class GRAPH;
 
 using namespace std;
 
+template<class T>
+void setToVector(set<T>& _set, vector<T>& _vec) {
+  ASSERT(_set.size() == _vec.size());
+
+  int i = 0;
+  for (typename set<T>::iterator it = _set.begin(); it != _set.end(); it++) {
+    _vec[i] = *it;
+    i++;
+  }
+}
+
 template<class T1, class T2>
 void printMapTT(map<T1, T2>& _map) {
   for (typename map<T1, T2>::iterator it = _map.begin(); it != _map.end();
