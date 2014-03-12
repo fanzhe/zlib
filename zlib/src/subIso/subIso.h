@@ -25,6 +25,7 @@ class SubIso {
   double cm_time;
   double match_time;
   double enum_cm_time;
+  double decomp_cm_time;
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;
   Cache cache;

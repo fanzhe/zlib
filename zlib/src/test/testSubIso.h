@@ -40,7 +40,7 @@ class TestSubIso {
 
     for (int i = 0; i < g_cnt; i++) {
       GRAPH *g = new GRAPH();
-      g_reader.GetNextGraph_MultiVertexLabel(*g);
+      g_reader.GetNextGraph_MultiVertexLabel_Original(*g);
 
       graphDB[i] = g;
     }

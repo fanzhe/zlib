@@ -212,6 +212,24 @@ void GRAPH::printGraphPartial(std::ostream& out) {
   }
 }
 
+void GRAPH::printGraph(std::ostream& out) {
+  out << "t # " << graphId << endl;
+
+  for (VertexID i = 0; i < Vcnt; i++) {
+    out << "v " << i << " " << getLabel(i) << endl;
+  }
+
+  for (VertexID i = 0; i < Vcnt; i++) {
+    VertexID u = i;
+    for (int j = 0; j < getDegree(u); j++) {
+      VertexID v = _adjList[u][j].v;
+      if (u < v) {
+        out << "e " << u << " " << v << " " << _adjList[u][j].elabel << endl;
+      }
+    }
+  }
+}
+
 void GRAPH::printGraphNew(std::ostream& out) {
   out << "-1 " << graphId << endl;
 

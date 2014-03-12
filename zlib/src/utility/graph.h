@@ -136,6 +136,7 @@ class GRAPH {
   void insert(Edge e);
   bool edge(VertexID v, VertexID w);
   int getDegree(VertexID v);
+  void printGraph(std::ostream& out);
   void printGraphNew(std::ostream& out);
   void printGraphPartial(std::ostream& out);
   int makeEmpty();

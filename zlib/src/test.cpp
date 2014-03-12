@@ -5,6 +5,7 @@
 #include "test/testMinDFSCode.h"
 #include "test/testSubGen.h"
 #include "test/testSubIso.h"
+#include "test/testTransform.h"
 #include "test/testVFLib.h"
 
 using namespace std;
@@ -79,6 +80,16 @@ void testVF(int argc, char** argv) {
 //  g_test->testIndSub();
 }
 
+void testTransform(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+  TestTransform* g_test = new TestTransform(atoi(argv[2]));
+
+  g_test->transformFromInputFile(argv[1], argv[3]);
+}
+
 int main(int argc, char** argv) {
 //  test VFLib
 //  testVF(argc, argv);
@@ -92,6 +103,7 @@ int main(int argc, char** argv) {
 
 //  test subIso
   testSubIso(argc, argv);
-
+  // test transform
+//  testTransform(argc, argv);
   return 0;
 }

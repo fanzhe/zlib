@@ -22,7 +22,7 @@ SubIso::SubIso(GRAPH* _q, GRAPH* _g)
    */
   response = false;
   cnt_cm = 0;
-  cm_time = cr_time = match_time = enum_cm_time = 0;
+  cm_time = cr_time = match_time = decomp_cm_time = enum_cm_time = 0;
   start_label = q->getLabel(q->getMinTreeHeight());
   tree_height = q->min_tree_height - 1;
 }
@@ -71,7 +71,7 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
       it != rootVertexSet.end(); it++) {
 
     VertexID r_vertex = *it;
-//    cout << endl << "original root: " << r_vertex << endl;
+    cout << endl << "original root: " << r_vertex << " " << g->getDegree(r_vertex) << endl;
 
     // cannot use this ifRootVertex cache
 //    cache.ifRootVertex.insert(r_vertex);
@@ -93,13 +93,14 @@ void SubIso::genAllCanReg(set<VertexID>& rootVertexSet) {
 
     cout << "cr_time: " << cr_time << endl;
     cout << "cm_time: " << cm_time << endl;
-    cout << "match_time: " << match_time << endl;
     cout << "enum_cm_time: " << enum_cm_time << endl;
+    cout << "decomp_cm_time: " << decomp_cm_time << endl;
+    cout << "match_time: " << match_time << endl;
 
     // TODO try a new DFS by the set of labels.
 
 //    cout << cnt_cm << endl;
-    cnt_cm = cr_time = cm_time = match_time = enum_cm_time = 0;
+    cnt_cm = cr_time = cm_time = decomp_cm_time = match_time = enum_cm_time = 0;
 
     if (response) {
       break;
@@ -329,7 +330,7 @@ void SubIso::cacheAllSubOf(GSPAN::DFSCode& dfs_code) {
 }
 
 bool SubIso::isCanMatChecked(GRAPH* cm) {
-  clock_t _s, _e;
+  clock_t _s, _s1, _e, _e1;
   _s = clock();
   GraphToMinDFSCode mindfs;
 
@@ -346,7 +347,10 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
     cache.ifHasCm.insert(dfs_code.hashCode());
 
     // we further cache all the size-V() subgraph of cm into ifHasCm
+    _s1 = clock();
     cacheAllSubOf(dfs_code);
+    _e1 = clock();
+    decomp_cm_time += gettime(_s1, _e1);
 
     _e = clock();
     enum_cm_time += gettime(_s, _e);
