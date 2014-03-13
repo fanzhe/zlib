@@ -29,14 +29,15 @@ class SubIso {
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;
   Cache cache;
-  struct VertexWDeg {
+
+  typedef struct VERTEXWDEG {
     VertexID u;
     int deg;
 
-    bool operator <(const VertexWDeg& vd) const {
+    bool operator <(const VERTEXWDEG& vd) const {
       return deg < vd.deg;
     }
-  };
+  } VertexWDeg;
 
  public:
   SubIso(GRAPH* _q, GRAPH* _g);

@@ -63,7 +63,18 @@ void testSubIso(int argc, char** argv) {
   g_test->loadFromInputFile(argv[1], argv[3]);
 
   g_test->testSubIso();
-//  g_test->debugSubIso();
+}
+
+void testDebug(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+  TestSubIso* g_test = new TestSubIso(atoi(argv[2]), atoi(argv[4]));
+
+  g_test->loadFromInputFile(argv[1], argv[3]);
+
+  g_test->debugSubIso();
 }
 
 void testVF(int argc, char** argv) {
@@ -102,8 +113,14 @@ int main(int argc, char** argv) {
 //  testMinDFS(argc, argv);
 
 //  test subIso
-  testSubIso(argc, argv);
-  // test transform
-//  testTransform(argc, argv);
+  if (argv[1][0] == 'd') {
+    testDebug(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'r') {
+    testSubIso(argc - 1, argv + 1);
+  } else if (argv[1][0] == 't') {
+    testTransform(argc - 1, argv + 1);
+  } else {
+    cout << "else?" << endl;
+  }
   return 0;
 }
