@@ -343,11 +343,9 @@ void GRAPH::setVertexLabelMapCnt() {
 int GRAPH::getMinTreeHeight2(VertexID start_v) {
   int _min_tree_height = 0;
 
-  set<VertexID> visit_v;
-  visit_v.insert(start_v);
-
   unordered_map<VertexID, int> map_hop;
   queue<VertexID> nodes;
+
   nodes.push(start_v);
   map_hop[start_v] = 1;
 
@@ -362,13 +360,12 @@ int GRAPH::getMinTreeHeight2(VertexID start_v) {
       VertexID u = _adjList[v][j].v;
 
       // u is visited
-      if (visit_v.find(u) != visit_v.end()) {
+      if (map_hop.find(u) != map_hop.end()) {
         continue;
       }
 
       // u is what we want,
       // add u to next_nodes for iteration
-      visit_v.insert(u);
       nodes.push(u);
       map_hop[u] = map_hop[v] + 1;
 
@@ -391,10 +388,6 @@ VertexID GRAPH::getMinTreeHeight() {
       min_tree_height = _min;
     }
   }
-
-//  printGraphNew(cout);
-//  cout << "start_v: " << start_v << endl;
-//  cout << "min_tree_height: " << min_tree_height << endl;
   return start_v;
 }
 
@@ -410,10 +403,11 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
     isSingle = true;
   }
   _vertex_label_map_cnt[_start_v_l]--;
-  visit_v.insert(start_v);
 
   unordered_map<VertexID, int> map_hop;
   queue<int> nodes;
+
+  visit_v.insert(start_v);
   nodes.push(start_v);
   map_hop[start_v] = 0;
 
@@ -430,7 +424,7 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
       int u = _adjList[v][j].v;
 
       // u is visited
-      if (visit_v.find(u) != visit_v.end()) {
+      if (map_hop.find(u) != map_hop.end()) {
         continue;
       }
 
@@ -488,7 +482,7 @@ void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
       VertexID u = _adjList[v][j].v;
 
       // u is visited
-      if (visit_v.find(u) != visit_v.end()) {
+      if (map_hop.find(u) != map_hop.end()) {
         continue;
       }
 
