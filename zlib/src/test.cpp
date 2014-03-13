@@ -7,6 +7,7 @@
 #include "test/testSubIso.h"
 #include "test/testTransform.h"
 #include "test/testVFLib.h"
+#include "test/testGenDataSet.h"
 
 using namespace std;
 
@@ -101,6 +102,26 @@ void testTransform(int argc, char** argv) {
   g_test->transformFromInputFile(argv[1], argv[3]);
 }
 
+void testGenDataSet(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+  TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
+
+  g_test->genDataSet(argv[1], argv[3], atoi(argv[4]));
+}
+
+void testGenQuerySet(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+  TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
+
+  g_test->genQuerySet(argv[1], argv[3], atoi(argv[4]), atoi(argv[5]));
+}
+
 int main(int argc, char** argv) {
 //  test VFLib
 //  testVF(argc, argv);
@@ -119,6 +140,10 @@ int main(int argc, char** argv) {
     testSubIso(argc - 1, argv + 1);
   } else if (argv[1][0] == 't') {
     testTransform(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'g') {
+    testGenDataSet(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'q') {
+    testGenQuerySet(argc - 1, argv + 1);
   } else {
     cout << "else?" << endl;
   }
