@@ -9,9 +9,12 @@
 #include <sstream>
 #include <ctime>
 #include <map>
+#include <tr1/unordered_map>
 
 #include "GlobalDefinition.h"
 //#include "graph.h"
+
+using namespace std::tr1;
 
 class GRAPH;
 
@@ -25,6 +28,15 @@ void setToVector(set<T>& _set, vector<T>& _vec) {
   for (typename set<T>::iterator it = _set.begin(); it != _set.end(); it++) {
     _vec[i] = *it;
     i++;
+  }
+}
+
+template<class T1, class T2>
+void printHashTableTT(unordered_map<T1, T2>& _map) {
+  for (typename unordered_map<T1, T2>::iterator it = _map.begin(); it != _map.end();
+      it++) {
+    cout << it->first << " " << it->second;
+    cout << endl;
   }
 }
 

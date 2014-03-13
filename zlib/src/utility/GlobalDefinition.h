@@ -5,8 +5,10 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <tr1/unordered_map>
 
 using namespace std;
+using namespace std::tr1;
 
 typedef int GraphID;
 typedef int VertexID;
@@ -15,8 +17,8 @@ typedef int Label;
 typedef Label EdgeLabel;
 typedef Label VertexLabel;
 typedef unsigned int HashCode;
-typedef map<VertexLabel, set<VertexID> > VertexLabelMap;
-typedef map<VertexLabel, int> VertexLabelMapCnt;
+typedef unordered_map<VertexLabel, set<VertexID> > VertexLabelMap;
+typedef unordered_map<VertexLabel, int> VertexLabelMapCnt;
 typedef unsigned int HashCode;
 
 typedef int Algorithm;

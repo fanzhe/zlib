@@ -7,11 +7,14 @@
 #include <string>
 #include <utility>
 #include <algorithm>
+#include <tr1/unordered_map>
 
 #include "../gSpan/gspan.h"
 #include "../minDFS/GraphToMinDFSCode.h"
 #include "../utility/graph.h"
 #include "../utility/utilityFunction.h"
+
+using namespace std::tr1;
 
 SubIso::SubIso(GRAPH* _q, GRAPH* _g)
     : q(_q),
@@ -26,6 +29,7 @@ SubIso::SubIso(GRAPH* _q, GRAPH* _g)
   cm_time = cr_time = match_time = decomp_cm_time = enum_cm_time = 0;
   start_label = q->getLabel(q->getMinTreeHeight());
   tree_height = q->min_tree_height - 1;
+  cout << "tree_height: " << tree_height << endl;
 }
 
 bool SubIso::isVisited(vector<int>& canMatVertex, int dep, int v) {
@@ -174,7 +178,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
   cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
-  printMapTT(cr->vlabels_map_cnt);
+  printHashTableTT(cr->vlabels_map_cnt);
 //  if (!predictCR(cr, 10000)) {
 //    cout << "---------skipped!-------" << endl;
 //    return false;

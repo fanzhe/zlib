@@ -5,10 +5,12 @@
 #include <map>
 #include <set>
 #include <queue>
+#include <tr1/unordered_map>
 
 #include "utilityFunction.h"
 
 using namespace std;
+using namespace std::tr1;
 
 #ifndef DEFAULT_VERTEX_NUMBER
 #define DEFAULT_VERTEX_NUMBER   (256)
@@ -344,8 +346,10 @@ int GRAPH::getMinTreeHeight2(VertexID start_v) {
   set<VertexID> visit_v;
   visit_v.insert(start_v);
 
+  unordered_map<VertexID, int> map_hop;
   queue<VertexID> nodes;
   nodes.push(start_v);
+  map_hop[start_v] = 1;
 
   // Begin BFS
   while (!nodes.empty()) {
@@ -366,9 +370,13 @@ int GRAPH::getMinTreeHeight2(VertexID start_v) {
       // add u to next_nodes for iteration
       visit_v.insert(u);
       nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
+
+      if (_min_tree_height < map_hop[u]) {
+        _min_tree_height = map_hop[u];
+      }
     }
     // nodes = next_nodes;
-    _min_tree_height++;
   }
   return _min_tree_height;
 }
@@ -404,7 +412,7 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
   _vertex_label_map_cnt[_start_v_l]--;
   visit_v.insert(start_v);
 
-  map<VertexID, int> map_hop;
+  unordered_map<VertexID, int> map_hop;
   queue<int> nodes;
   nodes.push(start_v);
   map_hop[start_v] = 0;
@@ -462,7 +470,7 @@ void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
   cout << "hop size " << hops << endl;
   visit_v.insert(start_v);
 
-  map<VertexID, int> map_hop;
+  unordered_map<VertexID, int> map_hop;
   queue<VertexID> nodes;
   nodes.push(start_v);
   map_hop[start_v] = 0;
@@ -500,7 +508,7 @@ void GRAPH::getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _ind_g) {
 
   // set vertex
   VertexID _new_v_id = 0;
-  map<VertexID, VertexID> g_to_ind_v;
+  unordered_map<VertexID, VertexID> g_to_ind_v;
   for (vector<VertexID>::iterator it = vertex.begin(); it != vertex.end();
       it++) {
     VertexID u = *it;
@@ -538,7 +546,7 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
 
   // set vertex
   VertexID _new_v_id = 0;
-  map<VertexID, VertexID> g_to_ind_v;
+  unordered_map<VertexID, VertexID> g_to_ind_v;
   for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
     VertexLabel u_l = getLabel(u);
@@ -735,13 +743,13 @@ void GRAPH::reduceByEqvCls(VertexID& r_vertex,
   ASSERT(eqv_cls.size() == V());
   ASSERT(eqv_cls_aux->NumElements() == V());
 
-  map<VertexID, set<VertexID> > _map;
+  unordered_map<VertexID, set<VertexID> > _map;
   for (int i = 0; i < V(); i++) {
     _map[eqv_cls_aux->FindSet(i)].insert(i);
   }
 
   // for each disjoint set
-  for (map<VertexID, set<VertexID> >::iterator it = _map.begin();
+  for (unordered_map<VertexID, set<VertexID> >::iterator it = _map.begin();
       it != _map.end(); it++) {
     VertexID _root = it->first;
     set<VertexID>& _ds = it->second;
@@ -815,7 +823,7 @@ void GRAPH::genEqvCls() {
   }
 
   // collect equivalent class
-  map<VertexID, set<VertexID> > _map;
+  unordered_map<VertexID, set<VertexID> > _map;
   for (int i = 0; i < V(); i++) {
     _map[eqv_cls_aux->FindSet(i)].insert(i);
   }
