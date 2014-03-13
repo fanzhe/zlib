@@ -486,70 +486,58 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
   _vertex_label_map_cnt[_start_v_l]--;
   visit_v.insert(start_v);
 
-  set<int> nodes;
-  nodes.insert(start_v);
+  map<VertexID, int> map_hop;
+  queue<int> nodes;
+  nodes.push(start_v);
+  map_hop[start_v] = 0;
 
-  set<int>::iterator it_begin = nodes.begin();
-  set<int>::iterator it_end = nodes.end();
+  // for each node v
+  while (!nodes.empty()) {
+    int v = nodes.front();
+    nodes.pop();
 
-  // for each hop
-  for (int cnt_hops = 0; cnt_hops < hops; cnt_hops++) {
+    if (map_hop[v] == hops)
+      continue;
 
-//    cout << "hop " << cnt_hops + 1 << endl;
+    // for each incident node u of v
+    for (int j = 0; j < getDegree(v); j++) {
+      int u = _adjList[v][j].v;
 
-    if (nodes.size() == 0) {
-//      cout << "end BFS" << endl;
-      return;
-    }
-
-    set<int> next_nodes;
-
-    // for each node v
-    for (set<int>::iterator it = it_begin; it != it_end; it++) {
-      int v = *it;
-
-      // for each incident node u of v
-      for (int j = 0; j < getDegree(v); j++) {
-        int u = _adjList[v][j].v;
-
-        // u is visited
-        if (visit_v.find(u) != visit_v.end()) {
-          continue;
-        }
-
-        // u's label is not contained
-        VertexLabel _u_l = _vlabels[u];
-        if (_vertex_label_map_cnt.find(_u_l) == _vertex_label_map_cnt.end()) {
-          continue;
-        }
-
-        // single
-        if (isSingle == true && _u_l == _start_v_l) {
-          continue;
-        }
-
-        // u is the root vertex of previous matching
-        if (cache.ifRootVertex.find(u) != cache.ifRootVertex.end()) {
-          continue;
-        }
-
-        // update the label map cnt
-        if (_vertex_label_map_cnt[_u_l] > 0) {
-          _vertex_label_map_cnt[_u_l]--;
-        }
-
-        // u is what we want,
-        // add u to next_nodes for iteration
-        visit_v.insert(u);
-        next_nodes.insert(u);
+      // u is visited
+      if (visit_v.find(u) != visit_v.end()) {
+        continue;
       }
+
+      // u's label is not contained
+      VertexLabel _u_l = _vlabels[u];
+      if (_vertex_label_map_cnt.find(_u_l) == _vertex_label_map_cnt.end()) {
+        continue;
+      }
+
+      // single
+      if (isSingle == true && _u_l == _start_v_l) {
+        continue;
+      }
+
+      // u is the root vertex of previous matching
+      if (cache.ifRootVertex.find(u) != cache.ifRootVertex.end()) {
+        continue;
+      }
+
+      // update the label map cnt
+      if (_vertex_label_map_cnt[_u_l] > 0) {
+        _vertex_label_map_cnt[_u_l]--;
+      }
+
+      // u is what we want,
+      // add u to next_nodes for iteration
+      visit_v.insert(u);
+      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
     }
-//    printSet(next_nodes);
-    // nodes = next_nodes;
-    nodes = next_nodes;
-    it_begin = nodes.begin();
-    it_end = nodes.end();
   }
+//    printSet(next_nodes);
+  // nodes = next_nodes;
 //  cout << "end BFS new" << endl;
 }
 
@@ -558,47 +546,34 @@ void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
   cout << "hop size " << hops << endl;
   visit_v.insert(start_v);
 
-  set<VertexID> nodes;
-  nodes.insert(start_v);
+  map<VertexID, int> map_hop;
+  queue<VertexID> nodes;
+  nodes.push(start_v);
+  map_hop[start_v] = 0;
 
-  set<VertexID>::iterator it_begin = nodes.begin();
-  set<VertexID>::iterator it_end = nodes.end();
+  // for each node v
+  while (!nodes.empty()) {
+    VertexID v = nodes.front();
+    nodes.pop();
 
-  // for each hop
-  for (int cnt_hops = 0; cnt_hops < hops; cnt_hops++) {
+    if (map_hop[v] == hops)
+      continue;
 
-//    cout << "hop - vertex: ";
-//    printSet(nodes);
-    if (nodes.size() == 0) {
-      cout << "end BFS" << endl;
-      return;
-    }
+    // for each incident node u of v
+    for (int j = 0; j < getDegree(v); j++) {
+      VertexID u = _adjList[v][j].v;
 
-    set<int> next_nodes;
-
-    // for each node v
-    for (set<VertexID>::iterator it = it_begin; it != it_end; it++) {
-      VertexID v = *it;
-
-      // for each incident node u of v
-      for (int j = 0; j < getDegree(v); j++) {
-        VertexID u = _adjList[v][j].v;
-
-        // u is visited
-        if (visit_v.find(u) != visit_v.end()) {
-          continue;
-        }
-
-        // u is what we want,
-        // add u to next_nodes for iteration
-        visit_v.insert(u);
-        next_nodes.insert(u);
+      // u is visited
+      if (visit_v.find(u) != visit_v.end()) {
+        continue;
       }
+
+      // u is what we want,
+      // add u to next_nodes for iteration
+      visit_v.insert(u);
+      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
     }
-    // nodes = next_nodes;
-    nodes = next_nodes;
-    it_begin = nodes.begin();
-    it_end = nodes.end();
   }
   cout << "end BFS" << endl;
 }
