@@ -352,7 +352,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
     // we further cache all the size-V() subgraph of cm into ifHasCm
     _s1 = clock();
-    cacheAllSubOf(dfs_code);
+    // TODO make sure.
+//    cacheAllSubOf(dfs_code);
     _e1 = clock();
     decomp_cm_time += gettime(_s1, _e1);
 

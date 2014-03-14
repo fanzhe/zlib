@@ -8,18 +8,20 @@
 #ifndef RANDOM_H_
 #define RANDOM_H_
 
-#include <time.h>
+#include <ctime>
+#include <cstdlib>
+#include <cstdio>
 
 class Random {
  public:
   Random() {
+    srand(time(NULL));
   }
 
   ~Random() {
   }
 
-  static int genRanInt(int range) {
-    srand(time(NULL));
+  int genRanInt(int range) {
     return rand() % range;
   }
 };

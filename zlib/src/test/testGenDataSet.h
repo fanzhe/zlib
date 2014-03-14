@@ -20,10 +20,12 @@ class TestGenDataSet {
  public:
   vector<GRAPH*> graphDB;
   int g_cnt, distinctLabel;
+  Random* randGen;
 
   TestGenDataSet(int _g_cnt) {
     g_cnt = _g_cnt;
     graphDB.resize(g_cnt);
+    randGen = new Random();
   }
 
   ~TestGenDataSet() {
@@ -51,14 +53,15 @@ class TestGenDataSet {
 
   void generateData(GRAPH* g) {
     int rand = 0;
-    int maxLabelCnt = g->V() / distinctLabel;
+    int maxLabelCnt = g->V() / distinctLabel + 1;
     unordered_map<VertexID, int> mymap;
     for (int i = 0; i < g->V();) {
-//      int rand = Random::genRanInt(distinctLabel);
+      rand = randGen->genRanInt(distinctLabel);
+
       g->setLabel(i, rand);
       if (mymap.find(rand) != mymap.end()) {
         if (mymap[rand] > maxLabelCnt) {
-          rand++;
+//          rand++;
           continue;
         } else {
           cout << i << " " << rand << endl;
@@ -73,7 +76,7 @@ class TestGenDataSet {
   }
 
   void genQuerySet(const char* input_g_file_name, char* output_g_file_name,
-                   int qcnt, int ecnt) {
+                   int qcnt, int vcnt) {
     // TODO generate query set
     InputReader g_reader(input_g_file_name);
     ofstream output(output_g_file_name);
@@ -83,23 +86,25 @@ class TestGenDataSet {
       g_reader.GetNextGraph_MultiVertexLabel_Original(*g);
       graphDB[i] = g;
 
+      GRAPH* q = new GRAPH();
       // TODO generate query set
       for (int i = 0; i < qcnt; i++) {
-        GRAPH* q = new GRAPH();
 
         q->graphId = i;
-        generateQuery(g, q, ecnt);
+        generateQuery(g, q, vcnt);
         q->printGraph(output);
 
         q->makeEmpty();
-        delete q;
       }
+      delete q;
     }
   }
 
-  void generateQuery(GRAPH* g, GRAPH* q, int ecnt) {
-    int start_v = Random::genRanInt(g->V());
-
+  void generateQuery(GRAPH* g, GRAPH* q, int vcnt) {
+    int start_v = randGen->genRanInt(g->V());
+    set<VertexID> visit_v;
+    g->BFSwithSpecVcnt(start_v, vcnt, visit_v);
+    g->getInducedSubGraph(visit_v, q);
   }
 };
 

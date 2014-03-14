@@ -459,6 +459,37 @@ void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
 //  cout << "end BFS new" << endl;
 }
 
+void GRAPH::BFSwithSpecVcnt(VertexID start_v, int vcnt,
+                            set<VertexID>& visit_v) {
+  queue<VertexID> nodes;
+
+  visit_v.insert(start_v);
+  nodes.push(start_v);
+
+  while (!nodes.empty()) {
+    VertexID v = nodes.front();
+    nodes.pop();
+
+    for (int j = 0; j < getDegree(v); j++) {
+      VertexID u = _adjList[v][j].v;
+
+      // u is visited
+      if (visit_v.find(u) != visit_v.end()) {
+        continue;
+      }
+
+      visit_v.insert(u);
+
+      // found vcnt nodes
+      if (visit_v.size() == vcnt) {
+        return;
+      }
+
+      nodes.push(u);
+    }
+  }
+}
+
 void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
   cout << "start BFS" << endl;
   cout << "hop size " << hops << endl;
@@ -494,6 +525,42 @@ void GRAPH::BFS(VertexID start_v, int hops, set<VertexID>& visit_v) {
     }
   }
   cout << "end BFS" << endl;
+}
+
+void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g) {
+  int _ind_g_s = vertex.size();
+  _ind_g->setV(_ind_g_s);
+
+  // set vertex
+  VertexID _new_v_id = 0;
+  unordered_map<VertexID, VertexID> g_to_ind_v;
+  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end();
+      it++) {
+    VertexID u = *it;
+    VertexLabel u_l = getLabel(u);
+    g_to_ind_v[u] = _new_v_id;
+    _ind_g->setLabel(_new_v_id++, u_l);
+  }
+
+  // set edge
+  int e_id = 0;
+  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end();
+      it++) {
+    VertexID u = *it;
+    for (set<VertexID>::iterator it1 = vertex.begin(); it1 != vertex.end();
+        it1++) {
+      VertexID v = *it1;
+      if (!edge(u, v) || u <= v)
+        continue;
+
+      _ind_g->insert(
+          Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+    }
+  }
+
+  // set the vertex label map of the induced subgraph
+  _ind_g->setVertexLabelMap();
+  _ind_g->setVertexLabelMapCnt();
 }
 
 void GRAPH::getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _ind_g) {
