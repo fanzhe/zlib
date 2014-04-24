@@ -22,15 +22,17 @@ class CGBE {
   // scheme functions
   CGBE();
   ~CGBE();
-  void generator();
   void encrypt(mpz_t& m, mpz_t& c);
   void decrypt(mpz_t& c, mpz_t& m);
   void decrypt(mpz_t& c, mpz_t& m, int cnt);
 
+ private:
   // utilities
   void genRand(mpz_t& _r, int _size);
   void _mulmod(mpz_t& res, mpz_t& a, mpz_t& b, mpz_t& mod);
   void _addmod(mpz_t& res, mpz_t& a, mpz_t& b, mpz_t& mod);
+
+  void generator();
 };
 
 #endif /* CGBE_H_ */

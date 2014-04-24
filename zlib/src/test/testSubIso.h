@@ -50,35 +50,31 @@ class TestSubIso {
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
       cout << "q" << i << endl;
+
+      q->clientPreProcess();
+
       for (int j = 0; j < g_cnt; j++) {
-
-//          if (i != 12 || j != 43)
-//            continue;
-
-//          cout << "-----------query graph----------" << endl;
-//          q->printGraphNew(cout);
-
         GRAPH* g = graphDB[j];
         SubIso* subIso = new SubIso(q, g);
-
-//          cout << "-----------graph data----------" << endl;
-//          g->printGraphNew(cout);
 
         bool res1 = subIso->isSubIso();
         if (res1) {
           cnt_res1++;
         }
+        delete subIso;
+
+        // VF2
         bool res2 = q->isSubgrpahOfByVF2(g);
         if (res2) {
           cnt_res2++;
         }
-        //        cout << i << " " << j << " " << res << endl;
 
         if (res1 != res2) {
           cout << i << " " << j << " " << res1 << " " << res2 << endl;
         }
-        delete subIso;
       }
+
+      q->encryptFree();
     }
 
     cout << "total: " << cnt_res1 << " vs. " << cnt_res2 << endl;
@@ -91,10 +87,13 @@ class TestSubIso {
 //      if (i != 3) {
 //        continue;
 //      }
-      for (int j = 0; j < g_cnt; j++) {
 
+      q->clientPreProcess();
+
+      for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
-        cout << " === g:" << j << " |V|: " << g->Vcnt << " |E|: " << g->Ecnt << endl;
+        cout << " === g:" << j << " |V|: " << g->Vcnt << " |E|: " << g->Ecnt
+             << endl;
         SubIso* subIso = new SubIso(q, g);
 
         bool res1 = subIso->isSubIso();
@@ -103,6 +102,8 @@ class TestSubIso {
         }
         delete subIso;
       }
+
+      q->encryptFree();
     }
 
     cout << "total: " << cnt_res1 << endl;

@@ -21,6 +21,10 @@
 #include "../vflib/vf2_mono_state.h"
 //#include "ECVector.h"
 
+#include "../crypto/BigMatrix.h"
+#include "../crypto/cgbe.h"
+#include "../crypto/Message.h"
+
 using namespace std;
 
 class Edge {
@@ -94,6 +98,7 @@ class GRAPH {
   vector<vector<AdjElement> > _adjList;
   int maximum_vertex;
   int min_tree_height;
+  VertexLabel start_label;
 
   VertexLabelMap vlabels_map;
   VertexLabelMapCnt vlabels_map_cnt;
@@ -106,13 +111,19 @@ class GRAPH {
 
 
   // -------- Encryption for query --------
+  CGBE * cgbe;
   BigMatrix* Mq;
+  Message* msg;
+  void encryptInit();
   void encrypt();
   void encryptFree();
   // --------------------------------------
 
+  // for client
+  void clientPreProcess();
+
   // -------- for subiso --------
-  int* M;  // for query graph
+  int* M;  // for mapping between query and matching
   int* col;
   int* col1;
   int* row;

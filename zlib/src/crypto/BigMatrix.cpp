@@ -6,6 +6,8 @@
  */
 
 #include "BigMatrix.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 BigMatrix::BigMatrix(int _row, int _col) {
   row = _row;
@@ -41,4 +43,12 @@ void BigMatrix::matrixFree() {
     free(matrix[i]);
   }
   free(matrix);
+}
+
+void BigMatrix::setValue(int _row, int _col, int _v) {
+  mpz_set_d(matrix[_row][_col], _v);
+}
+
+void BigMatrix::setValue(int _row, int _col, mpz_t _v) {
+  mpz_set(matrix[_row][_col], _v);
 }

@@ -18,9 +18,12 @@ class BigMatrix {
   BigMatrix(int _row, int _col);
   ~BigMatrix();
 
-  void matrixInit();
   void matrixFree ();
+  void setValue(int _row, int _col, int _v);
+  void setValue(int _row, int _col, mpz_t _v);
 
+ private:
+  void matrixInit();
 };
 
 

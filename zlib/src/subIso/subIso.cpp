@@ -19,17 +19,18 @@ using namespace std::tr1;
 SubIso::SubIso(GRAPH* _q, GRAPH* _g)
     : q(_q),
       g(_g) {
-  /**
-   * use BFS on q to determine the
-   * start label, which is the same to that
-   * of the first vertex of the query by default
-   */
+  // set l_s and h
+  start_label = q->start_label;
+  tree_height = q->min_tree_height - 1;
+
+  ASSERT(start_label > NO_LABEL);
+  ASSERT(tree_height > NO_VERTEX);
+
+  cout << "tree_height: " << tree_height << endl;
+
   response = false;
   cnt_cm = 0;
   cm_time = cr_time = match_time = decomp_cm_time = enum_cm_time = 0;
-  start_label = q->getLabel(q->getMinTreeHeight());
-  tree_height = q->min_tree_height - 1;
-  cout << "tree_height: " << tree_height << endl;
 }
 
 bool SubIso::isVisited(vector<int>& canMatVertex, int dep, int v) {

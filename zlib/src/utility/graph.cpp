@@ -36,6 +36,9 @@ GRAPH::GRAPH()
 
   for (int i = 0; i < DEFAULT_VERTEX_NUMBER; i++)
     _vlabels[i] = NO_LABEL;
+
+  min_tree_height = NO_VERTEX;
+  start_label = NO_VERTEX;
 }
 
 GRAPH::GRAPH(int V)
@@ -534,8 +537,7 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g) {
   // set vertex
   VertexID _new_v_id = 0;
   unordered_map<VertexID, VertexID> g_to_ind_v;
-  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end();
-      it++) {
+  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
     VertexLabel u_l = getLabel(u);
     g_to_ind_v[u] = _new_v_id;
@@ -544,8 +546,7 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g) {
 
   // set edge
   int e_id = 0;
-  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end();
-      it++) {
+  for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
     for (set<VertexID>::iterator it1 = vertex.begin(); it1 != vertex.end();
         it1++) {
@@ -1066,3 +1067,64 @@ void GRAPH::removeEdge(VertexID v, VertexID w) {
   }
 }
 
+void GRAPH::clientPreProcess() {
+  /**
+   * preprocessing at the client side.
+   * 1. encryption
+   * 2. determine l_s and h
+   */
+  // encryption
+  encryptInit();
+  encrypt();
+
+  // set h and l_s
+  start_label = getLabel(getMinTreeHeight());
+}
+
+void GRAPH::encryptInit() {
+  // init Mq
+  Mq = new BigMatrix(V(), V());
+  cgbe = new CGBE();
+  msg = new Message(V());
+
+  // set values of Mq and encrypt them
+  for (int i = 0; i < V(); i++) {
+    VertexID u = i;
+    for (int j = 0; j < V(); j++) {
+      VertexID v = j;
+
+      if (V() < DEFAULTENCODING) {
+        if (edge(u, v)) {
+          // is edge, 1
+          Mq->setValue(u, v, cgbe->encoding);
+        } else {
+          // is not edge
+          Mq->setValue(u, v, 1);
+        }
+      } else {
+        if (edge(u, v)) {
+          Mq->setValue(u, v, 1);
+        } else {
+          Mq->setValue(u, v, cgbe->encoding);
+        }
+      }
+    }
+  }
+}
+
+void GRAPH::encrypt() {
+  ASSERT(Mq != NULL);
+  ASSERT(cgbe != NULL);
+
+  for (int i = 0; i < V(); i++) {
+    for (int j = 0; j < V(); j++) {
+      cgbe->encrypt(Mq->matrix[i][j], Mq->matrix[i][j]);
+    }
+  }
+}
+
+void GRAPH::encryptFree() {
+  delete Mq;
+  delete cgbe;
+  delete msg;
+}

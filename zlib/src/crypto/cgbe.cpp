@@ -6,6 +6,8 @@
  */
 
 #include "cgbe.h"
+#include <iostream>
+using namespace std;
 
 CGBE::CGBE() {
   mpz_init(encoding);
@@ -14,6 +16,11 @@ CGBE::CGBE() {
   mpz_init(x);
   mpz_init(gx);
   mpz_init(gx_1);
+  mpz_init(n);
+
+  // random
+  gmp_randinit_default(r_state);
+  gmp_randinit_mt(r_state);
 
   generator();
 }
@@ -25,10 +32,8 @@ CGBE::~CGBE() {
   mpz_clear(x);
   mpz_clear(gx);
   mpz_clear(gx_1);
+  mpz_clear(n);
 
-  // random
-  gmp_randinit_default(r_state);
-  gmp_randinit_mt(r_state);
 }
 
 void CGBE::genRand(mpz_t& _r, int _size) {

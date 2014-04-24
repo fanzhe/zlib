@@ -38,6 +38,8 @@ typedef int Status;
 
 #define     MATRIX_INDEX(u,v,Vcnt)    ((u) * (Vcnt) + (v))
 
-#define     DEFAULTMSGSIZE  2048
-#define     DEFAULTRANDOM   32
+#define     DEFAULTMSGSIZE      2048
+#define     DEFAULTRANDOM       32
+#define     DEFAULTENCODING     5
+
 #endif
