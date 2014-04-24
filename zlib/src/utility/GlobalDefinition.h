@@ -36,6 +36,8 @@ typedef int Status;
 #define 		INVALID_GRAPH_ID 	(-1)
 #define			ALGORITHM_FGINDEX 	(-1)  // useless, for gspan compile#define 		FILENAME_BUFF_SIZE 	(256)#define			DEFAULT_VERTEX_NUMBER	(256)//#define 		max(X,Y) 			((X) > (Y) ? : (X) : (Y);)//#define 		min(X,Y) 			((X) < (Y) ? : (X) : (Y);)#define     DEFAULT_MAX_VCNT    (10000)
 
-#define   MATRIX_INDEX(u,v,Vcnt)    ((u) * (Vcnt) + (v))
+#define     MATRIX_INDEX(u,v,Vcnt)    ((u) * (Vcnt) + (v))
 
+#define     DEFAULTMSGSIZE  2048
+#define     DEFAULTRANDOM   32
 #endif

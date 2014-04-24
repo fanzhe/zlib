@@ -104,6 +104,13 @@ class GRAPH {
   bool eqv_cls_flg;
   // -------------------------------------
 
+
+  // -------- Encryption for query --------
+  BigMatrix* Mq;
+  void encrypt();
+  void encryptFree();
+  // --------------------------------------
+
   // -------- for subiso --------
   int* M;  // for query graph
   int* col;
