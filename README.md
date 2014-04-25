@@ -10,10 +10,10 @@
 
 * Enumeration of all subgraphs of a graph with pre-defined size. 
 
-* Equivalent class of a graph.
+* Neighborhood equivalent class of a graph.
 
-* Subgraph isomorphism testing (Turbo + Ullmann) between two graphs. 
+* Subgraph isomorphism testing (Turbo + Ullmann). 
 
 * Integration of VFLib (http://www.cs.sunysb.edu/~algorith/implement/vflib/implement.shtml).
 
-* Cyclic group based encryption for subIso (TBA).
+* Cyclic group based encryption scheme, a homomorphic encryption method supports both partially additions *and* multiplications.
