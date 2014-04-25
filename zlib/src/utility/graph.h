@@ -179,8 +179,10 @@ class GRAPH {
   void initSubIso();
   void clearSubIso();
   bool isSubgraphOf(GRAPH* g);  // g and g' are of same size
-  void isSubgraphOf1(int dep, GRAPH* g, int& res);
-  void isSubgraphOf2(GRAPH* g, int& res);
+//  void isSubgraphOf1(int dep, GRAPH* g, int& res);
+  void isSubgraphOf1(int dep, GRAPH* g);
+  void isSubgraphOf2(GRAPH* g);
+  void isSubgraphOf2e(GRAPH* g);
   void initM(int* M, GRAPH* g);
   void cnt_ones_of_row_function(GRAPH* g);
   void resetSubIso(GRAPH* g);

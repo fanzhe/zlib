@@ -17,6 +17,7 @@ CGBE::CGBE() {
   mpz_init(gx);
   mpz_init(gx_1);
   mpz_init(n);
+  mpz_init(I);
 
   // random
   gmp_randinit_default(r_state);
@@ -33,7 +34,23 @@ CGBE::~CGBE() {
   mpz_clear(gx);
   mpz_clear(gx_1);
   mpz_clear(n);
+  mpz_clear(I);
+}
 
+void CGBE::setvalue(mpz_t& _d, mpz_t& _s) {
+  mpz_set(_d, _s);
+}
+
+void CGBE::setvalue(mpz_t& _d, int _s) {
+  mpz_set_d(_d, _s);
+}
+
+void CGBE::mul(mpz_t& _rs, mpz_t& _l, mpz_t& _r) {
+  _mulmod(_rs, _l, _r, n);
+}
+
+void CGBE::add(mpz_t& _rs, mpz_t& _l, mpz_t& _r) {
+  _addmod(_rs, _l, _r, n);
 }
 
 void CGBE::genRand(mpz_t& _r, int _size) {
@@ -64,7 +81,18 @@ void CGBE::encrypt(mpz_t& m, mpz_t& c) {
 }
 
 void CGBE::decrypt(mpz_t& c, mpz_t& m) {
+  // m = c * gx_1 % n
   _mulmod(m, c, gx_1, n);
+
+  // m = m % encoding
+  mpz_mod(m, m, encoding);
+}
+
+bool CGBE::isZero(mpz_t& _m) {
+  if (mpz_cmp_d(_m, 0) == 0) {
+    return true;
+  }
+  return false;
 }
 
 void CGBE::decrypt(mpz_t& c, mpz_t& m, int cnt) {
@@ -73,11 +101,14 @@ void CGBE::decrypt(mpz_t& c, mpz_t& m, int cnt) {
   mpz_init(_cnt);
   mpz_set_d(_cnt, cnt);
 
-  // gx_m
+  // gx_m = gx_1 ^ _cnt
   mpz_powm(gx_m, gx_1, _cnt, n);
 
-  // gx_m * c (mod n)
+  // m = (c * gx_m) % n
   _mulmod(m, c, gx_m, n);
+
+  // m = m % encoding
+  mpz_mod(m, m, encoding);
 
   mpz_clear(_cnt);
   mpz_clear(gx_m);

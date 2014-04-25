@@ -8,6 +8,7 @@
 #include "test/testTransform.h"
 #include "test/testVFLib.h"
 #include "test/testGenDataSet.h"
+#include "test/testCrypto.h"
 
 using namespace std;
 
@@ -122,6 +123,10 @@ void testGenQuerySet(int argc, char** argv) {
   g_test->genQuerySet(argv[1], argv[3], atoi(argv[4]), atoi(argv[5]));
 }
 
+void testCrypto(int argc, char** argv) {
+  TestCrypto* cryp = new TestCrypto();
+}
+
 int main(int argc, char** argv) {
 //  test VFLib
 //  testVF(argc, argv);
@@ -144,8 +149,10 @@ int main(int argc, char** argv) {
     testGenDataSet(argc - 1, argv + 1);
   } else if (argv[1][0] == 'q') {
     testGenQuerySet(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'e') {
+    testCrypto(argc - 1, argv + 1);
   } else {
-    cout << "else?" << endl;
+    cout << "wrong input" << endl;
   }
   return 0;
 }

@@ -899,11 +899,72 @@ void GRAPH::genEqvCls() {
 
 }
 
-void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
+void GRAPH::isSubgraphOf2e(GRAPH* g) {
 //  cout << "=========== query vertex ==============" << endl;
 //  printArray(col1, V());
 
-  // real thing
+  msg->resetRi();
+
+  // real thing with encrypted
+  for (int i = 0; i < V(); i++) {
+    for (int j = i + 1; j < V(); j++) {
+      VertexID _i = col[i];
+      VertexID _j = col[j];
+
+      if (V() < DEFAULTENCODING) {
+        // * multiplications
+        if (!g->edge(_i, _j)) {
+          cgbe->mul(msg->Ri, msg->Ri, Mq->matrix[i][j]);
+        } else {
+          cgbe->mul(msg->Ri, msg->Ri, cgbe->I);
+        }
+      } else {
+        // additions
+        if (!g->edge(_i, _j)) {
+          cgbe->add(msg->Ri, msg->Ri, Mq->matrix[i][j]);
+        } else {
+          cgbe->add(msg->Ri, msg->Ri, cgbe->I);
+        }
+      }
+    }
+  }
+
+  // aggregate
+  if (V() < DEFAULTENCODING) {
+    // * additions
+    cgbe->add(msg->Rk, msg->Rk, msg->Ri);
+  } else {
+    // multiplications
+    cgbe->mul(msg->Rk, msg->Rk, msg->Ri);
+  }
+
+  msg->cnt++;
+
+  // decryption
+  if (V() < DEFAULTENCODING) {
+    if (msg->cnt >= DEFAULTAGGREGATES) {
+      cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
+      msg->cnt = 0;
+      if (!cgbe->isZero(msg->R)) {
+        msg->answer = 1;
+      }
+    }
+  } else {
+    if (msg->cnt >= DEFAULTAGGREGATE) {
+      cgbe->decrypt(msg->Rk, msg->R, msg->cnt);
+      msg->cnt = 0;
+      if (cgbe->isZero(msg->R)) {
+        msg->answer = 1;
+      }
+    }
+  }
+}
+
+void GRAPH::isSubgraphOf2(GRAPH* g) {
+//  cout << "=========== query vertex ==============" << endl;
+//  printArray(col1, V());
+
+  // real thing with plain text
   for (int i = 0; i < V(); i++) {
     for (int j = 0; j < V(); j++) {
       if (i != j && edge(i, j)) {
@@ -915,18 +976,18 @@ void GRAPH::isSubgraphOf2(GRAPH* g, int& res) {
       }
     }
   }
-  res = 0;
+  msg->answer = 1;
 }
 
-void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
+void GRAPH::isSubgraphOf1(int dep, GRAPH* g) {
   // early stop
-  if (res == 0) {
+  if (msg->answer == 1) {
     return;
   }
 
   // okay
   if (dep == V()) {
-    isSubgraphOf2(g, res);
+    isSubgraphOf2e(g);
     return;
   }
 
@@ -965,7 +1026,7 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
       row[j] = 1;
       col[dep] = j;
       col1[j] = dep;
-      isSubgraphOf1(dep + 1, g, res);
+      isSubgraphOf1(dep + 1, g);
       row[j] = 0;
       col[dep] = col1[j] = -1;
     }
@@ -980,9 +1041,9 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g, int& res) {
  * ps: q's structure is not known.
  */
 bool GRAPH::isSubgraphOf(GRAPH* g) {
-  int res = 1;
-  isSubgraphOf1(0, g, res);
-  return (res == 0);
+  msg->answer = 0;
+  isSubgraphOf1(0, g);
+  return (msg->answer == 1);
 }
 
 bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
@@ -1073,8 +1134,9 @@ void GRAPH::clientPreProcess() {
    * 1. encryption
    * 2. determine l_s and h
    */
-  // encryption
+  // initialize encryption
   encryptInit();
+  // encryption
   encrypt();
 
   // set h and l_s
@@ -1087,7 +1149,7 @@ void GRAPH::encryptInit() {
   cgbe = new CGBE();
   msg = new Message(V());
 
-  // set values of Mq and encrypt them
+  // set values of Mq
   for (int i = 0; i < V(); i++) {
     VertexID u = i;
     for (int j = 0; j < V(); j++) {
@@ -1110,16 +1172,31 @@ void GRAPH::encryptInit() {
       }
     }
   }
+
+  // set value I
+  if (V() < DEFAULTENCODING) {
+    cgbe->setvalue(cgbe->I, 1);
+  } else {
+    cgbe->setvalue(cgbe->I, cgbe->encoding);
+  }
 }
 
 void GRAPH::encrypt() {
   ASSERT(Mq != NULL);
   ASSERT(cgbe != NULL);
 
+  // encrypt Mq
   for (int i = 0; i < V(); i++) {
     for (int j = 0; j < V(); j++) {
       cgbe->encrypt(Mq->matrix[i][j], Mq->matrix[i][j]);
     }
+  }
+
+  // encrypt I
+  if (V() < DEFAULTENCODING) {
+    cgbe->encrypt(cgbe->I, cgbe->I);
+  } else {
+    cgbe->encrypt(cgbe->I, cgbe->I);
   }
 }
 
