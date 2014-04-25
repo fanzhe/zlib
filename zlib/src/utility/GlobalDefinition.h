@@ -41,6 +41,6 @@ typedef int Status;
 #define     DEFAULTMSGSIZE        2048
 #define     DEFAULTRANDOM         32
 #define     DEFAULTENCODING       7
-#define     DEFAULTAGGREGATES     1
-#define     DEFAULTAGGREGATE      1
+#define     DEFAULTAGGREGATES     100
+#define     DEFAULTAGGREGATE      10
 #endif

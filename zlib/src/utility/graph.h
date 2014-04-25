@@ -116,6 +116,8 @@ class GRAPH {
   Message* msg;
   void encryptInit();
   void encrypt();
+  void decrypt();
+  void finalDecrypt();
   void encryptFree();
   // --------------------------------------
 

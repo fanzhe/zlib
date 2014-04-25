@@ -47,6 +47,14 @@ class Message {
       mpz_set_d(Ri, 0);
     }
   }
+
+  void resetRk() {
+    if (type == 0) {
+      mpz_set_d(Rk, 0);
+    } else {
+      mpz_set_d(Rk, 1);
+    }
+  }
 };
 
 #endif /* MESSAGE_H_ */

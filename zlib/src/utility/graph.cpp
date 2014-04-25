@@ -941,23 +941,7 @@ void GRAPH::isSubgraphOf2e(GRAPH* g) {
   msg->cnt++;
 
   // decryption
-  if (V() < DEFAULTENCODING) {
-    if (msg->cnt >= DEFAULTAGGREGATES) {
-      cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
-      msg->cnt = 0;
-      if (!cgbe->isZero(msg->R)) {
-        msg->answer = 1;
-      }
-    }
-  } else {
-    if (msg->cnt >= DEFAULTAGGREGATE) {
-      cgbe->decrypt(msg->Rk, msg->R, msg->cnt);
-      msg->cnt = 0;
-      if (cgbe->isZero(msg->R)) {
-        msg->answer = 1;
-      }
-    }
-  }
+  decrypt();
 }
 
 void GRAPH::isSubgraphOf2(GRAPH* g) {
@@ -1042,7 +1026,14 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g) {
  */
 bool GRAPH::isSubgraphOf(GRAPH* g) {
   msg->answer = 0;
+
   isSubgraphOf1(0, g);
+
+  // last decryption
+  if (msg->cnt > 0) {
+    finalDecrypt();
+  }
+
   return (msg->answer == 1);
 }
 
@@ -1197,6 +1188,50 @@ void GRAPH::encrypt() {
     cgbe->encrypt(cgbe->I, cgbe->I);
   } else {
     cgbe->encrypt(cgbe->I, cgbe->I);
+  }
+}
+
+void GRAPH::finalDecrypt() {
+  if (V() < DEFAULTENCODING) {
+    cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
+    msg->resetRk();
+    msg->cnt = 0;
+
+    if (!cgbe->isZero(msg->R)) {
+      msg->answer = 1;
+    }
+  } else {
+    cgbe->decrypt(msg->Rk, msg->R, msg->cnt);
+    msg->cnt = 0;
+    msg->resetRk();
+
+    if (cgbe->isZero(msg->R)) {
+      msg->answer = 1;
+    }
+  }
+}
+
+void GRAPH::decrypt() {
+  if (V() < DEFAULTENCODING) {
+    if (msg->cnt >= DEFAULTAGGREGATES) {
+      cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
+      msg->resetRk();
+      msg->cnt = 0;
+
+      if (!cgbe->isZero(msg->R)) {
+        msg->answer = 1;
+      }
+    }
+  } else {
+    if (msg->cnt >= DEFAULTAGGREGATE) {
+      cgbe->decrypt(msg->Rk, msg->R, msg->cnt);
+      msg->cnt = 0;
+      msg->resetRk();
+
+      if (cgbe->isZero(msg->R)) {
+        msg->answer = 1;
+      }
+    }
   }
 }
 
