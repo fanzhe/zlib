@@ -5,7 +5,7 @@
  *      Author: zfan
  */
 
-#include "BigMatrix.h"
+#include "bigMatrix.h"
 #include <stdlib.h>
 #include <stdio.h>
 

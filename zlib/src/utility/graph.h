@@ -21,9 +21,9 @@
 #include "../vflib/vf2_mono_state.h"
 //#include "ECVector.h"
 
-#include "../crypto/BigMatrix.h"
+#include "../crypto/bigMatrix.h"
 #include "../crypto/cgbe.h"
-#include "../crypto/Message.h"
+#include "../crypto/message.h"
 
 using namespace std;
 
