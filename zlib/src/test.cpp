@@ -123,6 +123,16 @@ void testGenQuerySet(int argc, char** argv) {
   g_test->genQuerySet(argv[1], argv[3], atoi(argv[4]), atoi(argv[5]));
 }
 
+void testShowStat(int argc, char** argv) {
+  if (argc < 1) {
+    cout << "please input" << endl;
+    return;
+  }
+  TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
+
+  g_test->showStat(argv[1]);
+}
+
 void testCrypto(int argc, char** argv) {
   TestCrypto* cryp = new TestCrypto();
 }
@@ -151,6 +161,8 @@ int main(int argc, char** argv) {
     testGenQuerySet(argc - 1, argv + 1);
   } else if (argv[1][0] == 'e') {
     testCrypto(argc - 1, argv + 1);
+  } else if (argv[1][0] == 's') {
+    testShowStat(argc - 1, argv + 1);
   } else {
     cout << "wrong input" << endl;
   }

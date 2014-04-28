@@ -32,6 +32,33 @@ class TestGenDataSet {
     for (int i = 0; i < g_cnt; i++) {
       delete graphDB[i];
     }
+    delete randGen;
+  }
+
+  void showStat(const char* input_g_file_name) {
+    InputReader g_reader(input_g_file_name);
+
+    for (int i = 0; i < g_cnt; i++) {
+      GRAPH *g = new GRAPH();
+      g_reader.GetNextGraph_MultiVertexLabel_Original(*g);
+      graphDB[i] = g;
+
+      unordered_map<VertexLabel, int> mymap;
+
+      for (int i = 0; i < g->V(); i++) {
+        VertexLabel l = g->getLabel(i);
+        if (mymap.find(l) == mymap.end()) {
+          mymap[l] = 1;
+          continue;
+        }
+        mymap[l]++;
+      }
+
+      for (unordered_map<VertexLabel, int>::iterator it = mymap.begin();
+          it != mymap.end(); it++) {
+        cout << it->first << " " << it->second << endl;
+      }
+    }
   }
 
   void genDataSet(const char* input_g_file_name, char* output_g_file_name,
@@ -46,12 +73,18 @@ class TestGenDataSet {
       graphDB[i] = g;
 
       // TODO generate data set
-      generateData(g);
+      assignLabelByDegree(g);
       g->printGraph(output);
     }
   }
 
-  void generateData(GRAPH* g) {
+  void assignLabelByDegree(GRAPH* g) {
+    for (int i = 0; i < g->V(); i++) {
+      g->setLabel(i, g->getDegree(i));
+    }
+  }
+
+  void assignLabelByRandom(GRAPH* g) {
     int rand = 0;
     int maxLabelCnt = g->V() / distinctLabel + 1;
     unordered_map<VertexID, int> mymap;
