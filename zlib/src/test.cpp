@@ -65,6 +65,8 @@ void testSubIso(int argc, char** argv) {
   g_test->loadFromInputFile(argv[1], argv[3]);
 
   g_test->testSubIso();
+
+  delete g_test;
 }
 
 void testDebug(int argc, char** argv) {
@@ -77,6 +79,8 @@ void testDebug(int argc, char** argv) {
   g_test->loadFromInputFile(argv[1], argv[3]);
 
   g_test->debugSubIso();
+
+  delete g_test;
 }
 
 void testVF(int argc, char** argv) {
@@ -91,6 +95,8 @@ void testVF(int argc, char** argv) {
 
   g_test->testSubIso();
 //  g_test->testIndSub();
+
+  delete g_test;
 }
 
 void testTransform(int argc, char** argv) {
@@ -101,6 +107,8 @@ void testTransform(int argc, char** argv) {
   TestTransform* g_test = new TestTransform(atoi(argv[2]));
 
   g_test->transformFromInputFile(argv[1], argv[3]);
+
+  delete g_test;
 }
 
 void testGenDataSet(int argc, char** argv) {
@@ -111,6 +119,8 @@ void testGenDataSet(int argc, char** argv) {
   TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
 
   g_test->genDataSet(argv[1], argv[3], atoi(argv[4]));
+
+  delete g_test;
 }
 
 void testGenQuerySet(int argc, char** argv) {
@@ -121,6 +131,8 @@ void testGenQuerySet(int argc, char** argv) {
   TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
 
   g_test->genQuerySet(argv[1], argv[3], atoi(argv[4]), atoi(argv[5]));
+
+  delete g_test;
 }
 
 void testShowStat(int argc, char** argv) {
@@ -131,6 +143,8 @@ void testShowStat(int argc, char** argv) {
   TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
 
   g_test->showStat(argv[1]);
+
+  delete g_test;
 }
 
 void testCrypto(int argc, char** argv) {

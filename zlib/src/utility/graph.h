@@ -20,6 +20,7 @@
 #include "../vflib/vf2_sub_state.h"
 #include "../vflib/vf2_mono_state.h"
 //#include "ECVector.h"
+#include "myStat.h"
 
 #include "../crypto/bigMatrix.h"
 #include "../crypto/cgbe.h"
@@ -123,6 +124,7 @@ class GRAPH {
 
   // for client
   void clientPreProcess();
+  STAT* myStat;
 
   // -------- for subiso --------
   int* M;  // for mapping between query and matching

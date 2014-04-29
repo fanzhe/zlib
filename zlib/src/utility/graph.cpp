@@ -905,6 +905,7 @@ void GRAPH::isSubgraphOf2e(GRAPH* g) {
 
   msg->resetRi();
 
+  double _s = clock();
   // real thing with encrypted
   for (int i = 0; i < V(); i++) {
     for (int j = i + 1; j < V(); j++) {
@@ -937,11 +938,16 @@ void GRAPH::isSubgraphOf2e(GRAPH* g) {
     // multiplications
     cgbe->mul(msg->Rk, msg->Rk, msg->Ri);
   }
+  double _e = clock();
+  myStat->mul_add_time += gettime(_s, _e);
 
   msg->cnt++;
 
   // decryption
+  _s = clock();
   decrypt();
+  _e = clock();
+  myStat->decrypt_time += gettime(_s, _e);
 }
 
 void GRAPH::isSubgraphOf2(GRAPH* g) {
@@ -971,7 +977,11 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g) {
 
   // okay
   if (dep == V()) {
+    double _s = clock();
     isSubgraphOf2e(g);
+    double _e = clock();
+    myStat->isSubgraphOf2e_time += gettime(_s, _e);
+
     return;
   }
 
@@ -1031,7 +1041,10 @@ bool GRAPH::isSubgraphOf(GRAPH* g) {
 
   // last decryption
   if (msg->cnt > 0) {
+    double _s = clock();
     finalDecrypt();
+    double _e = clock();
+    myStat->decrypt_time += gettime(_s, _e);
   }
 
   return (msg->answer == 1);
@@ -1132,6 +1145,9 @@ void GRAPH::clientPreProcess() {
 
   // set h and l_s
   start_label = getLabel(getMinTreeHeight());
+
+  // init stat
+  myStat = new STAT();
 }
 
 void GRAPH::encryptInit() {
@@ -1209,6 +1225,8 @@ void GRAPH::finalDecrypt() {
       msg->answer = 1;
     }
   }
+
+  myStat->encypted_msg_cnt ++;
 }
 
 void GRAPH::decrypt() {
@@ -1217,6 +1235,8 @@ void GRAPH::decrypt() {
       cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
       msg->resetRk();
       msg->cnt = 0;
+
+      myStat->encypted_msg_cnt ++;
 
       if (!cgbe->isZero(msg->R)) {
         msg->answer = 1;
@@ -1227,6 +1247,8 @@ void GRAPH::decrypt() {
       cgbe->decrypt(msg->Rk, msg->R, msg->cnt);
       msg->cnt = 0;
       msg->resetRk();
+
+      myStat->encypted_msg_cnt ++;
 
       if (cgbe->isZero(msg->R)) {
         msg->answer = 1;
@@ -1239,4 +1261,5 @@ void GRAPH::encryptFree() {
   delete Mq;
   delete cgbe;
   delete msg;
+  delete myStat;
 }

@@ -26,11 +26,15 @@ SubIso::SubIso(GRAPH* _q, GRAPH* _g)
   ASSERT(start_label > NO_LABEL);
   ASSERT(tree_height > NO_VERTEX);
 
-  cout << "tree_height: " << tree_height << endl;
+//  cout << "tree_height: " << tree_height << endl;
 
   response = false;
   cnt_cm = 0;
-  cm_time = cr_time = match_time = decomp_cm_time = enum_cm_time = 0;
+  myStat = new STAT();
+}
+
+SubIso::~SubIso() {
+  delete myStat;
 }
 
 bool SubIso::isVisited(vector<int>& canMatVertex, int dep, int v) {
@@ -76,7 +80,7 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
   for (int i = 0; i < rootVertex.size(); i++) {
 
     VertexID r_vertex = rootVertex[i].u;
-    cout << endl << "original root: " << r_vertex << " " << g->getDegree(r_vertex) << endl;
+//    cout << endl << "original root: " << r_vertex << " " << g->getDegree(r_vertex) << endl;
 
     // cannot use this ifRootVertex cache
 //    cache.ifRootVertex.insert(r_vertex);
@@ -88,24 +92,19 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
       continue;
     }
     _e = clock();
-    cr_time = gettime(_s, _e);
+    myStat->cr_time += gettime(_s, _e);
+
+//    cout << "go" << endl;
 
     // find cm
     _s = clock();
     genAllCanMatch(r_vertex, cr, cm);
     _e = clock();
-    cm_time = gettime(_s, _e);
-
-    cout << "cr_time: " << cr_time << endl;
-    cout << "cm_time: " << cm_time << endl;
-    cout << "enum_cm_time: " << enum_cm_time << endl;
-    cout << "decomp_cm_time: " << decomp_cm_time << endl;
-    cout << "match_time: " << match_time << endl;
+    myStat->cm_time += gettime(_s, _e);
 
     // TODO try a new DFS by the set of labels.
 
-//    cout << cnt_cm << endl;
-    cnt_cm = cr_time = cm_time = decomp_cm_time = match_time = enum_cm_time = 0;
+//    cnt_cm = cr_time = cm_time = decomp_cm_time = match_time = enum_cm_time = 0;
 
     if (response) {
       break;
@@ -114,6 +113,15 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     // reset cr, we do not set cr's eqv. cls.
     cr->makeEmpty();
   }
+
+
+  cout << "cnt_cm: " << cnt_cm << endl;
+  cout << "cr_time: " << myStat->cr_time << endl;
+  cout << "cm_time: " << myStat->cm_time << endl;
+  cout << "enum_cm_time: " << myStat->enum_cm_time << endl;
+//  cout << "decomp_cm_time: " << myStat->decomp_cm_time << endl;
+  cout << "match_time: " << myStat->match_time << endl;
+
 
   q->clearSubIso();
   cm->clearEqvCls();
@@ -178,18 +186,22 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
-  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
-  printHashTableTT(cr->vlabels_map_cnt);
-//  if (!predictCR(cr, 10000)) {
+
+//  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  printHashTableTT(cr->vlabels_map_cnt);
+
+  if (!predictCR(cr, 10000)) {
 //    cout << "---------skipped!-------" << endl;
 //    return false;
-//  }
+  }
+
   return true;
 }
 
 bool SubIso::predictCR(GRAPH* cr, long long limit) {
   cr->setVertexLabelMapCnt();
   long long cnt = sumUpVertexLabelCnt(cr->vlabels_map_cnt);
+  cout << "predict: " << cnt << endl;
   if (cnt > limit) {
     return false;
   } else {
@@ -335,6 +347,10 @@ void SubIso::cacheAllSubOf(GSPAN::DFSCode& dfs_code) {
 }
 
 bool SubIso::isCanMatChecked(GRAPH* cm) {
+  if (q->V() > DEFAULTCACHESIZE) {
+    return true;
+  }
+
   clock_t _s, _s1, _e, _e1;
   _s = clock();
   GraphToMinDFSCode mindfs;
@@ -356,14 +372,14 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
     // TODO make sure.
 //    cacheAllSubOf(dfs_code);
     _e1 = clock();
-    decomp_cm_time += gettime(_s1, _e1);
+    myStat->decomp_cm_time += gettime(_s1, _e1);
 
     _e = clock();
-    enum_cm_time += gettime(_s, _e);
+    myStat->enum_cm_time += gettime(_s, _e);
     return true;
   } else {
     _e = clock();
-    enum_cm_time += gettime(_s, _e);
+    myStat->enum_cm_time += gettime(_s, _e);
     return false;
   }
 }
@@ -427,7 +443,7 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     _s = clock();
     doMatch(cm);
     _e = clock();
-    match_time += gettime(_s, _e);
+    myStat->match_time += gettime(_s, _e);
 
     // reset cm for next match
     cm->makeEmpty();

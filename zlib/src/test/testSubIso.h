@@ -2,7 +2,9 @@
 #define TESTSUBISO_H
 
 #include "../utility/GlobalDataStructures.h"
+#include "../utility/utilityFunction.h"
 #include "../utility/graph.h"
+#include "../utility/myStat.h"
 #include "../subIso/subIso.h"
 
 class TestSubIso {
@@ -81,22 +83,42 @@ class TestSubIso {
   }
 
   void testSubIso() {
+    STAT* myStat = new STAT();
+
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
-      cout << "q:" << i << " |V|: " << q->Vcnt << " |E|: " << q->Ecnt;
-//      if (i != 3) {
+//      if (i != 4) {
 //        continue;
 //      }
+      cout << "q:" << i << " |V|: " << q->Vcnt << " |E|: " << q->Ecnt;
 
+      clock_t _s = clock();
       q->clientPreProcess();
+      clock_t _e = clock();
+      q->myStat->encrypt_time = gettime(_s, _e);
 
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
-        cout << " === g:" << j << " |V|: " << g->Vcnt << " |E|: " << g->Ecnt
+        cout << "   g:" << j << " |V|: " << g->Vcnt << " |E|: " << g->Ecnt
              << endl;
         SubIso* subIso = new SubIso(q, g);
 
+        clock_t _s = clock();
         bool res1 = subIso->isSubIso();
+        clock_t _e = clock();
+        myStat->avg_sp_time += gettime(_s, _e);
+
+        myStat->avg_client_time += q->myStat->encrypt_time
+            + q->myStat->decrypt_time;
+        myStat->avg_client_msg_size += q->myStat->encypted_msg_cnt;
+
+        cout << "decrypt_time: " << q->myStat->decrypt_time << endl;
+        cout << "isSubgraphOf2e_time: " << q->myStat->isSubgraphOf2e_time << endl;
+        cout << "mul_add_time: " << q->myStat->mul_add_time << endl;
+
+        q->myStat->reset();
+
+
         if (res1) {
           cnt_res1++;
         }
@@ -106,7 +128,15 @@ class TestSubIso {
       q->encryptFree();
     }
 
-    cout << "total: " << cnt_res1 << endl;
+    // after finish
+    cout << "total: " << (q_cnt * q_cnt) << " / " << cnt_res1 << endl;
+    cout << "avg_sp_time: " << myStat->avg_sp_time / (g_cnt * q_cnt) << endl;
+    cout << "avg_client_time: " << myStat->avg_client_time / (g_cnt * q_cnt)
+         << endl;
+    cout << "avg_total_msg_size: "
+         << myStat->avg_client_msg_size / (g_cnt * q_cnt) << endl;
+
+    delete myStat;
   }
 
 };

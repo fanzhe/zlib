@@ -5,6 +5,8 @@
 #include <vector>
 
 #include "../utility/GlobalDefinition.h"
+#include "../utility/myStat.h"
+
 #include "cache.h"
 
 class GRAPH;
@@ -20,12 +22,8 @@ class SubIso {
   bool response;
   int tree_height;
   int cnt_cm;
+  STAT* myStat;
 
-  double cr_time;
-  double cm_time;
-  double match_time;
-  double enum_cm_time;
-  double decomp_cm_time;
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;
   Cache cache;
@@ -41,6 +39,7 @@ class SubIso {
 
  public:
   SubIso(GRAPH* _q, GRAPH* _g);
+  ~SubIso();
   void calVertexLabelMap();
   void clearVertexLabelMap();
   bool isVisited(vector<int>& path, int dep, int v);
