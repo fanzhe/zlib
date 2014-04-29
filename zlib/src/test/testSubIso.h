@@ -111,13 +111,17 @@ class TestSubIso {
         myStat->avg_client_time += q->myStat->encrypt_time
             + q->myStat->decrypt_time;
         myStat->avg_client_msg_size += q->myStat->encypted_msg_cnt;
+        myStat->avg_cm_cnt += subIso->myStat->cm_cnt;
+        myStat->avg_cm_cnt_prune += subIso->myStat->cm_cnt_prune;
+        myStat->avg_cr_cnt += subIso->myStat->cr_cnt;
+        myStat->avg_cr_cnt_predict += subIso->myStat->cr_cnt_predict;
 
         cout << "decrypt_time: " << q->myStat->decrypt_time << endl;
-        cout << "isSubgraphOf2e_time: " << q->myStat->isSubgraphOf2e_time << endl;
+        cout << "isSubgraphOf2e_time: " << q->myStat->isSubgraphOf2e_time
+             << endl;
         cout << "mul_add_time: " << q->myStat->mul_add_time << endl;
 
         q->myStat->reset();
-
 
         if (res1) {
           cnt_res1++;
@@ -129,12 +133,16 @@ class TestSubIso {
     }
 
     // after finish
-    cout << "total: " << (q_cnt * q_cnt) << " / " << cnt_res1 << endl;
-    cout << "avg_sp_time: " << myStat->avg_sp_time / (g_cnt * q_cnt) << endl;
-    cout << "avg_client_time: " << myStat->avg_client_time / (g_cnt * q_cnt)
-         << endl;
-    cout << "avg_total_msg_size: "
-         << myStat->avg_client_msg_size / (g_cnt * q_cnt) << endl;
+    int tt = (q_cnt * q_cnt);
+    cout << endl;
+    cout << "total: " << tt << " / " << cnt_res1 << endl;
+    cout << "avg_cr_cnt: " << myStat->avg_cr_cnt / tt << endl;
+    cout << "avg_cr_cnt_predict: " << myStat->avg_cr_cnt_predict / tt << endl;
+    cout << "avg_cm_cnt: " << myStat->avg_cm_cnt / tt << endl;
+    cout << "avg_cm_cnt_prune: " << myStat->avg_cm_cnt_prune / tt << endl;
+    cout << "avg_sp_time: " << myStat->avg_sp_time / tt << endl;
+    cout << "avg_client_time: " << myStat->avg_client_time / tt << endl;
+    cout << "avg_total_msg_size: " << myStat->avg_client_msg_size / tt << endl;
 
     delete myStat;
   }

@@ -22,10 +22,27 @@ double gettime (clock_t s, clock_t e) {
   return ((double)(e - s)) / CLOCKS_PER_SEC;
 }
 
-long long sumUpVertexLabelCnt(VertexLabelMapCnt _a) {
+long long sumUpVertexLabelCnt(VertexLabelMapCnt _a, VertexLabelMapCnt _b) {
   long long res = 1;
   for (VertexLabelMapCnt::iterator it = _a.begin(); it != _a.end(); it++) {
-    res *= it->second;
+    res *= permutation(_a[it->first], _b[it->first]);
   }
   return res;
+}
+
+long long permutation(int k, int n) {
+  ASSERT(k <= n);
+  int f = 1;
+  for (int i = n; i >= (n - k + 1); i--) {
+    f = f * i;
+  }
+  return f;
+}
+
+long long factorial(int r) {
+  int f = 1;
+  for (int i = 2; i <= r; i++) {
+    f = f * i;
+  }
+  return f;
 }

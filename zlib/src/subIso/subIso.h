@@ -21,12 +21,11 @@ class SubIso {
   GRAPH* g;
   bool response;
   int tree_height;
-  int cnt_cm;
-  STAT* myStat;
+
+  Cache cache;
 
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;
-  Cache cache;
 
   typedef struct VERTEXWDEG {
     VertexID u;
@@ -38,6 +37,8 @@ class SubIso {
   } VertexWDeg;
 
  public:
+
+  STAT* myStat;
   SubIso(GRAPH* _q, GRAPH* _g);
   ~SubIso();
   void calVertexLabelMap();

@@ -29,7 +29,6 @@ SubIso::SubIso(GRAPH* _q, GRAPH* _g)
 //  cout << "tree_height: " << tree_height << endl;
 
   response = false;
-  cnt_cm = 0;
   myStat = new STAT();
 }
 
@@ -73,7 +72,6 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
 
   q->initSubIso();
   cm->initEqvCls(q->V());
-  cache.cnt_cm = cache.cnt_cr = cache.cnt_cm_p = 0;
 
 //  cout << "|CR| = " << rootVertexSet.size() << endl;
   // for each starting vertex
@@ -114,14 +112,14 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     cr->makeEmpty();
   }
 
-
-  cout << "cnt_cm: " << cnt_cm << endl;
+  cout << "cnt_cr & cnt_cm: " << myStat->cr_cnt << " : " << myStat->cm_cnt
+       << endl;
+  cout << "cr_cnt_predict: " << myStat->cr_cnt_predict << endl;
   cout << "cr_time: " << myStat->cr_time << endl;
   cout << "cm_time: " << myStat->cm_time << endl;
   cout << "enum_cm_time: " << myStat->enum_cm_time << endl;
 //  cout << "decomp_cm_time: " << myStat->decomp_cm_time << endl;
   cout << "match_time: " << myStat->match_time << endl;
-
 
   q->clearSubIso();
   cm->clearEqvCls();
@@ -165,6 +163,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // (2) need to re-set the r_vertex
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
+  myStat->cr_cnt++;
 //  if (!predictCR(cr, 100000)) {
 //    cout << "---------skipped!-------" << endl;
 //    return false;
@@ -190,9 +189,10 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
 //  printHashTableTT(cr->vlabels_map_cnt);
 
-  if (!predictCR(cr, 10000)) {
+  if (!predictCR(cr, 100000)) {
 //    cout << "---------skipped!-------" << endl;
-//    return false;
+    myStat->cr_cnt_predict++;
+    return false;
   }
 
   return true;
@@ -200,8 +200,14 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 
 bool SubIso::predictCR(GRAPH* cr, long long limit) {
   cr->setVertexLabelMapCnt();
-  long long cnt = sumUpVertexLabelCnt(cr->vlabels_map_cnt);
-  cout << "predict: " << cnt << endl;
+  q->setVertexLabelMapCnt();
+
+  long long cnt = sumUpVertexLabelCnt(q->vlabels_map_cnt, cr->vlabels_map_cnt);
+
+//  cout << "predict: " << cnt << endl;
+//  cout << "detailed:" << endl;
+//  printHashTableTT(cr->vlabels_map_cnt);
+//  cout << endl;
   if (cnt > limit) {
     return false;
   } else {
@@ -419,16 +425,16 @@ void SubIso::genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canMatVertex,
     // as the size of canMatVertex is small, e.g., 10
     cr->getInducedSubGraph(canMatVertex, cm);
 
-    cnt_cm++;
+    myStat->cm_cnt++;
     // if cm is judged before by minDFSCode
     if (!isCanMatChecked(cm)) {
 //      cout << "!!!!!!!!!!!! cm is checked !!!!!!!!!!! " << endl;
       cm->makeEmpty();
-//      cout << "-" << cache.cnt_cm_p++ << endl;
+      myStat->cm_cnt_prune++;
+//      cout << "-" << myStat->cm_cnt_prune << endl;
       return;
     }
 
-//    cout << "+" << cache.cnt_cm++ << endl;
     // generate equivalent class of cm
     cm->resetEqvCls();
     cm->genEqvCls();
