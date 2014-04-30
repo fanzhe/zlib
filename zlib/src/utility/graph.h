@@ -10,6 +10,8 @@
 
 #include "GlobalDefinition.h"
 #include "DisjointSets.h"
+#include "utilityFunction.h"
+
 #include "../subIso/cache.h"
 
 #include "../vflib/argedit.h"

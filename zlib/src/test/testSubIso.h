@@ -6,6 +6,7 @@
 #include "../utility/graph.h"
 #include "../utility/myStat.h"
 #include "../subIso/subIso.h"
+#include "../utility/OutputWriter.h"
 
 class TestSubIso {
  public:
@@ -82,7 +83,8 @@ class TestSubIso {
     cout << "total: " << cnt_res1 << " vs. " << cnt_res2 << endl;
   }
 
-  void testSubIso() {
+  void testSubIso(const char* detailed_result, const char* avg_result) {
+    OutputWriter* writer = new OutputWriter(detailed_result, avg_result);
     STAT* myStat = new STAT();
 
     for (int i = 0; i < q_cnt; i++) {
@@ -106,43 +108,55 @@ class TestSubIso {
         clock_t _s = clock();
         bool res1 = subIso->isSubIso();
         clock_t _e = clock();
-        myStat->avg_sp_time += gettime(_s, _e);
+        subIso->myStat->each_tt_time = gettime(_s, _e);
 
+        myStat->avg_total_time += subIso->myStat->each_tt_time + q->myStat->encrypt_time;
+        myStat->avg_sp_time += subIso->myStat->each_tt_time - q->myStat->decrypt_time;
         myStat->avg_client_time += q->myStat->encrypt_time
             + q->myStat->decrypt_time;
+        myStat->avg_cr_time += subIso->myStat->cr_time;
+        myStat->avg_cm_time += subIso->myStat->cm_time;
+        myStat->avg_canon_cm_time += subIso->myStat->canon_cm_time;
+        myStat->avg_decomp_cm_time += subIso->myStat->decomp_cm_time;
+        myStat->avg_match_time += subIso->myStat->match_time;
+        myStat->avg_isSubgraphOf2e_time += subIso->myStat->isSubgraphOf2e_time;
+        myStat->avg_mul_add_time += subIso->myStat->mul_add_time;
+
+        myStat->avg_org_psb_map_cnt += q->myStat->org_psb_map_cnt;
+        myStat->avg_red_psb_map_cnt += q->myStat->red_psb_map_cnt;
         myStat->avg_client_msg_size += q->myStat->encypted_msg_cnt;
+
         myStat->avg_cm_cnt += subIso->myStat->cm_cnt;
         myStat->avg_cm_cnt_prune += subIso->myStat->cm_cnt_prune;
         myStat->avg_cr_cnt += subIso->myStat->cr_cnt;
         myStat->avg_cr_cnt_predict += subIso->myStat->cr_cnt_predict;
 
-        cout << "decrypt_time: " << q->myStat->decrypt_time << endl;
-        cout << "isSubgraphOf2e_time: " << q->myStat->isSubgraphOf2e_time
-             << endl;
-        cout << "mul_add_time: " << q->myStat->mul_add_time << endl;
+        myStat->avg_org_cr_v += subIso->myStat->org_cr_v;
+        myStat->avg_org_cr_e += subIso->myStat->org_cr_e;
+        myStat->avg_red_cr_v += subIso->myStat->red_cr_v;
+        myStat->avg_red_cr_e += subIso->myStat->red_cr_e;
+        myStat->avg_nec_effect_v += subIso->myStat->nec_effect_v;
+        myStat->avg_nec_effect_e += subIso->myStat->nec_effect_e;
+        myStat->avg_nc_effect_v += subIso->myStat->nc_effect_v;
+        myStat->avg_nc_effect_e += subIso->myStat->nc_effect_e;
 
-        q->myStat->reset();
+        writer->writeDetailsubIsoResult(subIso->myStat);
+        writer->writeDetailMatchResult(q->myStat);
 
         if (res1) {
           cnt_res1++;
         }
+
+        q->myStat->reset();
         delete subIso;
       }
 
       q->encryptFree();
     }
 
-    // after finish
-    int tt = (q_cnt * q_cnt);
-    cout << endl;
-    cout << "total: " << tt << " / " << cnt_res1 << endl;
-    cout << "avg_cr_cnt: " << myStat->avg_cr_cnt / tt << endl;
-    cout << "avg_cr_cnt_predict: " << myStat->avg_cr_cnt_predict / tt << endl;
-    cout << "avg_cm_cnt: " << myStat->avg_cm_cnt / tt << endl;
-    cout << "avg_cm_cnt_prune: " << myStat->avg_cm_cnt_prune / tt << endl;
-    cout << "avg_sp_time: " << myStat->avg_sp_time / tt << endl;
-    cout << "avg_client_time: " << myStat->avg_client_time / tt << endl;
-    cout << "avg_total_msg_size: " << myStat->avg_client_msg_size / tt << endl;
+    myStat->tt = (q_cnt * g_cnt);
+    myStat->answer_cnt = cnt_res1;
+    writer->writeAvgResult(myStat);
 
     delete myStat;
   }

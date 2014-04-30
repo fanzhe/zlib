@@ -102,7 +102,6 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
 
     // TODO try a new DFS by the set of labels.
 
-//    cnt_cm = cr_time = cm_time = decomp_cm_time = match_time = enum_cm_time = 0;
 
     if (response) {
       break;
@@ -111,15 +110,6 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     // reset cr, we do not set cr's eqv. cls.
     cr->makeEmpty();
   }
-
-  cout << "cnt_cr & cnt_cm: " << myStat->cr_cnt << " : " << myStat->cm_cnt
-       << endl;
-  cout << "cr_cnt_predict: " << myStat->cr_cnt_predict << endl;
-  cout << "cr_time: " << myStat->cr_time << endl;
-  cout << "cm_time: " << myStat->cm_time << endl;
-  cout << "enum_cm_time: " << myStat->enum_cm_time << endl;
-//  cout << "decomp_cm_time: " << myStat->decomp_cm_time << endl;
-  cout << "match_time: " << myStat->match_time << endl;
 
   q->clearSubIso();
   cm->clearEqvCls();
@@ -174,20 +164,35 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
+  int cr1_v = cr->VnI();
+  int cr1_e = cr->E();
+  myStat->org_cr_v += cr1_v;
+  myStat->org_cr_e += cr1_e;
 //  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
   canRegEqvCls(cr, r_vertex);
 //  cout << " ~~~~~~~~~~ before:" << r_vertex << "~~~~~~~~~~~~~~" << endl;
 //  cr->printGraphNew(cout);
+  int cr2_v = cr->VnI();
+  int cr2_e = cr->E();
 //  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   canRegReduce(cr, r_vertex);
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
 
+  int cr3_v = cr->VnI();
+  int cr3_e = cr->E();
+  myStat->red_cr_v += cr3_v;
+  myStat->red_cr_e += cr3_e;
 //  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
 //  printHashTableTT(cr->vlabels_map_cnt);
+
+  myStat->nec_effect_v += cr1_v - cr2_v;
+  myStat->nec_effect_e += cr1_e - cr2_e;
+  myStat->nc_effect_v += cr2_v - cr3_v;
+  myStat->nc_effect_e += cr2_e - cr3_e;
 
   if (!predictCR(cr, 100000)) {
 //    cout << "---------skipped!-------" << endl;
@@ -203,6 +208,7 @@ bool SubIso::predictCR(GRAPH* cr, long long limit) {
   q->setVertexLabelMapCnt();
 
   long long cnt = sumUpVertexLabelCnt(q->vlabels_map_cnt, cr->vlabels_map_cnt);
+//  cout << cnt << endl;
 
 //  cout << "predict: " << cnt << endl;
 //  cout << "detailed:" << endl;
@@ -368,6 +374,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
 //  cout << "============= hash code ============" << endl;
 //  cout << dfs_code.hashCode() << endl;
+  _e = clock();
+  myStat->canon_cm_time += gettime(_s, _e);
 
   if (cache.ifHasCm.find(dfs_code.hashCode()) == cache.ifHasCm.end()) {
 
@@ -380,12 +388,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
     _e1 = clock();
     myStat->decomp_cm_time += gettime(_s1, _e1);
 
-    _e = clock();
-    myStat->enum_cm_time += gettime(_s, _e);
     return true;
   } else {
-    _e = clock();
-    myStat->enum_cm_time += gettime(_s, _e);
     return false;
   }
 }

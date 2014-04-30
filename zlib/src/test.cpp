@@ -64,7 +64,7 @@ void testSubIso(int argc, char** argv) {
 
   g_test->loadFromInputFile(argv[1], argv[3]);
 
-  g_test->testSubIso();
+  g_test->testSubIso(argv[5], argv[6]);
 
   delete g_test;
 }

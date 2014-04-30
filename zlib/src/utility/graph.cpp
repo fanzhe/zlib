@@ -977,6 +977,7 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g) {
 
   // okay
   if (dep == V()) {
+    myStat->red_psb_map_cnt ++;
     double _s = clock();
     isSubgraphOf2e(g);
     double _e = clock();
@@ -1036,6 +1037,9 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g) {
  */
 bool GRAPH::isSubgraphOf(GRAPH* g) {
   msg->answer = 0;
+
+  // org psb map cnt
+  myStat->org_psb_map_cnt += sumUpVertexLabelCnt(g->vlabels_map_cnt, g->vlabels_map_cnt);
 
   isSubgraphOf1(0, g);
 
