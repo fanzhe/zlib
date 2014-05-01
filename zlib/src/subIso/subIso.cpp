@@ -87,6 +87,8 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     _s = clock();
     if (!genCanReg(r_vertex, cr)) {
       cr->makeEmpty();
+      _e = clock();
+      myStat->cr_time += gettime(_s, _e);
       continue;
     }
     _e = clock();
@@ -101,7 +103,6 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     myStat->cm_time += gettime(_s, _e);
 
     // TODO try a new DFS by the set of labels.
-
 
     if (response) {
       break;
