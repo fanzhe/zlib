@@ -59,6 +59,7 @@ class TestSubIso {
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
         SubIso* subIso = new SubIso(q, g);
+//        g->printGraphNew(cout);
 
         bool res1 = subIso->isSubIso();
         if (res1) {

@@ -155,10 +155,6 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   g->getInducedSubGraph(visit_v, cr, r_vertex);
 
   myStat->cr_cnt++;
-//  if (!predictCR(cr, 100000)) {
-//    cout << "---------skipped!-------" << endl;
-//    return false;
-//  }
 
 //  cout << "root vertex: " << r_vertex << endl;
 //  cout << "************** Candidate Region: ***************" << endl;
@@ -169,7 +165,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   int cr1_e = cr->E();
   myStat->org_cr_v += cr1_v;
   myStat->org_cr_e += cr1_e;
-//  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
   canRegEqvCls(cr, r_vertex);
@@ -177,7 +173,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cr->printGraphNew(cout);
   int cr2_v = cr->VnI();
   int cr2_e = cr->E();
-//  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   canRegReduce(cr, r_vertex);
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
@@ -187,7 +183,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   int cr3_e = cr->E();
   myStat->red_cr_v += cr3_v;
   myStat->red_cr_e += cr3_e;
-//  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
 //  printHashTableTT(cr->vlabels_map_cnt);
 
   myStat->nec_effect_v += cr1_v - cr2_v;
@@ -241,60 +237,62 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
     }
     // equals to 1
 
-    cr->setVertexLabelMap();
+//    cr->setVertexLabelMap();
     set<VertexID>& _set = cr->vlabels_map[_l];
     for (set<VertexID>::iterator it1 = _set.begin(); it1 != _set.end(); it1++) {
       VertexID u = *it1;
 
-      set<VertexID> _set1;
-
-      // remove the neighbor vertex with label _l
-      for (int i = 0; i < cr->getDegree(u); i++) {
-        VertexID nu = cr->_adjList[u][i].v;
-        if (cr->getLabel(nu) != _l) {
-          _set1.insert(nu);
-        }
-      }
+      if (u == r_vertex)
+        continue;
 
       set<VertexID>::iterator it2 = it1;
       for (it2++; it2 != _set.end(); it2++) {
         VertexID v = *it2;
 
-        set<VertexID> _set2, _set3;
+        if (v == r_vertex)
+          continue;
 
-        for (int i = 0; i < cr->getDegree(v); i++) {
-          VertexID nv = cr->_adjList[v][i].v;
-          if (cr->getLabel(nv) != _l) {
-            _set2.insert(nv);
+        // if u (v) dominate v (u)
+        bool _inter = 0;
+        int ind_u = 0;
+        int ind_v = 0;
+        while (ind_u < cr->getDegree(u) && ind_v < cr->getDegree(v)) {
+          VertexID nu = cr->_adjList[u][ind_u].v;
+          VertexID nv = cr->_adjList[v][ind_v].v;
+          if (cr->getLabel(nu) == _l) {
+            ind_u++;
+            continue;
+          }
+          if (cr->getLabel(nv) == _l) {
+            ind_v++;
+            continue;
+          }
+
+          if (nu < nv) {
+            ind_u++;
+          } else if (nu > nv) {
+            ind_v++;
+          } else {
+            _inter++;
+            ind_u++;
+            ind_v++;
           }
         }
 
-        twoSetsIntersection(_set1, _set2, _set3);
-
-        if (_set1.size() == _set3.size()) {
-          if (u == r_vertex)
-            continue;
-          // remove u's edges
+        if (_inter == cr->getDegree(u)) {
+          // v dominate u
           cr->removeVexAllEdges(u);
-
-//          cout << "++++++++" << endl;
           break;
         }
-        if (_set2.size() == _set3.size()) {
-          // remove v's edges
-          if (v == r_vertex)
-            continue;
-          cr->removeVexAllEdges(v);
 
-//          cout << "-------" << endl;
+        if (_inter == cr->getDegree(v)) {
+          // u dominate v
+          cr->removeVexAllEdges(v);
           continue;
         }
       }
     }
   }
-
-  cr->setVertexLabelMap();
-  cr->setVertexLabelMapCnt();
 }
 
 void SubIso::canRegEqvCls(GRAPH* cr, VertexID& r_vertex) {
@@ -311,18 +309,20 @@ void SubIso::canRegEqvCls(GRAPH* cr, VertexID& r_vertex) {
 //  cout << "+ after: " << cr->E() << endl;
 //  printVectorSet(cr->eqv_cls);
 
-  while (cr->eqv_cls_flg == true) {
-    // re-set the paras
-    cr->resetEqvCls();
+  /*
+   while (cr->eqv_cls_flg == true) {
+   // re-set the paras
+   cr->resetEqvCls();
 
-    cr->genEqvCls();
-    q->setVertexLabelMapCnt();
-//    cout << "q: " << q->vlabels_map_cnt[11] << endl;
-//    cout << "r before: " << cr->E() << endl;
-    cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
-//    cout << "r after: " << cr->E() << endl;
-    //  printVectorSet(cr->eqv_cls);
-  }
+   cr->genEqvCls();
+   q->setVertexLabelMapCnt();
+   //    cout << "q: " << q->vlabels_map_cnt[11] << endl;
+   //    cout << "r before: " << cr->E() << endl;
+   cr->reduceByEqvCls(r_vertex, q->vlabels_map_cnt);
+   //    cout << "r after: " << cr->E() << endl;
+   //  printVectorSet(cr->eqv_cls);
+   }
+   */
 
 // clear
   cr->clearEqvCls();

@@ -1106,16 +1106,8 @@ bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
 }
 
 void GRAPH::removeVexAllEdges(VertexID u) {
-  vector<AdjElement> _local_adjList = _adjList[u];
-
-  // for all u's neighbor vertices
-  for (int i = 0; i < _local_adjList.size(); i++) {
-    VertexID v = u;
-    VertexID w = _local_adjList[i].v;
-
-    removeEdge(v, w);
-    Ecnt--;
-  }
+  Ecnt -= _adjList[u].size();
+  _adjList[u].clear();
 }
 
 void GRAPH::removeEdge(VertexID v, VertexID w) {
