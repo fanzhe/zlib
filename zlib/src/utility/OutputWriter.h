@@ -64,6 +64,11 @@ class OutputWriter {
     detailed_writer << "  cm_cnt_prune: " << myStat->cm_cnt_prune << endl;
     detailed_writer << "total_time: " << myStat->each_tt_time << endl;
     detailed_writer << "  cr_time: " << myStat->cr_time << endl;
+    detailed_writer << "    cr_bfs_time: " << myStat->cr_bfs_time << endl;
+    detailed_writer << "    cr_cont_time: " << myStat->cr_cont_time << endl;
+    detailed_writer << "    nec_time: " << myStat->nec_time << endl;
+    detailed_writer << "    nc_time: " << myStat->nc_time << endl;
+    detailed_writer << "    cr_predict_time: " << myStat->cr_predict_time << endl;
     detailed_writer << "  cm_time: " << myStat->cm_time << endl;
     detailed_writer << "    canon_cm_time: " << myStat->canon_cm_time << endl;
     detailed_writer << "    decomp_cm_time: " << myStat->decomp_cm_time << endl;
@@ -110,6 +115,11 @@ class OutputWriter {
     avg_writer << "avg_total_time: " << myStat->avg_total_time / myStat->tt << endl;
     avg_writer << "  avg_sp_time: " << myStat->avg_sp_time / myStat->tt << endl;
     avg_writer << "    avg_cr_time: " << myStat->avg_cr_time / myStat->tt << endl;
+    avg_writer << "      avg_cr_bfs_time: " << myStat->avg_cr_bfs_time /myStat->tt << endl;
+    avg_writer << "      avg_cr_cont_time: " << myStat->avg_cr_cont_time / myStat->tt << endl;
+    avg_writer << "      avg_nec_time: " << myStat->avg_nec_time / myStat->tt << endl;
+    avg_writer << "      avg_nc_time: " << myStat->avg_nc_time / myStat->tt << endl;
+    avg_writer << "      avg_cr_predict_time: " << myStat->avg_cr_predict_time / myStat->tt << endl;
     avg_writer << "    avg_cm_time: " << myStat->avg_cm_time / myStat->tt << endl;
     avg_writer << "      avg_canon_cm_time: " << myStat->avg_canon_cm_time / myStat->tt << endl;
     avg_writer << "      avg_decomp_cm_time: " << myStat->avg_decomp_cm_time / myStat->tt << endl;

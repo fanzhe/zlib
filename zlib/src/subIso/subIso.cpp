@@ -138,7 +138,10 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   q->setVertexLabelMapCnt();
   // if the # of label of r_vertex in q is 1,
   // no need to introduce other vertex with the same label
+  double _s = clock();
   g->BFSwithConst(r_vertex, tree_height, visit_v, q->vlabels_map_cnt, cache);
+  double _e = clock();
+  myStat->cr_bfs_time += gettime(_s, _e);
 
 //  cout << "|cr_i|: " << visit_v.size() << endl;
 //  printSet(visit_v);
@@ -152,7 +155,11 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // generate cr by induced subgraph of g
   // (1) already set the vertex label map
   // (2) need to re-set the r_vertex
+  _s = clock();
   g->getInducedSubGraph(visit_v, cr, r_vertex);
+  _e = clock();
+  myStat->cr_cont_time += gettime(_s, _e);
+//  cout << "..." << gettime(_s, _e) << endl;
 
   myStat->cr_cnt++;
 
@@ -165,16 +172,22 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   int cr1_e = cr->E();
   myStat->org_cr_v += cr1_v;
   myStat->org_cr_e += cr1_e;
-  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   // generate eqv_cls for cr
   // deduce the edges of cr by eqv_cls
+  _s = clock();
   canRegEqvCls(cr, r_vertex);
+  _e = clock();
+  myStat->nec_time += gettime(_s, _e);
 //  cout << " ~~~~~~~~~~ before:" << r_vertex << "~~~~~~~~~~~~~~" << endl;
 //  cr->printGraphNew(cout);
   int cr2_v = cr->VnI();
   int cr2_e = cr->E();
-  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+  _s = clock();
   canRegReduce(cr, r_vertex);
+  _e = clock();
+  myStat->nc_time += gettime(_s, _e);
 
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
@@ -183,7 +196,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   int cr3_e = cr->E();
   myStat->red_cr_v += cr3_v;
   myStat->red_cr_e += cr3_e;
-  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
+//  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
 //  printHashTableTT(cr->vlabels_map_cnt);
 
   myStat->nec_effect_v += cr1_v - cr2_v;
@@ -191,11 +204,18 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   myStat->nc_effect_v += cr2_v - cr3_v;
   myStat->nc_effect_e += cr2_e - cr3_e;
 
+  _s = clock();
   if (!predictCR(cr, 100000)) {
 //    cout << "---------skipped!-------" << endl;
     myStat->cr_cnt_predict++;
+
+    _e = clock();
+    myStat->cr_predict_time = gettime(_s, _e);
     return false;
   }
+
+  _e = clock();
+  myStat->cr_predict_time = gettime(_s, _e);
 
   return true;
 }
@@ -253,18 +273,22 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
           continue;
 
         // if u (v) dominate v (u)
-        bool _inter = 0;
+        int _inter = 0;
         int ind_u = 0;
         int ind_v = 0;
+        int diff_l_u_cnt = 0;
+        int diff_l_v_cnt = 0;
         while (ind_u < cr->getDegree(u) && ind_v < cr->getDegree(v)) {
           VertexID nu = cr->_adjList[u][ind_u].v;
           VertexID nv = cr->_adjList[v][ind_v].v;
           if (cr->getLabel(nu) == _l) {
             ind_u++;
+            diff_l_u_cnt++;
             continue;
           }
           if (cr->getLabel(nv) == _l) {
             ind_v++;
+            diff_l_v_cnt++;
             continue;
           }
 
@@ -279,13 +303,13 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
           }
         }
 
-        if (_inter == cr->getDegree(u)) {
+        if (_inter == (cr->getDegree(u) - diff_l_u_cnt)) {
           // v dominate u
           cr->removeVexAllEdges(u);
           break;
         }
 
-        if (_inter == cr->getDegree(v)) {
+        if (_inter == (cr->getDegree(v) - diff_l_v_cnt)) {
           // u dominate v
           cr->removeVexAllEdges(v);
           continue;

@@ -977,7 +977,7 @@ void GRAPH::isSubgraphOf1(int dep, GRAPH* g) {
 
   // okay
   if (dep == V()) {
-    myStat->red_psb_map_cnt ++;
+    myStat->red_psb_map_cnt++;
     double _s = clock();
     isSubgraphOf2e(g);
     double _e = clock();
@@ -1039,7 +1039,8 @@ bool GRAPH::isSubgraphOf(GRAPH* g) {
   msg->answer = 0;
 
   // org psb map cnt
-  myStat->org_psb_map_cnt += sumUpVertexLabelCnt(g->vlabels_map_cnt, g->vlabels_map_cnt);
+  myStat->org_psb_map_cnt += sumUpVertexLabelCnt(g->vlabels_map_cnt,
+                                                 g->vlabels_map_cnt);
 
   isSubgraphOf1(0, g);
 
@@ -1107,6 +1108,19 @@ bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
 
 void GRAPH::removeVexAllEdges(VertexID u) {
   Ecnt -= _adjList[u].size();
+
+  for (int i = 0; i < _adjList[u].size(); i++) {
+    VertexID w = _adjList[u][i].v;
+
+    for (vector<AdjElement>::iterator it = _adjList[w].begin();
+        it != _adjList[w].end(); it++) {
+      if ((*it).v == u) {
+        _adjList[w].erase(it);
+        break;
+      }
+    }
+  }
+
   _adjList[u].clear();
 }
 
@@ -1222,7 +1236,7 @@ void GRAPH::finalDecrypt() {
     }
   }
 
-  myStat->encypted_msg_cnt ++;
+  myStat->encypted_msg_cnt++;
 }
 
 void GRAPH::decrypt() {
@@ -1232,7 +1246,7 @@ void GRAPH::decrypt() {
       msg->resetRk();
       msg->cnt = 0;
 
-      myStat->encypted_msg_cnt ++;
+      myStat->encypted_msg_cnt++;
 
       if (!cgbe->isZero(msg->R)) {
         msg->answer = 1;
@@ -1244,7 +1258,7 @@ void GRAPH::decrypt() {
       msg->cnt = 0;
       msg->resetRk();
 
-      myStat->encypted_msg_cnt ++;
+      myStat->encypted_msg_cnt++;
 
       if (cgbe->isZero(msg->R)) {
         msg->answer = 1;

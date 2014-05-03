@@ -28,6 +28,11 @@ class STAT {
   double red_psb_map_cnt;
 
   double cr_time;
+  double cr_bfs_time;
+  double cr_cont_time;
+  double nec_time;
+  double nc_time;
+  double cr_predict_time;
   double cm_time;
   double match_time;
   double canon_cm_time;
@@ -60,6 +65,11 @@ class STAT {
   double avg_total_time;
   double avg_sp_time;
   double avg_cr_time;
+  double avg_cr_bfs_time;
+  double avg_cr_cont_time;
+  double avg_cr_predict_time;
+  double avg_nec_time;
+  double avg_nc_time;
   double avg_cm_time;
   double avg_canon_cm_time;
   double avg_decomp_cm_time;
@@ -77,6 +87,10 @@ class STAT {
   double encypted_msg_cnt;
 
   STAT() {
+    cr_cont_time = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
+    cr_predict_time = avg_cr_predict_time = 0;
+    nec_time = nc_time = 0;
+    avg_nec_time = avg_nc_time = 0;
     org_psb_map_cnt = red_psb_map_cnt = avg_org_psb_map_cnt =
         avg_red_psb_map_cnt = 0;
     org_cr_v = org_cr_e = red_cr_v = red_cr_e = avg_org_cr_v = avg_org_cr_e =
@@ -98,6 +112,10 @@ class STAT {
   }
 
   void reset() {
+    cr_cont_time = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
+    cr_predict_time = avg_cr_predict_time = 0;
+    nec_time = nc_time = 0;
+    avg_nec_time = avg_nc_time = 0;
     org_psb_map_cnt = red_psb_map_cnt = avg_org_psb_map_cnt =
         avg_red_psb_map_cnt = 0;
     org_cr_v = org_cr_e = red_cr_v = red_cr_e = avg_org_cr_v = avg_org_cr_e =

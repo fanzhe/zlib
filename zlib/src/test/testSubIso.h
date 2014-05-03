@@ -116,6 +116,11 @@ class TestSubIso {
         myStat->avg_client_time += q->myStat->encrypt_time
             + q->myStat->decrypt_time;
         myStat->avg_cr_time += subIso->myStat->cr_time;
+        myStat->avg_cr_bfs_time += subIso->myStat->cr_bfs_time;
+        myStat->avg_cr_cont_time += subIso->myStat->cr_cont_time;
+        myStat->avg_nec_time += subIso->myStat->nec_time;
+        myStat->avg_nc_time += subIso->myStat->nc_time;
+        myStat->avg_cr_predict_time += subIso->myStat->cr_predict_time;
         myStat->avg_cm_time += subIso->myStat->cm_time;
         myStat->avg_canon_cm_time += subIso->myStat->canon_cm_time;
         myStat->avg_decomp_cm_time += subIso->myStat->decomp_cm_time;
