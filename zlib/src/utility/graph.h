@@ -27,6 +27,7 @@
 #include "../crypto/bigMatrix.h"
 #include "../crypto/cgbe.h"
 #include "../crypto/message.h"
+#include "SimpleGraph.h"
 
 using namespace std;
 
@@ -76,6 +77,10 @@ class AdjElement {
   EdgeID eid;
   EdgeLabel elabel;
 
+  AdjElement() {
+    v = eid = elabel = -1;
+  }
+
   AdjElement(VertexID v, EdgeID eid, EdgeLabel _elabel)
       : v(v),
         eid(eid),
@@ -111,7 +116,6 @@ class GRAPH {
   DisjointSets* eqv_cls_aux;
   bool eqv_cls_flg;
   // -------------------------------------
-
 
   // -------- Encryption for query --------
   CGBE * cgbe;
@@ -157,6 +161,7 @@ class GRAPH {
   VertexLabel getLabel(VertexID v);
   EdgeLabel getELabel(VertexID u, VertexID v) const;
 
+  void insert(EdgeID _e_id, VertexID _u, VertexID _v, EdgeLabel _l);
   void insert(Edge e);
   bool edge(VertexID v, VertexID w);
   int getDegree(VertexID v);
@@ -175,9 +180,12 @@ class GRAPH {
   void BFS(VertexID start_v, int lens, set<int>& visit_v);
   void BFSwithSpecVcnt(VertexID start_v, int vcnt, set<VertexID>& visit_v);
   void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
-                    VertexLabelMapCnt& _vertex_label_map_cnt,
+                    int& edge_cnt, VertexLabelMapCnt& _vertex_label_map_cnt,
                     Cache& cache);
-  void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _g, VertexID& r_vertex);
+  void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
+                    VertexLabelMapCnt& _vertex_label_map_cnt, Cache& cache);
+  void collectSimpleGraph(SIMPLEGRAPH& crv);
+  void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _g, VertexID& r_vertex, STAT* _myStat = NULL);
   void getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _g);
   void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g);
 
@@ -206,9 +214,14 @@ class GRAPH {
   };
 
   // for generating equivalent class
-  void reduceByEqvCls(VertexID& r_vertex, VertexLabelMapCnt& _vertex_label_map_cnt);
+  void reduceByEqvCls(VertexID& r_vertex,
+                      VertexLabelMapCnt& _vertex_label_map_cnt);
+  void reduceByEqvCls(VertexID& r_vertex, SIMPLEGRAPH& simple_graph,
+                             VertexLabelMapCnt& _vertex_label_map_cnt);
   void genEqvCls();
+  void genEqvCls(SIMPLEGRAPH& simple_graph);
   bool shareSameNeighbor(VertexID u, VertexID v);
+  bool shareSameNeighbor(VertexID u, VertexID v, SIMPLEGRAPH& simple_graph);
   void updateEqvCls(VertexID u, VertexID v);
   void resetEqvCls();
   void clearEqvCls();

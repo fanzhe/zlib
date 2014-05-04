@@ -30,6 +30,8 @@ class STAT {
   double cr_time;
   double cr_bfs_time;
   double cr_cont_time;
+  double cr_cont_time_1;
+  double cr_cont_time_2;
   double nec_time;
   double nc_time;
   double cr_predict_time;
@@ -87,7 +89,7 @@ class STAT {
   double encypted_msg_cnt;
 
   STAT() {
-    cr_cont_time = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
+    cr_cont_time = cr_cont_time_1 = cr_cont_time_2 = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
     cr_predict_time = avg_cr_predict_time = 0;
     nec_time = nc_time = 0;
     avg_nec_time = avg_nc_time = 0;
@@ -112,7 +114,7 @@ class STAT {
   }
 
   void reset() {
-    cr_cont_time = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
+    cr_cont_time = cr_cont_time_1 = cr_cont_time_2 = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
     cr_predict_time = avg_cr_predict_time = 0;
     nec_time = nc_time = 0;
     avg_nec_time = avg_nc_time = 0;

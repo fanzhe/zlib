@@ -66,6 +66,8 @@ class OutputWriter {
     detailed_writer << "  cr_time: " << myStat->cr_time << endl;
     detailed_writer << "    cr_bfs_time: " << myStat->cr_bfs_time << endl;
     detailed_writer << "    cr_cont_time: " << myStat->cr_cont_time << endl;
+    detailed_writer << "      cr_cont_time_1: " << myStat->cr_cont_time_1 << endl;
+    detailed_writer << "      cr_cont_time_2: " << myStat->cr_cont_time_2 << endl;
     detailed_writer << "    nec_time: " << myStat->nec_time << endl;
     detailed_writer << "    nc_time: " << myStat->nc_time << endl;
     detailed_writer << "    cr_predict_time: " << myStat->cr_predict_time << endl;

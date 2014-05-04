@@ -183,6 +183,12 @@ EdgeLabel GRAPH::getELabel(VertexID u, VertexID v) const {
 #endif
 }
 
+void GRAPH::insert(EdgeID _e_id, VertexID _u, VertexID _v, EdgeLabel _l) {
+  _adjList[_u].push_back(AdjElement(_v, _e_id, _l));
+  _adjList[_v].push_back(AdjElement(_u, _e_id, _l));
+  Ecnt++;
+}
+
 void GRAPH::insert(Edge e) {
   VertexID v = e.v, w = e.w;
 #ifdef ADJMATRIX
@@ -395,6 +401,101 @@ VertexID GRAPH::getMinTreeHeight() {
 }
 
 void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
+                         int& edge_cnt,
+                         VertexLabelMapCnt& _vertex_label_map_cnt,
+                         Cache& cache) {
+//  cout << "start BFS new " << endl;
+//  cout << "hop size " << hops << endl;
+
+  VertexLabel _start_v_l = _vlabels[start_v];
+  bool isSingle = false;
+  if (_vertex_label_map_cnt[_start_v_l] == 1) {
+    isSingle = true;
+  }
+  _vertex_label_map_cnt[_start_v_l]--;
+
+  unordered_map<VertexID, int> map_hop;
+  queue<int> nodes;
+
+  visit_v.insert(start_v);
+  nodes.push(start_v);
+  map_hop[start_v] = 0;
+
+  // for each node v
+  while (!nodes.empty()) {
+    int v = nodes.front();
+    nodes.pop();
+
+    if (map_hop[v] == hops)
+      continue;
+
+    // for each incident node u of v
+    for (int j = 0; j < getDegree(v); j++) {
+      int u = _adjList[v][j].v;
+
+      // u is visited
+      if (map_hop.find(u) != map_hop.end()) {
+        continue;
+      }
+
+      // u's label is not contained
+      VertexLabel _u_l = _vlabels[u];
+      if (_vertex_label_map_cnt.find(_u_l) == _vertex_label_map_cnt.end()) {
+        continue;
+      }
+
+      // single
+      if (isSingle == true && _u_l == _start_v_l) {
+        continue;
+      }
+
+      // u is the root vertex of previous matching
+      if (cache.ifRootVertex.find(u) != cache.ifRootVertex.end()) {
+        continue;
+      }
+
+      // update the label map cnt
+      if (_vertex_label_map_cnt[_u_l] > 0) {
+        _vertex_label_map_cnt[_u_l]--;
+      }
+
+      // u is what we want,
+      // add u to next_nodes for iteration
+      visit_v.insert(u);
+      edge_cnt++;
+      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
+    }
+  }
+//  cout << "end BFS new" << endl;
+}
+
+void GRAPH::collectSimpleGraph(SIMPLEGRAPH& crv) {
+  int new_id = 0;
+  for (set<VertexID>::iterator it = crv.vertex_set.begin();
+      it != crv.vertex_set.end(); it++) {
+    VertexID u = *it;
+
+    crv.label_to_vertex[getLabel(u)].insert(u);
+    crv.old_to_new[u] = new_id;
+    crv.new_to_old[new_id] = u;
+    new_id++;
+
+    // for each u's neighbor v
+    for (int i = 0; i < getDegree(u); i++) {
+      VertexID v = _adjList[u][i].v;
+
+      // v is in set vertex
+      if (u > v && crv.vertex_set.find(v) != crv.vertex_set.end()) {
+        crv.edge_cnt++;
+        crv.addDeg(u);
+        crv.addDeg(v);
+      }
+    }
+  }
+}
+
+void GRAPH::BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                          VertexLabelMapCnt& _vertex_label_map_cnt,
                          Cache& cache) {
 //  cout << "start BFS new " << endl;
@@ -548,14 +649,13 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g) {
   int e_id = 0;
   for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
-    for (set<VertexID>::iterator it1 = vertex.begin(); it1 != vertex.end();
-        it1++) {
-      VertexID v = *it1;
-      if (!edge(u, v) || u <= v)
+    for (int i = 0; i < getDegree(u); i++) {
+      VertexID v = _adjList[u][i].v;
+      VertexLabel vl = _adjList[u][i].elabel;
+      if (u <= v || vertex.find(v) == vertex.end())
         continue;
 
-      _ind_g->insert(
-          Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+      _ind_g->insert(e_id++, g_to_ind_v[u], g_to_ind_v[v], vl);
     }
   }
 
@@ -584,14 +684,13 @@ void GRAPH::getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _ind_g) {
   for (vector<VertexID>::iterator it = vertex.begin(); it != vertex.end();
       it++) {
     VertexID u = *it;
-    for (vector<VertexID>::iterator it1 = vertex.begin(); it1 != vertex.end();
-        it1++) {
-      VertexID v = *it1;
-      if (!edge(u, v) || u <= v)
+    for (int i = 0; i < getDegree(u); i++) {
+      VertexID v = _adjList[u][i].v;
+      VertexLabel vl = _adjList[u][i].elabel;
+      if (u <= v || !isInVector(v, vertex))
         continue;
 
-      _ind_g->insert(
-          Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
+      _ind_g->insert(e_id++, g_to_ind_v[u], g_to_ind_v[v], vl);
     }
   }
 
@@ -601,11 +700,12 @@ void GRAPH::getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _ind_g) {
 }
 
 void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
-                               VertexID& r_vertex) {
+                               VertexID& r_vertex, STAT* _myStat) {
   int _ind_g_s = vertex.size();
   _ind_g->setV(_ind_g_s);
   VertexID _r_vertex = r_vertex;
 
+  double _s = clock();
   // set vertex
   VertexID _new_v_id = 0;
   unordered_map<VertexID, VertexID> g_to_ind_v;
@@ -620,7 +720,10 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
 
     _ind_g->setLabel(_new_v_id++, u_l);
   }
+  double _e = clock();
+  _myStat->cr_cont_time_1 += gettime(_s, _e);
 
+  _s = clock();
   // set edge
   int e_id = 0;
   for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
@@ -629,25 +732,16 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
     // for each u's neighbor v
     for (int i = 0; i < getDegree(u); i++) {
       VertexID v = _adjList[u][i].v;
-      // v is in set vertex
-      if (vertex.find(v) != vertex.end()) {
-        // (u, v) is not inserted in _ind_g
-        if (!_ind_g->edge(g_to_ind_v[u], g_to_ind_v[v])) {
-          _ind_g->insert(
-              Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
-        }
+      VertexLabel vl = _adjList[u][i].elabel;
+      // u > v, and u is in set vertex
+      if (u <= v || vertex.find(v) == vertex.end()) {
+        continue;
       }
+      _ind_g->insert(e_id++, g_to_ind_v[u], g_to_ind_v[v], vl);
     }
-
-//    for (set<int>::iterator it1 = vertex.begin(); it1 != vertex.end(); it1++) {
-//      VertexID v = *it1;
-//      if (!edge(u, v) || u <= v)
-//        continue;
-//
-//      _ind_g->insert(
-//          Edge(e_id++, g_to_ind_v[u], g_to_ind_v[v], getELabel(u, v)));
-//    }
   }
+  _e = clock();
+  _myStat->cr_cont_time_2 += gettime(_s, _e);
 
   // set the vertex label map of the induced subgraph
   _ind_g->setVertexLabelMap();
@@ -748,6 +842,43 @@ void GRAPH::initEqvCls(int _size) {
   eqv_cls_flg = false;
 }
 
+bool GRAPH::shareSameNeighbor(VertexID u, VertexID v,
+                              SIMPLEGRAPH& simple_graph) {
+  if (simple_graph.vertex_deg[u] == 0 || simple_graph.vertex_deg[v] == 0) {
+    return false;
+  }
+
+  if (simple_graph.vertex_deg[u] != simple_graph.vertex_deg[v]) {
+    return false;
+  }
+
+  for (int i = 0; i < getDegree(u); i++) {
+    VertexID nu = _adjList[u][i].v;
+    if (!simple_graph.vIsIn(nu)) {
+      continue;
+    }
+
+    bool flg = false;
+    for (int j = 0; j < getDegree(v); j++) {
+      VertexID nv = _adjList[v][j].v;
+      if (!simple_graph.vIsIn(nv)) {
+        continue;
+      }
+
+      if (nu == nv || nu == v) {
+        flg = true;
+        break;
+      }
+    }
+
+    if (flg == false) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool GRAPH::shareSameNeighbor(VertexID u, VertexID v) {
   if (getDegree(u) == 0 || getDegree(v) == 0) {
     return false;
@@ -796,6 +927,69 @@ void GRAPH::updateEqvCls(VertexID u, VertexID v) {
     if (*it != u && *it != v) {
 //      cout << "*it: " << *it << ", u: " << u << endl;
       updateEqvCls(*it, u);
+    }
+  }
+}
+
+void GRAPH::reduceByEqvCls(VertexID& old_r_vertex, SIMPLEGRAPH& simple_graph,
+                           VertexLabelMapCnt& _vertex_label_map_cnt) {
+  ASSERT(eqv_cls.size() == simple_graph.vertex_set.size());
+  ASSERT(eqv_cls_aux->NumElements() == simple_graph.vertex_set.size());
+
+  VertexID new_r_vertex = simple_graph.old_to_new[old_r_vertex];
+
+  unordered_map<VertexID, set<VertexID> > _map;
+  for (set<VertexID>::iterator it = simple_graph.vertex_set.begin();
+      it != simple_graph.vertex_set.end(); it++) {
+    VertexID old_u = *it;
+    VertexID new_u = simple_graph.old_to_new[old_u];
+
+    _map[eqv_cls_aux->FindSet(new_u)].insert(new_u);
+  }
+
+  // for each disjoint set
+  for (unordered_map<VertexID, set<VertexID> >::iterator it = _map.begin();
+      it != _map.end(); it++) {
+    VertexID _root = it->first;
+    set<VertexID>& _ds = it->second;
+    int _lable_cnt = _vertex_label_map_cnt[getLabel(_root)];
+    bool _is = false;
+
+    // disjoint set size is smaller
+    if (_ds.size() < _lable_cnt)
+      continue;
+
+    // r_vertex is in this disjoint set
+    if (_ds.find(new_r_vertex) != _ds.end())
+      _is = true;
+
+    // remove
+    int _rm_cnt = 0;
+    for (set<VertexID>::iterator it1 = _ds.begin(); it1 != _ds.end(); it1++) {
+      VertexID new_u = *it1;
+      VertexID old_u = simple_graph.new_to_old[new_u];
+
+      if (_ds.size() - _rm_cnt == _lable_cnt) {
+        break;
+      } else {
+
+        if (new_u == _root)
+          continue;
+
+        // remove all u's edges
+        simple_graph.remove_vertex(old_u);
+
+        // update
+        eqv_cls_flg = true;
+
+        // removed
+        _rm_cnt++;
+      }
+    }
+
+    // re-set r_vertex
+    if (_is) {
+      old_r_vertex = simple_graph.new_to_old[_root];
     }
   }
 }
@@ -854,6 +1048,73 @@ void GRAPH::reduceByEqvCls(VertexID& r_vertex,
   }
 }
 
+void GRAPH::genEqvCls(SIMPLEGRAPH& simple_g) {
+  set<VertexID>& vertex_set = simple_g.vertex_set;
+
+  ASSERT(eqv_cls.size() == vertex_set.size());
+  ASSERT(eqv_cls_aux->NumElements() == vertex_set.size());
+
+  // initialize eqv_cls
+  for (set<VertexID>::iterator it = vertex_set.begin(); it != vertex_set.end();
+      it++) {
+    VertexID new_u = simple_g.old_to_new[*it];
+    eqv_cls[new_u].insert(new_u);
+  }
+
+  // bigO(Deg*V)
+  for (set<VertexID>::iterator it = vertex_set.begin(); it != vertex_set.end();
+      it++) {
+    VertexID old_u = *it;
+    VertexID new_u = simple_g.old_to_new[old_u];
+
+    for (int j = 0; j < getDegree(old_u); j++) {
+      VertexID old_v = _adjList[old_u][j].v;
+      VertexID new_v = simple_g.old_to_new[old_v];
+
+      if (!simple_g.vIsIn(old_v)) {
+        continue;
+      }
+
+      // u and v share the same label
+      // note the order
+      if (old_u > old_v || getLabel(old_u) != getLabel(old_v)) {
+        continue;
+      }
+
+      // u and v share the same neighbor vertexes
+      if (shareSameNeighbor(old_u, old_v, simple_g)) {
+//        updateEqvCls(u, v);
+        eqv_cls_aux->Union(eqv_cls_aux->FindSet(new_u),
+                           eqv_cls_aux->FindSet(new_v));
+      } else {
+        continue;
+      }
+    }
+  }
+
+  // collect equivalent class
+  unordered_map<VertexID, set<VertexID> > _map;
+  for (set<VertexID>::iterator it = vertex_set.begin(); it != vertex_set.end();
+      it++) {
+    VertexID old_u = *it;
+    VertexID new_u = simple_g.old_to_new[old_u];
+    _map[eqv_cls_aux->FindSet(new_u)].insert(new_u);
+  }
+
+  for (set<VertexID>::iterator it = vertex_set.begin(); it != vertex_set.end();
+      it++) {
+    VertexID old_u = *it;
+    VertexID new_u = simple_g.old_to_new[old_u];
+    for (set<VertexID>::iterator it1 =
+        _map[eqv_cls_aux->FindSet(new_u)].begin();
+        it1 != _map[eqv_cls_aux->FindSet(new_u)].end(); it1++) {
+      VertexID new_v = *it1;
+      eqv_cls[new_u].insert(new_v);
+    }
+  }
+
+}
+
 void GRAPH::genEqvCls() {
   ASSERT(eqv_cls.size() == V());
   ASSERT(eqv_cls_aux->NumElements() == V());
@@ -863,23 +1124,32 @@ void GRAPH::genEqvCls() {
     eqv_cls[i].insert(i);
   }
 
-  // bigO(Deg*V)
-  for (int i = 0; i < V(); i++) {
-    VertexID u = i;
-    for (int j = 0; j < getDegree(u); j++) {
-      VertexID v = _adjList[u][j].v;
+  // for each label _l
+  for (VertexLabelMapCnt::iterator it = vlabels_map_cnt.begin();
+      it != vlabels_map_cnt.end(); it++) {
+    VertexLabel _l = it->first;
 
-      // u and v share the same label
-      // note the order
-      if (u > v || getLabel(u) != getLabel(v))
-        continue;
+    set<VertexID>& _set = vlabels_map[_l];
 
-      // u and v share the same neighbor vertexes
-      if (shareSameNeighbor(u, v)) {
-//        updateEqvCls(u, v);
-        eqv_cls_aux->Union(eqv_cls_aux->FindSet(u), eqv_cls_aux->FindSet(v));
-      } else {
-        continue;
+    // for each vertex u
+    for (set<VertexID>::iterator it1 = _set.begin(); it1 != _set.end(); it1++) {
+      VertexID u = *it1;
+
+      // for each vertex v
+      set<VertexID>::iterator it2 = it1;
+      for (it2++; it2 != _set.end(); it2++) {
+        VertexID v = *it2;
+        if (getLabel(u) != getLabel(v))
+          continue;
+
+        // u and v share the same neighbor vertexes
+        if (shareSameNeighbor(u, v)) {
+          //        updateEqvCls(u, v);
+          eqv_cls_aux->Union(eqv_cls_aux->FindSet(u), eqv_cls_aux->FindSet(v));
+        } else {
+          continue;
+        }
+
       }
     }
   }

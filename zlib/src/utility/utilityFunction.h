@@ -33,8 +33,8 @@ void setToVector(set<T>& _set, vector<T>& _vec) {
 
 template<class T1, class T2>
 void printHashTableTT(unordered_map<T1, T2>& _map) {
-  for (typename unordered_map<T1, T2>::iterator it = _map.begin(); it != _map.end();
-      it++) {
+  for (typename unordered_map<T1, T2>::iterator it = _map.begin();
+      it != _map.end(); it++) {
     cout << it->first << " " << it->second;
     cout << endl;
   }
@@ -144,7 +144,7 @@ void vectorToString(vector<T>& _vec, int _size, string& _str) {
 }
 
 template<class T>
-void twoSetsIntersection(set<T> a, set<T> b, set<T>& c) {
+void twoSetsIntersection(set<T>& a, set<T>& b, set<T>& c) {
   typename set<T>::iterator it1 = a.begin();
   typename set<T>::iterator it2 = b.begin();
   for (; it1 != a.end() && it2 != b.end();) {
@@ -161,7 +161,7 @@ void twoSetsIntersection(set<T> a, set<T> b, set<T>& c) {
 }
 
 template<class T>
-bool twoSetsAreEqual(set<T> a, set<T> b) {
+bool twoSetsAreEqual(set<T>& a, set<T>& b) {
   if (a.size() != b.size())
     return false;
 
@@ -173,6 +173,16 @@ bool twoSetsAreEqual(set<T> a, set<T> b) {
   }
 
   return true;
+}
+
+template<class T>
+bool isInVector(T& a, vector<T>& b) {
+  for (int i = 0; i < b.size(); i++) {
+    if (b[i] == a) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void setVertexNeighborToSet(set<VertexID>& _set, VertexID v, GRAPH* g);

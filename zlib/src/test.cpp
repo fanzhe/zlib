@@ -10,6 +10,8 @@
 #include "test/testGenDataSet.h"
 #include "test/testCrypto.h"
 
+#include <vector>
+
 using namespace std;
 
 void testInput(int argc, char** argv) {
@@ -151,6 +153,15 @@ void testCrypto(int argc, char** argv) {
   TestCrypto* cryp = new TestCrypto();
 }
 
+void testPlain() {
+  vector<int> a;
+  for (int i = 0; i < 2000000; i++) {
+    a.push_back(i);
+  }
+  cout << "finish" << endl;
+  return;
+}
+
 int main(int argc, char** argv) {
 //  test VFLib
 //  testVF(argc, argv);
@@ -178,7 +189,7 @@ int main(int argc, char** argv) {
   } else if (argv[1][0] == 's') {
     testShowStat(argc - 1, argv + 1);
   } else {
-    cout << "wrong input" << endl;
+    testPlain();
   }
   return 0;
 }

@@ -6,6 +6,7 @@
 
 #include "../utility/GlobalDefinition.h"
 #include "../utility/myStat.h"
+#include "../utility/SimpleGraph.h"
 
 #include "cache.h"
 
@@ -46,9 +47,12 @@ class SubIso {
   bool isVisited(vector<int>& path, int dep, int v);
   void genAllCanReg(vector<VertexWDeg>& rootVertexSet);
   bool genCanReg(VertexID& r_vertex, GRAPH* cr);
+  bool genCanRegOpt(VertexID& r_vertex, GRAPH* cr);
   bool predictCR(GRAPH* cr, long long limit);
   void canRegEqvCls(GRAPH* cr, VertexID& r_vertex);
+  void canRegEqvClsOpt(SIMPLEGRAPH& crv, VertexID& r_vertex);
   void canRegReduce(GRAPH* cr, VertexID& r_vertex);
+  void canRegReduceOpt(SIMPLEGRAPH& crv, VertexID& r_vertex);
   void genAllCanMatch(VertexID r_vertex, GRAPH* cr, GRAPH* cm);
   void genCanMatch(int dep, GRAPH* cr, vector<VertexID>& canVertex, GRAPH* cm);
   void doMatch(GRAPH* cm);

@@ -86,6 +86,7 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     // generate cr
     _s = clock();
     if (!genCanReg(r_vertex, cr)) {
+//    if (!genCanRegOpt(r_vertex, cr)) {
       cr->makeEmpty();
       _e = clock();
       myStat->cr_time += gettime(_s, _e);
@@ -131,6 +132,83 @@ bool SubIso::isMapped(VertexLabelMapCnt& vlabels_map_cnt) {
   return true;
 }
 
+bool SubIso::genCanRegOpt(VertexID& r_vertex, GRAPH* cr) {
+  // BFS to generate can. reg. vertex set.
+  SIMPLEGRAPH crv;
+  q->setVertexLabelMapCnt();
+
+  // bfs and collect simple graph
+  double _s = clock();
+  g->BFSwithConst(r_vertex, tree_height, crv.vertex_set, q->vlabels_map_cnt,
+                  cache);
+  g->collectSimpleGraph(crv);
+  double _e = clock();
+  myStat->cr_bfs_time += gettime(_s, _e);
+
+  if (!isMapped(q->vlabels_map_cnt)) {
+    return false;
+  }
+
+  myStat->cr_cnt++;
+  // in this version, we do not generate induced subgraph
+  // we directly use nec and nc
+
+  int cr1_v = crv.vertex_set.size();
+  int cr1_e = crv.edge_cnt;
+  myStat->org_cr_v += cr1_v;
+  myStat->org_cr_e += cr1_e;
+//  cout << "1: " << cr1_v << endl;
+
+  // reduce by nec
+  _s = clock();
+  canRegEqvClsOpt(crv, r_vertex);
+  _e = clock();
+  myStat->nec_time += gettime(_s, _e);
+
+  crv.reset();
+  g->collectSimpleGraph(crv);
+  int cr2_v = crv.vertex_set.size();
+  int cr2_e = crv.edge_cnt;
+//  cout << "2: " << cr2_v << endl;
+
+  // reduce by nc
+  _s = clock();
+  canRegReduceOpt(crv, r_vertex);
+  _e = clock();
+  myStat->nc_time += gettime(_s, _e);
+
+  crv.reset();
+  g->collectSimpleGraph(crv);
+  int cr3_v = crv.vertex_set.size();
+  int cr3_e = crv.edge_cnt;
+  myStat->red_cr_v += cr3_v;
+  myStat->red_cr_e += cr3_e;
+//  cout << "3: " << cr3_v << endl;
+
+  myStat->nec_effect_v += cr1_v - cr2_v;
+  myStat->nec_effect_e += cr1_e - cr2_e;
+  myStat->nc_effect_v += cr2_v - cr3_v;
+  myStat->nc_effect_e += cr2_e - cr3_e;
+
+  // generate induced subgrpah of crv
+  g->getInducedSubGraph(crv.vertex_set, cr, r_vertex, myStat);
+
+  _s = clock();
+  if (!predictCR(cr, 100000)) {
+    //    cout << "---------skipped!-------" << endl;
+    myStat->cr_cnt_predict++;
+
+    _e = clock();
+    myStat->cr_predict_time = gettime(_s, _e);
+    return false;
+  }
+
+  _e = clock();
+  myStat->cr_predict_time = gettime(_s, _e);
+
+  return true;
+}
+
 bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 
   // BFS to gen can. reg.
@@ -156,7 +234,7 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   // (1) already set the vertex label map
   // (2) need to re-set the r_vertex
   _s = clock();
-  g->getInducedSubGraph(visit_v, cr, r_vertex);
+  g->getInducedSubGraph(visit_v, cr, r_vertex, myStat);
   _e = clock();
   myStat->cr_cont_time += gettime(_s, _e);
 //  cout << "..." << gettime(_s, _e) << endl;
@@ -238,6 +316,83 @@ bool SubIso::predictCR(GRAPH* cr, long long limit) {
   }
 }
 
+void SubIso::canRegReduceOpt(SIMPLEGRAPH& crv, VertexID& r_vertex) {
+  q->setVertexLabelMapCnt();
+
+  // for each label
+  for (VertexLabelMap::iterator it = crv.label_to_vertex.begin();
+      it != crv.label_to_vertex.end(); it++) {
+    VertexLabel _l = it->first;
+
+    // test to reduce single label, so far
+    if (q->vlabels_map_cnt[_l] != 1) {
+      continue;
+    }
+    // equals to 1
+
+    set<VertexID>& _set = crv.label_to_vertex[_l];
+    for (set<VertexID>::iterator it1 = _set.begin(); it1 != _set.end(); it1++) {
+      VertexID u = *it1;
+
+      if (u == r_vertex)
+        continue;
+
+      set<VertexID>::iterator it2 = it1;
+      for (it2++; it2 != _set.end(); it2++) {
+        VertexID v = *it2;
+
+        if (v == r_vertex)
+          continue;
+
+        // if u (v) dominate v (u)
+        int _inter = 0;
+        int ind_u = 0;
+        int ind_v = 0;
+        int diff_l_u_cnt = 0;
+        int diff_l_v_cnt = 0;
+        while (ind_u < g->getDegree(u) && ind_v < g->getDegree(v)) {
+          VertexID nu = g->_adjList[u][ind_u].v;
+          VertexID nv = g->_adjList[v][ind_v].v;
+
+          if (!crv.vIsIn(nu) || g->getLabel(nu) == _l) {
+            ind_u++;
+            diff_l_u_cnt++;
+            continue;
+          }
+          if (!crv.vIsIn(nv) || g->getLabel(nv) == _l) {
+            ind_v++;
+            diff_l_v_cnt++;
+            continue;
+          }
+
+          if (nu < nv) {
+            ind_u++;
+          } else if (nu > nv) {
+            ind_v++;
+          } else {
+            _inter++;
+            ind_u++;
+            ind_v++;
+          }
+        }
+
+        if (_inter == (g->getDegree(u) - diff_l_u_cnt)) {
+          // v dominate u
+          crv.remove_vertex(u);
+          break;
+        }
+
+        if (_inter == (g->getDegree(v) - diff_l_v_cnt)) {
+          // u dominate v
+          crv.remove_vertex(v);
+          continue;
+        }
+      }
+    }
+  }
+
+}
+
 void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
   // TODO further reduce cr.
 
@@ -317,6 +472,19 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
       }
     }
   }
+}
+
+void SubIso::canRegEqvClsOpt(SIMPLEGRAPH& crv, VertexID& r_vertex) {
+  // initialize
+  g->initEqvCls(crv.vertex_set.size());
+
+  g->genEqvCls(crv);
+
+  q->setVertexLabelMapCnt();
+
+  g->reduceByEqvCls(r_vertex, crv, q->vlabels_map_cnt);
+
+  g->clearEqvCls();
 }
 
 void SubIso::canRegEqvCls(GRAPH* cr, VertexID& r_vertex) {
