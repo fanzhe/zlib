@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <cstdio>
 
+using namespace std;
+
 class Random {
  public:
   Random() {

@@ -162,6 +162,7 @@ class GRAPH {
   EdgeLabel getELabel(VertexID u, VertexID v) const;
 
   void insert(EdgeID _e_id, VertexID _u, VertexID _v, EdgeLabel _l);
+  void insert(VertexID u, AdjElement& _adje);
   void insert(Edge e);
   bool edge(VertexID v, VertexID w);
   int getDegree(VertexID v);

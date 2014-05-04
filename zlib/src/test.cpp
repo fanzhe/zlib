@@ -101,6 +101,18 @@ void testVF(int argc, char** argv) {
   delete g_test;
 }
 
+void testTransformSNAP(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+  TestTransform* g_test = new TestTransform(atoi(argv[2]));
+
+  g_test->transformFromSNAP(argv[1], argv[3]);
+
+  delete g_test;
+}
+
 void testTransform(int argc, char** argv) {
   if (argc < 4) {
     cout << "please input" << endl;
@@ -188,6 +200,8 @@ int main(int argc, char** argv) {
     testCrypto(argc - 1, argv + 1);
   } else if (argv[1][0] == 's') {
     testShowStat(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'n' ) {
+    testTransformSNAP(argc - 1, argv + 1);
   } else {
     testPlain();
   }

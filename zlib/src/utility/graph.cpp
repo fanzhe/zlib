@@ -183,6 +183,10 @@ EdgeLabel GRAPH::getELabel(VertexID u, VertexID v) const {
 #endif
 }
 
+void GRAPH::insert(VertexID _u, AdjElement& _adje) {
+  _adjList[_u].push_back(_adje);
+}
+
 void GRAPH::insert(EdgeID _e_id, VertexID _u, VertexID _v, EdgeLabel _l) {
   _adjList[_u].push_back(AdjElement(_v, _e_id, _l));
   _adjList[_v].push_back(AdjElement(_u, _e_id, _l));
@@ -726,6 +730,7 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
   _s = clock();
   // set edge
   int e_id = 0;
+  AdjElement _adje(0, 0, 0);
   for (set<VertexID>::iterator it = vertex.begin(); it != vertex.end(); it++) {
     VertexID u = *it;
 
@@ -737,7 +742,15 @@ void GRAPH::getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g,
       if (u <= v || vertex.find(v) == vertex.end()) {
         continue;
       }
-      _ind_g->insert(e_id++, g_to_ind_v[u], g_to_ind_v[v], vl);
+//      _ind_g->insert(e_id++, g_to_ind_v[u], g_to_ind_v[v], vl);
+      _adje.eid = e_id;
+      _adje.elabel = vl;
+      _adje.v = g_to_ind_v[v];
+      _ind_g->insert(g_to_ind_v[u], _adje);
+      _adje.v = g_to_ind_v[u];
+      _ind_g->insert(g_to_ind_v[v], _adje);
+      _ind_g->Ecnt++;
+      e_id++;
     }
   }
   _e = clock();

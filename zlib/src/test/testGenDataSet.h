@@ -135,6 +135,7 @@ class TestGenDataSet {
 
   void generateQuery(GRAPH* g, GRAPH* q, int vcnt) {
     int start_v = randGen->genRanInt(g->V());
+
     set<VertexID> visit_v;
     g->BFSwithSpecVcnt(start_v, vcnt, visit_v);
     g->getInducedSubGraph(visit_v, q);
