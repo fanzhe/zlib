@@ -185,10 +185,10 @@ bool SubIso::genCanRegOpt(VertexID& r_vertex, GRAPH* cr) {
   myStat->red_cr_e += cr3_e;
 //  cout << "3: " << cr3_v << endl;
 
-  myStat->nec_effect_v += cr1_v - cr2_v;
-  myStat->nec_effect_e += cr1_e - cr2_e;
-  myStat->nc_effect_v += cr2_v - cr3_v;
-  myStat->nc_effect_e += cr2_e - cr3_e;
+  myStat->nec_effect_v += (cr1_v - cr2_v) / cr1_v;
+  myStat->nec_effect_e += (cr1_e - cr2_e) / cr1_e;
+  myStat->nc_effect_v += (cr2_v - cr3_v) / cr2_v;
+  myStat->nc_effect_e += (cr2_e - cr3_e) / cr2_e;
 
   // generate induced subgrpah of crv
   g->getInducedSubGraph(crv.vertex_set, cr, r_vertex, myStat);
@@ -246,8 +246,8 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cr->printGraphNew(cout);
 //  cr->printGraphPartial(cout);
 
-  int cr1_v = cr->VnI();
-  int cr1_e = cr->E();
+  double cr1_v = cr->VnI();
+  double cr1_e = cr->E();
   myStat->org_cr_v += cr1_v;
   myStat->org_cr_e += cr1_e;
 //  cout << "1. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
@@ -259,8 +259,8 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
   myStat->nec_time += gettime(_s, _e);
 //  cout << " ~~~~~~~~~~ before:" << r_vertex << "~~~~~~~~~~~~~~" << endl;
 //  cr->printGraphNew(cout);
-  int cr2_v = cr->VnI();
-  int cr2_e = cr->E();
+  double cr2_v = cr->VnI();
+  double cr2_e = cr->E();
 //  cout << "2. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
   _s = clock();
   canRegReduce(cr, r_vertex);
@@ -270,17 +270,17 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 //  cout << " ========== after:" << r_vertex << " ===============" << endl;
 //  cr->printGraphNew(cout);
 
-  int cr3_v = cr->VnI();
-  int cr3_e = cr->E();
+  double cr3_v = cr->VnI();
+  double cr3_e = cr->E();
   myStat->red_cr_v += cr3_v;
   myStat->red_cr_e += cr3_e;
 //  cout << "3. |V(cr_i)|: " << cr->VnI() << " |E(cr_i)|: " << cr->E() << endl;
 //  printHashTableTT(cr->vlabels_map_cnt);
 
-  myStat->nec_effect_v += cr1_v - cr2_v;
-  myStat->nec_effect_e += cr1_e - cr2_e;
-  myStat->nc_effect_v += cr2_v - cr3_v;
-  myStat->nc_effect_e += cr2_e - cr3_e;
+  myStat->nec_effect_v += (cr1_v - cr2_v) / cr1_v;
+  myStat->nec_effect_e += (cr1_e - cr2_e) / cr1_e;
+  myStat->nc_effect_v += (cr2_v - cr3_v) / cr2_v;
+  myStat->nc_effect_e += (cr2_e - cr3_e) / cr2_e;
 
   _s = clock();
   if (!predictCR(cr, 100000)) {
@@ -412,25 +412,26 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
     }
     // equals to 1
 
-//    cr->setVertexLabelMap();
     set<VertexID>& _set = cr->vlabels_map[_l];
     for (set<VertexID>::iterator it1 = _set.begin(); it1 != _set.end(); it1++) {
       VertexID u = *it1;
 
-      if (u == r_vertex)
+      if (u == r_vertex || cr->getDegree(u) == 0)
         continue;
 
       set<VertexID>::iterator it2 = it1;
       for (it2++; it2 != _set.end(); it2++) {
         VertexID v = *it2;
 
-        if (v == r_vertex)
+        if (v == r_vertex || cr->getDegree(v) == 0)
           continue;
 
         // if u (v) dominate v (u)
         int _inter = 0;
         int ind_u = 0;
+        int flg_u = 1;
         int ind_v = 0;
+        int flg_v = 1;
         int diff_l_u_cnt = 0;
         int diff_l_v_cnt = 0;
         while (ind_u < cr->getDegree(u) && ind_v < cr->getDegree(v)) {
@@ -448,13 +449,19 @@ void SubIso::canRegReduce(GRAPH* cr, VertexID& r_vertex) {
           }
 
           if (nu < nv) {
+            flg_u = 0;
             ind_u++;
           } else if (nu > nv) {
+            flg_v = 0;
             ind_v++;
           } else {
             _inter++;
             ind_u++;
             ind_v++;
+          }
+
+          if (flg_u == 0 && flg_v == 0) {
+            break;
           }
         }
 

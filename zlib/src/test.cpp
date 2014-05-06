@@ -9,6 +9,7 @@
 #include "test/testVFLib.h"
 #include "test/testGenDataSet.h"
 #include "test/testCrypto.h"
+//#include "utility/EVector.h"
 
 #include <vector>
 
@@ -166,12 +167,39 @@ void testCrypto(int argc, char** argv) {
 }
 
 void testPlain() {
-  vector<int> a;
-  for (int i = 0; i < 2000000; i++) {
-    a.push_back(i);
+  vector<int> u;
+  u.push_back(1);
+  u.push_back(4);
+  u.push_back(5);
+  vector<int> v;
+  v.push_back(1);
+  v.push_back(3);
+
+  int inter = 0;
+  int ind_u = 0;
+  int ind_v = 0;
+  int flg_u = 1;
+  int flg_v = 1;
+  while (ind_u < u.size() && ind_v < v.size()) {
+    int nu = u[ind_u];
+    int nv = v[ind_v];
+    if (nu < nv) {
+      ind_u++;
+      flg_u = 0;
+    } else if (nv < nu) {
+      ind_v++;
+      flg_v = 0;
+    } else {
+      inter++;
+      ind_u++;
+      ind_v++;
+    }
+    if (flg_u == flg_v == 0)
+      break;
   }
-  cout << "finish" << endl;
-  return;
+
+  cout << inter << endl;
+  cout << flg_u << " " << flg_v << endl;
 }
 
 int main(int argc, char** argv) {
@@ -200,7 +228,7 @@ int main(int argc, char** argv) {
     testCrypto(argc - 1, argv + 1);
   } else if (argv[1][0] == 's') {
     testShowStat(argc - 1, argv + 1);
-  } else if (argv[1][0] == 'n' ) {
+  } else if (argv[1][0] == 'n') {
     testTransformSNAP(argc - 1, argv + 1);
   } else {
     testPlain();

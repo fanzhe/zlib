@@ -82,6 +82,7 @@ class OutputWriter {
                     << myStat->isSubgraphOf2e_time << endl;
     detailed_writer << "        mul_add_time: " << myStat->mul_add_time << endl;
     detailed_writer << "        decrypt_time: " << myStat->decrypt_time << endl;
+    detailed_writer << "encrypt_time: " << myStat->encrypt_time << endl;
     detailed_writer << "org_psb_map_cnt: " << myStat->org_psb_map_cnt << endl;
     detailed_writer << "red_psb_map_cnt: " << myStat->red_psb_map_cnt << endl;
     detailed_writer << endl;
@@ -130,7 +131,8 @@ class OutputWriter {
 
     avg_writer << "  avg_client_time: " << myStat->avg_client_time / myStat->tt
                << endl;
-
+    avg_writer << "    avg_encrypt_time: " << myStat->avg_encrypt_time / myStat->tt << endl;
+    avg_writer << "    avg_decrypt_time: " << myStat->avg_decrypt_time / myStat->tt << endl;
     avg_writer << "avg_org_psb_map_cnt: " << myStat->avg_org_psb_map_cnt / myStat->tt << endl;
     avg_writer << "avg_red_psb_map_cnt: " << myStat->avg_red_psb_map_cnt / myStat->tt << endl;
     avg_writer << "avg_total_msg_size: "

@@ -43,9 +43,13 @@ class TestGenDataSet {
       g_reader.GetNextGraph_MultiVertexLabel_Original(*g);
       graphDB[i] = g;
 
-      unordered_map<VertexLabel, int> mymap;
+      cout << "Vcnt: " << g->V() << endl;
+      cout << "Ecnt: " << g->E() << endl;
 
+      unordered_map<VertexLabel, int> mymap;
+      double avg_deg = 0;
       for (int i = 0; i < g->V(); i++) {
+        avg_deg += g->getDegree(i);
         VertexLabel l = g->getLabel(i);
         if (mymap.find(l) == mymap.end()) {
           mymap[l] = 1;
@@ -53,6 +57,9 @@ class TestGenDataSet {
         }
         mymap[l]++;
       }
+
+      cout << "avg_deg: " << avg_deg / g->V() << endl;
+      cout << "distinct_label: " << mymap.size() << endl;
 
       for (unordered_map<VertexLabel, int>::iterator it = mymap.begin();
           it != mymap.end(); it++) {
