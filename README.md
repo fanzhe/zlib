@@ -17,3 +17,5 @@
 * Integration of VFLib (http://www.cs.sunysb.edu/~algorith/implement/vflib/implement.shtml).
 
 * Cyclic group based encryption scheme, a homomorphic encryption method supports both partially additions *and* multiplications.
+
+* TBA: Independent Cascade (IC) Model, Linear Threshold (LT) Model, Monte Carlo (MC).
