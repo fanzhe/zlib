@@ -36,6 +36,7 @@ class STAT {
   double nc_time;
   double cr_predict_time;
   double cm_time;
+  double cache_size;
   double match_time;
   double canon_cm_time;
   double decomp_cm_time;
@@ -82,6 +83,7 @@ class STAT {
   double avg_encrypt_time;
   double avg_decrypt_time;
   double avg_client_msg_size;
+  double avg_cache_size;
 
   // for encryption
   double encrypt_time;
@@ -91,6 +93,7 @@ class STAT {
   double encypted_msg_cnt;
 
   STAT() {
+    cache_size = avg_cache_size = 0;
     avg_encrypt_time = avg_decrypt_time = 0;
     cr_cont_time = cr_cont_time_1 = cr_cont_time_2 = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
     cr_predict_time = avg_cr_predict_time = 0;
@@ -117,6 +120,7 @@ class STAT {
   }
 
   void reset() {
+    cache_size = avg_cache_size = 0;
     avg_encrypt_time = avg_decrypt_time = 0;
     cr_cont_time = cr_cont_time_1 = cr_cont_time_2 = cr_bfs_time = avg_cr_bfs_time = avg_cr_cont_time = 0;
     cr_predict_time = avg_cr_predict_time = 0;

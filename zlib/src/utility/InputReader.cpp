@@ -32,6 +32,20 @@ InputReader::InputReader(const char* input_file_name) {
   ReadFirstLine();
 }
 
+InputReader::InputReader(const char* input_file_name, const char* input_type) {
+//  strcpy_s(m_FileName, FILENAME_BUFF_SIZE, input_file_name);
+  strcpy(m_FileName, input_file_name);
+
+  m_InputStream.open(m_FileName);
+
+  if (!m_InputStream.is_open()) {
+    cout << "input file " << input_file_name << " doesn't exist." << endl;
+    exit(1);
+  }
+
+  ASSERT(m_InputStream.is_open());
+}
+
 InputReader::~InputReader() {
   m_InputStream.close();
 }
@@ -181,6 +195,71 @@ void InputReader::_New_Graph(GRAPH& graph, vector<RawVertex>& v_list,
 
   ASSERT(graph.E() == (int )e_list.size());
   ASSERT(graph.V() == (int )v_list.size());
+}
+
+void InputReader::GetSnapGraph(GRAPH& graph) {
+  map<VertexID, VertexID> v_map;
+  map<VertexID, set<VertexID> > org_adj_list;
+  map<VertexID, set<VertexID> > new_adj_list;
+  VertexID org_src, org_dest;
+  VertexID new_src, new_dest;
+  VertexID new_id = 0;
+
+  // read file
+  while (!m_InputStream.eof()) {
+    m_InputStream >> org_src >> org_dest;
+
+    if (v_map.find(org_src) == v_map.end()) {
+      new_src = new_id;
+      v_map[org_src] = new_id;
+      new_id++;
+    } else {
+      new_src = v_map[org_src];
+    }
+
+    if (v_map.find(org_dest) == v_map.end()) {
+      new_dest = new_id;
+      v_map[org_dest] = new_id;
+      new_id++;
+    } else {
+      new_dest = v_map[org_dest];
+    }
+    new_adj_list[new_src].insert(new_dest);
+    new_adj_list[new_dest].insert(new_src);
+  }
+
+  cout << new_adj_list.size() << endl;
+
+  // to graph
+  vector<RawVertex> v_list;
+  vector<RawEdge> e_list;
+  map<VertexLabel, int> label_count_map;
+
+  // vertices and edges
+  for (map<VertexID, set<VertexID> >::iterator it = new_adj_list.begin();
+      it != new_adj_list.end(); it++) {
+    RawVertex src;
+    src.id = it->first;
+    src.label = it->second.size();
+    v_list.push_back(src);
+    label_count_map[src.label]++;
+
+    for (set<VertexID>::iterator it1 = it->second.begin();
+        it1 != it->second.end(); it1++) {
+      if (src.id >= *it1) continue;
+      RawEdge edge;
+
+      // TODO set all edge label as the same
+      edge.label = 0;
+      edge.u = src.id;
+      edge.v = *it1;
+      e_list.push_back(edge);
+    }
+  }
+
+  cout << "v: " << v_list.size() << " e: " << e_list.size() << endl;
+
+  _New_Graph(graph, v_list, e_list, label_count_map);
 }
 
 bool InputReader::GetNextGraph_MultiVertexLabel(GRAPH& graph) {

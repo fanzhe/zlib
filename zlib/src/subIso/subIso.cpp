@@ -73,17 +73,17 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
   q->initSubIso();
   cm->initEqvCls(q->V());
 
-//  cout << "|CR| = " << rootVertexSet.size() << endl;
+//  cout << "|CR| = " << rootVertex.size() << endl;
   // for each starting vertex
   for (int i = 0; i < rootVertex.size(); i++) {
 
     VertexID r_vertex = rootVertex[i].u;
 //    cout << endl << "original root: " << r_vertex << " " << g->getDegree(r_vertex) << endl;
 
-    // cannot use this ifRootVertex cache
+// cannot use this ifRootVertex cache
 //    cache.ifRootVertex.insert(r_vertex);
 
-    // generate cr
+// generate cr
     _s = clock();
     if (!genCanReg(r_vertex, cr)) {
 //    if (!genCanRegOpt(r_vertex, cr)) {
@@ -97,12 +97,12 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
 
 //    cout << "go" << endl;
 
-    // find cm
+// find cm
     _s = clock();
     genAllCanMatch(r_vertex, cr, cm);
     _e = clock();
     myStat->cm_time += gettime(_s, _e);
-
+    myStat->cache_size += cache.ifHasCm.size();
     // TODO try a new DFS by the set of labels.
 
     if (response) {
@@ -301,9 +301,30 @@ bool SubIso::genCanReg(VertexID& r_vertex, GRAPH* cr) {
 bool SubIso::predictCR(GRAPH* cr, long long limit) {
   cr->setVertexLabelMapCnt();
   q->setVertexLabelMapCnt();
+//  long long cnt = sumUpVertexLabelCnt(q->vlabels_map_cnt, cr->vlabels_map_cnt);
 
-  long long cnt = sumUpVertexLabelCnt(q->vlabels_map_cnt, cr->vlabels_map_cnt);
-//  cout << cnt << endl;
+  VertexLabelMapCnt& _a = q->vlabels_map_cnt;
+  VertexLabelMapCnt& _b = cr->vlabels_map_cnt;
+  long long cnt = 1;
+  for (VertexLabelMapCnt::iterator it = _a.begin(); it != _a.end(); it++) {
+//    cnt *= permutation(_a[it->first], _b[it->first]);
+
+    // C(k, n)
+    int k = _a[it->first];
+    int n = _b[it->first];
+    long long f = 1;
+    for (int i = n; i >= (n - k + 1); i--) {
+      f = f * i;
+      if (f > limit) {
+        return false;
+      }
+    }
+//    cout << f << " " << cnt <<  endl;
+    cnt *= f;
+    if (cnt > limit) {
+      return false;
+    }
+  }
 
 //  cout << "predict: " << cnt << endl;
 //  cout << "detailed:" << endl;

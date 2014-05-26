@@ -31,6 +31,20 @@ class TestTransform {
     }
   }
 
+  void transformFromSnap(const char* input_g_file_name,
+                         const char* output_g_file_name) {
+    InputReader g_reader(input_g_file_name, "snap");
+    ofstream output(output_g_file_name);
+    for (int i = 0; i < g_cnt; i++) {
+      GRAPH *g = new GRAPH();
+      g_reader.GetSnapGraph(*g);
+
+      graphDB[i] = g;
+
+      g->printGraph(output);
+    }
+  }
+
   void transformFromInputFile(const char* input_g_file_name,
                               const char* output_g_file_name) {
     InputReader g_reader(input_g_file_name);
@@ -82,6 +96,7 @@ class TestTransform {
         _adj[new_u].insert(new_v);
         _adj[new_v].insert(new_u);
       }
+      cout << _adj.size() << endl;
       // end of read
 
       // construct graph g

@@ -56,6 +56,7 @@ typedef struct RawEdge {
 class InputReader {
  public:
   InputReader(const char* input_file_name);
+  InputReader(const char* input_file_name, const char* input_type);
   ~InputReader();
 
   void _New_Graph_Original(GRAPH& graph, vector<RawVertex>& v_list,
@@ -71,6 +72,7 @@ class InputReader {
   bool GetNextGraph(GRAPH& graph);
   bool GetNextGraph_Original(GRAPH& graph);
   bool GetNextGraph_MultiVertexLabel(GRAPH& graph);
+  void GetSnapGraph(GRAPH& graph);
   bool GetNextGraph_MultiVertexLabel_Original(GRAPH& graph);
 
  public:

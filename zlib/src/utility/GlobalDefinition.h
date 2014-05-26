@@ -44,4 +44,5 @@ typedef int Status;
 #define     DEFAULTCACHESIZE      7
 #define     DEFAULTAGGREGATES     100
 #define     DEFAULTAGGREGATE      10
+#define     DEFAULALPHAFORL       0.1
 #endif

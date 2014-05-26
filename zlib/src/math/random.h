@@ -17,7 +17,8 @@ using namespace std;
 class Random {
  public:
   Random() {
-    srand(time(NULL));
+    int seed = static_cast<int>(time(0));
+    srand(seed);
   }
 
   ~Random() {

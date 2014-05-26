@@ -391,16 +391,36 @@ int GRAPH::getMinTreeHeight2(VertexID start_v) {
   return _min_tree_height;
 }
 
-VertexID GRAPH::getMinTreeHeight() {
-  min_tree_height = V() + 1;
+VertexID GRAPH::getMinTreeHeight(VertexLabelMapCnt& _glabel_cnt) {
   VertexID start_v;
-  for (int i = 0; i < V(); i++) {
-    int _min = getMinTreeHeight2(i);
-    if (min_tree_height > _min) {
-      start_v = i;
-      min_tree_height = _min;
+
+  double min_rank = 1.1;
+  double rank;
+  double alpha = DEFAULALPHAFORL;
+  double max_label_cnt = 0;
+
+  for (VertexLabelMapCnt::iterator it = _glabel_cnt.begin();
+      it != _glabel_cnt.end(); it++) {
+    if (max_label_cnt < it->second) {
+      max_label_cnt = it->second;
     }
   }
+
+  for (int i = 0; i < V(); i++) {
+    double _min = getMinTreeHeight2(i);
+
+    rank = alpha * ((double)_glabel_cnt[getLabel(i)] / max_label_cnt)
+        + (1 - alpha) * (_min / (V() + 1));
+
+    if (min_rank > rank) {
+      start_v = i;
+      min_rank = rank;
+      min_tree_height = _min;
+    }
+//    cout << i << ' ' << _min << ' ' << _glabel_cnt[getLabel(i)] << endl;
+  }
+
+//  cout << start_v << endl;
   return start_v;
 }
 
@@ -1425,7 +1445,7 @@ void GRAPH::removeEdge(VertexID v, VertexID w) {
   }
 }
 
-void GRAPH::clientPreProcess() {
+void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt) {
   /**
    * preprocessing at the client side.
    * 1. encryption
@@ -1437,7 +1457,7 @@ void GRAPH::clientPreProcess() {
   encrypt();
 
   // set h and l_s
-  start_label = getLabel(getMinTreeHeight());
+  start_label = getLabel(getMinTreeHeight(_glabel_cnt));
 
   // init stat
   myStat = new STAT();

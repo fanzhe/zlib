@@ -129,7 +129,7 @@ class GRAPH {
   // --------------------------------------
 
   // for client
-  void clientPreProcess();
+  void clientPreProcess(VertexLabelMapCnt& _glabel_cnt);
   STAT* myStat;
 
   // -------- for subiso --------
@@ -176,7 +176,7 @@ class GRAPH {
   // for generating candidate region
   void setVertexLabelMap();
   void setVertexLabelMapCnt();
-  VertexID getMinTreeHeight();
+  VertexID getMinTreeHeight(VertexLabelMapCnt& _glabel_cnt);
   int getMinTreeHeight2(VertexID start_v);
   void BFS(VertexID start_v, int lens, set<int>& visit_v);
   void BFSwithSpecVcnt(VertexID start_v, int vcnt, set<VertexID>& visit_v);
