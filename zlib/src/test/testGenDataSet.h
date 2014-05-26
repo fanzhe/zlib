@@ -21,11 +21,13 @@ class TestGenDataSet {
   vector<GRAPH*> graphDB;
   int g_cnt, distinctLabel;
   Random* randGen;
+  int threshold;
 
   TestGenDataSet(int _g_cnt) {
     g_cnt = _g_cnt;
     graphDB.resize(g_cnt);
     randGen = new Random();
+    threshold = 8000;
   }
 
   ~TestGenDataSet() {
@@ -125,16 +127,28 @@ class TestGenDataSet {
       graphDB[i] = g;
 
       GRAPH* q = new GRAPH();
-      for (int i = 0; i < qcnt; i++) {
+      for (int j = 0; j < qcnt; j++) {
 
-        q->graphId = i;
+        q->graphId = j;
         generateQueryDFS(g, q, vcnt);
+        if (!isAvailable(q)) {
+          j--;
+          continue;
+        }
         q->printGraph(output);
 
         q->makeEmpty();
       }
       delete q;
     }
+  }
+
+  bool isAvailable(GRAPH* q) {
+    for (int i = 0; i < q->V(); i++) {
+      if (q->getLabel(i) >= threshold)
+        return false;
+    }
+    return true;
   }
 
   void genQuerySetBFS(const char* input_g_file_name, char* output_g_file_name,
@@ -148,10 +162,15 @@ class TestGenDataSet {
       graphDB[i] = g;
 
       GRAPH* q = new GRAPH();
-      for (int i = 0; i < qcnt; i++) {
+      for (int j = 0; j < qcnt; j++) {
 
-        q->graphId = i;
+        q->graphId = j;
         generateQueryBFS(g, q, vcnt);
+        if (!isAvailable(q)) {
+          j--;
+          continue;
+        }
+
         q->printGraph(output);
 
         q->makeEmpty();
@@ -182,8 +201,7 @@ class TestGenDataSet {
     _DFSwithRandom(g, start_v, vcnt, visit_v);
   }
 
-  void _DFSwithRandom(GRAPH* g, VertexID v, int vcnt,
-                      set<VertexID>& visit_v) {
+  void _DFSwithRandom(GRAPH* g, VertexID v, int vcnt, set<VertexID>& visit_v) {
     if (visit_v.size() == vcnt) {
       return;
     }
