@@ -49,7 +49,7 @@ class TestSubIso {
     }
   }
 
-  void debugSubIso(const int _agg_size) {
+  void debugSubIso(const int _encode_size, const int _agg_size) {
     for (int i = 0; i < g_cnt; i++) {
       GRAPH* g = graphDB[i];
       cout << "g" << i << endl;
@@ -59,7 +59,7 @@ class TestSubIso {
 
       for (int j = 0; j < q_cnt; j++) {
         GRAPH* q = queryDB[j];
-        q->clientPreProcess(g->vlabels_map_cnt, _agg_size);
+        q->clientPreProcess(g->vlabels_map_cnt, _encode_size, _agg_size);
 
         SubIso* subIso = new SubIso(q, g);
         bool res1 = subIso->isSubIso();
@@ -84,7 +84,7 @@ class TestSubIso {
   }
 
   void testSubIso(const char* detailed_result, const char* avg_result,
-                  const int _agg_size) {
+                  const int _encode_size, const int _agg_size) {
     OutputWriter* writer = new OutputWriter(detailed_result, avg_result);
     STAT* myStat = new STAT();
 
@@ -106,7 +106,7 @@ class TestSubIso {
 
         // Encrypt
         clock_t _s = clock();
-        q->clientPreProcess(g->vlabels_map_cnt, _agg_size);
+        q->clientPreProcess(g->vlabels_map_cnt, _encode_size, _agg_size);
         clock_t _e = clock();
         q->myStat->encrypt_time = gettime(_s, _e);
 

@@ -409,7 +409,7 @@ VertexID GRAPH::getMinTreeHeight(VertexLabelMapCnt& _glabel_cnt) {
   for (int i = 0; i < V(); i++) {
     double _min = getMinTreeHeight2(i);
 
-    rank = alpha * ((double)_glabel_cnt[getLabel(i)] / max_label_cnt)
+    rank = alpha * ((double) _glabel_cnt[getLabel(i)] / max_label_cnt)
         + (1 - alpha) * (_min / (V() + 1));
 
     if (min_rank > rank) {
@@ -1445,14 +1445,15 @@ void GRAPH::removeEdge(VertexID v, VertexID w) {
   }
 }
 
-void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _agg_size) {
+void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt,
+                             const int _encode_size, const int _agg_size) {
   /**
    * preprocessing at the client side.
    * 1. encryption
    * 2. determine l_s and h
    */
   // initialize encryption
-  encryptInit(_agg_size);
+  encryptInit(_encode_size, _agg_size);
   // encryption
   encrypt();
 
@@ -1463,12 +1464,12 @@ void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _agg_size
   myStat = new STAT();
 }
 
-void GRAPH::encryptInit(const int _agg_size) {
+void GRAPH::encryptInit(const int _encode_size, const int _agg_size) {
   // init para.
 
-  DEFAULTENCODING     = 10;
-  DEFAULTAGGREGATE    = 10;
-  DEFAULTAGGREGATES   = _agg_size;
+  DEFAULTENCODING = _encode_size;
+  DEFAULTAGGREGATE = 10;
+  DEFAULTAGGREGATES = _agg_size;
 
   // init Mq
   Mq = new BigMatrix(V(), V());

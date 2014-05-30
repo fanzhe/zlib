@@ -121,7 +121,7 @@ class GRAPH {
   CGBE * cgbe;
   BigMatrix* Mq;
   Message* msg;
-  void encryptInit(const int _agg_size);
+  void encryptInit(const int _encode_size, const int _agg_size);
   void encrypt();
   void decrypt();
   void finalDecrypt();
@@ -133,7 +133,8 @@ class GRAPH {
   // --------------------------------------
 
   // for client
-  void clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _agg_size);
+  void clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _encode_size,
+                        const int _agg_size);
   STAT* myStat;
 
   // -------- for subiso --------
@@ -190,7 +191,8 @@ class GRAPH {
   void BFSwithConst(VertexID start_v, int hops, set<VertexID>& visit_v,
                     VertexLabelMapCnt& _vertex_label_map_cnt, Cache& cache);
   void collectSimpleGraph(SIMPLEGRAPH& crv);
-  void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _g, VertexID& r_vertex, STAT* _myStat = NULL);
+  void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _g, VertexID& r_vertex,
+                          STAT* _myStat = NULL);
   void getInducedSubGraph(vector<VertexID>& vertex, GRAPH* _g);
   void getInducedSubGraph(set<VertexID>& vertex, GRAPH* _ind_g);
 
@@ -222,7 +224,7 @@ class GRAPH {
   void reduceByEqvCls(VertexID& r_vertex,
                       VertexLabelMapCnt& _vertex_label_map_cnt);
   void reduceByEqvCls(VertexID& r_vertex, SIMPLEGRAPH& simple_graph,
-                             VertexLabelMapCnt& _vertex_label_map_cnt);
+                      VertexLabelMapCnt& _vertex_label_map_cnt);
   void genEqvCls();
   void genEqvCls(SIMPLEGRAPH& simple_graph);
   bool shareSameNeighbor(VertexID u, VertexID v);
