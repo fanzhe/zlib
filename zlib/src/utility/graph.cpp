@@ -1348,12 +1348,12 @@ bool GRAPH::isSubgraphOf(GRAPH* g) {
   isSubgraphOf1(0, g);
 
   // last decryption
-  if (msg->cnt > 0) {
-    double _s = clock();
-    finalDecrypt();
-    double _e = clock();
-    myStat->decrypt_time += gettime(_s, _e);
-  }
+//  if (msg->cnt > 0) {
+//    double _s = clock();
+//    finalDecrypt();
+//    double _e = clock();
+//    myStat->decrypt_time += gettime(_s, _e);
+//  }
 
   return (msg->answer == 1);
 }
@@ -1544,14 +1544,14 @@ void GRAPH::finalDecrypt() {
       msg->answer = 1;
     }
   }
-  cout << "okay!" << endl;
+//  cout << "okay!" << endl;
   myStat->encypted_msg_cnt++;
 }
 
 void GRAPH::decrypt() {
   if (V() < DEFAULTENCODING) {
     if (msg->cnt >= DEFAULTAGGREGATES) {
-      cout << msg->cnt << " " << DEFAULTAGGREGATES << endl;
+//      cout << msg->cnt << " " << DEFAULTAGGREGATES << endl;
       cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
       msg->resetRk();
       msg->cnt = 0;

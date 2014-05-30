@@ -1,6 +1,10 @@
 #!/bin/sh
 
+
+./zlib.exe r data/dblp/query/dblp_dfs_q5 1000 data/dblp/dblp.degree 1 data/dblp/result/dblp_dfs_q5_10.detailed data/dblp/result/dblp_dfs_q5_10.avg 10
+
 ./zlib.exe r data/dblp/query/dblp_dfs_q6 1000 data/dblp/dblp.degree 1 data/dblp/result/dblp_dfs_q6_10.detailed data/dblp/result/dblp_dfs_q6_10.avg 10
+
 
 #./zlib.exe r data/dblp/query/dblp_dfs_q7 1000 data/dblp/dblp.degree 1 data/dblp/result/dblp_dfs_q7_10.detailed data/dblp/result/dblp_dfs_q7_10.avg 10
 #./zlib.exe r data/dblp/query/dblp_dfs_q7 1000 data/dblp/dblp.degree 1 data/dblp/result/dblp_dfs_q7_20.detailed data/dblp/result/dblp_dfs_q7_20.avg 20

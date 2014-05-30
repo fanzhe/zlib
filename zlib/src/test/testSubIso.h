@@ -140,7 +140,7 @@ class TestSubIso {
 
         myStat->avg_org_psb_map_cnt += q->myStat->org_psb_map_cnt;
         myStat->avg_red_psb_map_cnt += q->myStat->red_psb_map_cnt;
-        cout << "test: " << q->myStat->encypted_msg_cnt << endl;
+//        cout << "test: " << q->myStat->encypted_msg_cnt << endl;
         myStat->avg_client_msg_size += q->myStat->encypted_msg_cnt;
         myStat->avg_cache_size += subIso->myStat->cache_size;
 

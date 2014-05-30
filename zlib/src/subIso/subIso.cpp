@@ -746,6 +746,16 @@ void SubIso::doSubIso() {
   sortRootVertex(g->vlabels_map[start_label], rootVertex);
 
   genAllCanReg(rootVertex);
+
+  // final round
+  if (q->msg->cnt > 0) {
+    double _s = clock();
+    q->finalDecrypt();
+    double _e = clock();
+    q->myStat->decrypt_time += gettime(_s, _e);
+  }
+
+  response = q->msg->answer == 1;
 }
 
 bool SubIso::isSubIso() {
