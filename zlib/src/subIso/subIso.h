@@ -24,6 +24,7 @@ class SubIso {
   int tree_height;
 
   Cache cache;
+  int DEFAULTCACHESIZE    = 10;
 
 //  set<string> ifHasString;
 //  set<HashCode> ifHasCm;

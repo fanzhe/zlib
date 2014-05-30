@@ -47,6 +47,7 @@ class TestGenDataSet {
 
       cout << "Vcnt: " << g->V() << endl;
       cout << "Ecnt: " << g->E() << endl;
+      cout << "Density: " << double( (2 * g->E()) / (g->V()) ) / (g->V() - 1) << endl;
 
       unordered_map<VertexLabel, int> mymap;
       double avg_deg = 0;
@@ -131,7 +132,7 @@ class TestGenDataSet {
 
         q->graphId = j;
         generateQueryDFS(g, q, vcnt);
-        if (!isAvailable(q)) {
+        if (!isAvailable(q, vcnt)) {
           j--;
           continue;
         }
@@ -143,7 +144,10 @@ class TestGenDataSet {
     }
   }
 
-  bool isAvailable(GRAPH* q) {
+  bool isAvailable(GRAPH* q, int vcnt) {
+    if (q->V() != vcnt) {
+      return false;
+    }
     for (int i = 0; i < q->V(); i++) {
       if (q->getLabel(i) >= threshold)
         return false;
@@ -166,7 +170,7 @@ class TestGenDataSet {
 
         q->graphId = j;
         generateQueryBFS(g, q, vcnt);
-        if (!isAvailable(q)) {
+        if (!isAvailable(q, vcnt)) {
           j--;
           continue;
         }

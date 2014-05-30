@@ -40,9 +40,8 @@ typedef int Status;
 
 #define     DEFAULTMSGSIZE        2048
 #define     DEFAULTRANDOM         32
-#define     DEFAULTENCODING       7
-#define     DEFAULTCACHESIZE      7
-#define     DEFAULTAGGREGATES     100
-#define     DEFAULTAGGREGATE      10
 #define     DEFAULALPHAFORL       0.1
+
+
+
 #endif

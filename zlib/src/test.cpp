@@ -67,7 +67,7 @@ void testSubIso(int argc, char** argv) {
 
   g_test->loadFromInputFile(argv[1], argv[3]);
 
-  g_test->testSubIso(argv[5], argv[6]);
+  g_test->testSubIso(argv[5], argv[6], atoi(argv[7]));
 
   delete g_test;
 }
@@ -81,7 +81,7 @@ void testDebug(int argc, char** argv) {
 
   g_test->loadFromInputFile(argv[1], argv[3]);
 
-  g_test->debugSubIso();
+  g_test->debugSubIso(atoi(argv[5]));
 
   delete g_test;
 }

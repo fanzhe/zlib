@@ -121,15 +121,19 @@ class GRAPH {
   CGBE * cgbe;
   BigMatrix* Mq;
   Message* msg;
-  void encryptInit();
+  void encryptInit(const int _agg_size);
   void encrypt();
   void decrypt();
   void finalDecrypt();
   void encryptFree();
+
+  int DEFAULTENCODING;
+  int DEFAULTAGGREGATE;
+  int DEFAULTAGGREGATES;
   // --------------------------------------
 
   // for client
-  void clientPreProcess(VertexLabelMapCnt& _glabel_cnt);
+  void clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _agg_size);
   STAT* myStat;
 
   // -------- for subiso --------

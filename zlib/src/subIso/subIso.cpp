@@ -52,16 +52,16 @@ void SubIso::clearVertexLabelMap() {
   q->vlabels_map.clear();
   q->vlabels_map_cnt.clear();
 
-  g->vlabels_map.clear();
-  g->vlabels_map_cnt.clear();
+//  g->vlabels_map.clear();
+//  g->vlabels_map_cnt.clear();
 }
 
 void SubIso::calVertexLabelMap() {
   q->setVertexLabelMap();
   q->setVertexLabelMapCnt();
 
-  g->setVertexLabelMap();
-  g->setVertexLabelMapCnt();
+//  g->setVertexLabelMap();
+//  g->setVertexLabelMapCnt();
 }
 
 void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {

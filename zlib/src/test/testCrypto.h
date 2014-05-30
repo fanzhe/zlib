@@ -27,8 +27,12 @@ class TestCrypto{
     cgbe->encrypt(b, b);
     cgbe->encrypt(c, c);
 
-    cgbe->add(a, a, b);
-    cgbe->add(a, a, c);
+    int i = 0;
+    for (; i < 100000; i++) {
+      cgbe->add(a, a, b);
+    }
+//    cgbe->add(a, a, b);
+//    cgbe->add(a, a, c);
 
     cgbe->decrypt(a, a, 1);
     gmp_printf("test result: %Zd \n", a);

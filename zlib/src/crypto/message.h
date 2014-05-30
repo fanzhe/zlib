@@ -21,12 +21,12 @@ class Message {
   int cnt;  // numbers of message that are aggregated
   int type;
 
-  Message(int _size) {
+  Message(int _size, int _DEFAULTENCODING) {
     mpz_init(Rk);
     mpz_init(Ri);
     mpz_init(R);
 
-    if (_size < DEFAULTENCODING) {
+    if (_size < _DEFAULTENCODING) {
       mpz_set_d(Rk, 0);
       mpz_set_d(Ri, 1);
       type = 0;

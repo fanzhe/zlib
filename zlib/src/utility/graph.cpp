@@ -1445,14 +1445,14 @@ void GRAPH::removeEdge(VertexID v, VertexID w) {
   }
 }
 
-void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt) {
+void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _agg_size) {
   /**
    * preprocessing at the client side.
    * 1. encryption
    * 2. determine l_s and h
    */
   // initialize encryption
-  encryptInit();
+  encryptInit(_agg_size);
   // encryption
   encrypt();
 
@@ -1463,11 +1463,17 @@ void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt) {
   myStat = new STAT();
 }
 
-void GRAPH::encryptInit() {
+void GRAPH::encryptInit(const int _agg_size) {
+  // init para.
+
+  DEFAULTENCODING     = 10;
+  DEFAULTAGGREGATE    = 10;
+  DEFAULTAGGREGATES   = _agg_size;
+
   // init Mq
   Mq = new BigMatrix(V(), V());
   cgbe = new CGBE();
-  msg = new Message(V());
+  msg = new Message(V(), DEFAULTENCODING);
 
   // set values of Mq
   for (int i = 0; i < V(); i++) {
@@ -1538,13 +1544,14 @@ void GRAPH::finalDecrypt() {
       msg->answer = 1;
     }
   }
-
+  cout << "okay!" << endl;
   myStat->encypted_msg_cnt++;
 }
 
 void GRAPH::decrypt() {
   if (V() < DEFAULTENCODING) {
     if (msg->cnt >= DEFAULTAGGREGATES) {
+      cout << msg->cnt << " " << DEFAULTAGGREGATES << endl;
       cgbe->decrypt(msg->Rk, msg->R, (V() * (V() - 1)) / 2);
       msg->resetRk();
       msg->cnt = 0;
@@ -1557,6 +1564,7 @@ void GRAPH::decrypt() {
     }
   } else {
     if (msg->cnt >= DEFAULTAGGREGATE) {
+//      cout << "failed!" << endl;
       cgbe->decrypt(msg->Rk, msg->R, msg->cnt);
       msg->cnt = 0;
       msg->resetRk();
