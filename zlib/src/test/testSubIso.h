@@ -98,7 +98,7 @@ class TestSubIso {
 
       for (int j = 0; j < q_cnt; j++) {
         GRAPH* q = queryDB[j];
-//        if (j != 37) {
+//        if (j != 244) {
 //          continue;
 //        }
         cout << "  q:" << j << " |V|: " << q->Vcnt << " |E|: " << q->Ecnt

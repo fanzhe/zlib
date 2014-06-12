@@ -83,7 +83,7 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
 // cannot use this ifRootVertex cache
 //    cache.ifRootVertex.insert(r_vertex);
 
-// generate cr
+    // generate cr
     _s = clock();
     if (!genCanReg(r_vertex, cr)) {
 //    if (!genCanRegOpt(r_vertex, cr)) {
@@ -95,22 +95,31 @@ void SubIso::genAllCanReg(vector<VertexWDeg>& rootVertex) {
     _e = clock();
     myStat->cr_time += gettime(_s, _e);
 
-//    cout << "go" << endl;
 
-// find cm
     _s = clock();
     genAllCanMatch(r_vertex, cr, cm);
     _e = clock();
     myStat->cm_time += gettime(_s, _e);
     myStat->cache_size += cache.ifHasCm.size();
-    // TODO try a new DFS by the set of labels.
-
-    if (response) {
-      break;
-    }
 
     // reset cr, we do not set cr's eqv. cls.
     cr->makeEmpty();
+
+    if (response) {
+      break;
+    } else {
+      // final round
+      if (q->msg->cnt > 0) {
+        double _s = clock();
+        q->finalDecrypt();
+        double _e = clock();
+        q->myStat->decrypt_time += gettime(_s, _e);
+      }
+      response = (q->msg->answer == 1);
+      if (response)
+        break;
+    }
+
   }
 
   q->clearSubIso();
@@ -586,6 +595,8 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
   clock_t _s, _s1, _e, _e1;
   _s = clock();
+
+//  cout << "start canon:" << endl;
   GraphToMinDFSCode mindfs;
 
   GSPAN::DFSCode dfs_code;
@@ -593,6 +604,7 @@ bool SubIso::isCanMatChecked(GRAPH* cm) {
 
   mindfs.ConvertGRAPH(dfs_code);
 
+//  cout << "end canon" << endl;
 //  cout << "============= hash code ============" << endl;
 //  cout << dfs_code.hashCode() << endl;
   _e = clock();
@@ -747,15 +759,19 @@ void SubIso::doSubIso() {
 
   genAllCanReg(rootVertex);
 
-  // final round
-  if (q->msg->cnt > 0) {
-    double _s = clock();
-    q->finalDecrypt();
-    double _e = clock();
-    q->myStat->decrypt_time += gettime(_s, _e);
-  }
-
-  response = q->msg->answer == 1;
+//  if (response) {
+//    return;
+//  }
+//
+//  // final round
+//  if (q->msg->cnt > 0) {
+//    double _s = clock();
+//    q->finalDecrypt();
+//    double _e = clock();
+//    q->myStat->decrypt_time += gettime(_s, _e);
+//  }
+//
+//  response = q->msg->answer == 1;
 }
 
 bool SubIso::isSubIso() {
