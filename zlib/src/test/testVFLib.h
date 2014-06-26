@@ -77,9 +77,12 @@ class TestVFLib {
   }
 
   void testSubIso() {
+    map<double, double> result;
     for (int i = 0; i < q_cnt; i++) {
       GRAPH* q = queryDB[i];
 //      q->printGraphNew(cout);
+
+      clock_t start = clock();
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
 //        g->printGraphNew(cout);
@@ -89,7 +92,12 @@ class TestVFLib {
         if (res)
           cnt_res++;
       }
+      clock_t end = clock();
+
+      double runTime = gettime(start, end) * CLOCKS_PER_SEC;
+      result[runTime] ++;
     }
+    printMapTT(result);
     cout << "total:" << cnt_res << endl;
   }
 

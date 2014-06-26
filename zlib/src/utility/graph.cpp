@@ -1358,6 +1358,18 @@ bool GRAPH::isSubgraphOf(GRAPH* g) {
   return (msg->answer == 1);
 }
 
+int vf2_match_cnt;
+int vf2_match_cnt_max;
+bool my_vf2_match_visitor(int n, node_id c1[], node_id c2[], void *usr_data) {
+  vf2_match_cnt ++;
+  if (vf2_match_cnt > vf2_match_cnt_max) {
+//    cout << ".";
+    return true;
+  }
+//  cout << "<";
+  return false;
+}
+
 bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
   NodeCompare node_compare;
 
@@ -1403,6 +1415,13 @@ bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
   node_id ni2[g->maximum_vertex];
 
   if (match(&sub_state, &n, ni1, ni2)) {
+  /*
+  vf2_match_cnt = 0;
+  vf2_match_cnt_max = 1000;
+  int _cnt = match(&sub_state, my_vf2_match_visitor, NULL);
+  if (_cnt > 0) {
+  */
+//    cout << _cnt << endl;
     return true;
   }
 

@@ -263,6 +263,8 @@ int main(int argc, char** argv) {
     }
   } else if (argv[1][0] == 'n') {
     testTransformSNAP(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'v') {
+    testVF(argc - 1, argv + 1);
   } else {
     testPlain();
   }

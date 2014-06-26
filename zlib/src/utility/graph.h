@@ -209,6 +209,7 @@ class GRAPH {
   void resetSubIso(GRAPH* g);
 
   // for VFLib
+//  bool my_vf2_match_visitor(int n, node_id c1[], node_id c2[], void *usr_data);
   bool isSubgrpahOfByVF2(GRAPH* g);
   class NodeCompare : public AttrComparator {
    public:
