@@ -103,8 +103,10 @@ class GRAPH {
 
   VertexLabel *_vlabels;
 //  ECVector<ECVector<AdjElement> > _adjList;
+  vector<unordered_map<VertexID, bool> > _adjVertex;
   vector<vector<AdjElement> > _adjList;
   int maximum_vertex;
+
   int min_tree_height;
   VertexLabel start_label;
 

@@ -26,6 +26,7 @@ GRAPH::GRAPH()
 #endif
   _vlabels = new VertexLabel[DEFAULT_VERTEX_NUMBER];
   _adjList.resize(DEFAULT_VERTEX_NUMBER);
+  _adjVertex.resize(DEFAULT_VERTEX_NUMBER);
 
   maximum_vertex = DEFAULT_VERTEX_NUMBER;
 
@@ -51,6 +52,7 @@ GRAPH::GRAPH(int V)
 #endif
   _vlabels = new VertexLabel[V];
   _adjList.resize(V);
+  _adjVertex.resize(V);
 
   maximum_vertex = V;
 #ifdef ADJMATRIX
@@ -116,9 +118,13 @@ void GRAPH::setV(int V) {
 
     for (int i = 0; i < prev_Vcnt; i++) {
       _adjList[i].clear();
+      _adjVertex[i].clear();
     }
     _adjList.clear();
+    _adjVertex.clear();
+
     _adjList.resize(V);
+    _adjVertex.resize(V);
   }
 }
 
@@ -185,11 +191,16 @@ EdgeLabel GRAPH::getELabel(VertexID u, VertexID v) const {
 
 void GRAPH::insert(VertexID _u, AdjElement& _adje) {
   _adjList[_u].push_back(_adje);
+
+  _adjVertex[_u][_adje.v] = true;
 }
 
 void GRAPH::insert(EdgeID _e_id, VertexID _u, VertexID _v, EdgeLabel _l) {
   _adjList[_u].push_back(AdjElement(_v, _e_id, _l));
   _adjList[_v].push_back(AdjElement(_u, _e_id, _l));
+
+  _adjVertex[_u][_v] = true;
+  _adjVertex[_v][_u] = true;
   Ecnt++;
 }
 
@@ -213,6 +224,9 @@ void GRAPH::insert(Edge e) {
 #endif
   _adjList[v].push_back(AdjElement(w, e.edge_id, e.label));
   _adjList[w].push_back(AdjElement(v, e.edge_id, e.label));
+
+  _adjVertex[v][w] = true;
+  _adjVertex[w][v] = true;
 }
 
 void GRAPH::setGraphId(GraphID id) {
@@ -289,7 +303,12 @@ bool GRAPH::edge(VertexID v, VertexID w) {
 #ifdef ADJMATRIX
   return (ADJ(v, w) != NO_EDGE);
 #endif
-  return getELabel(v, w) != NO_EDGE;
+//  return getELabel(v, w) != NO_EDGE;
+  if (_adjVertex[v].find(w) != _adjVertex[v].end()) {
+//    ASSERT(_adjVertex[v][w]);
+    return _adjVertex[v][w];
+  }
+  return false;
 }
 
 // make empty of the most basic data structure
@@ -308,6 +327,7 @@ int GRAPH::makeEmpty() {
 
   for (int i = 0; i < Vcnt; i++) {
     _adjList[i].clear();
+    _adjVertex[i].clear();
   }
 
   Vcnt = 0;
@@ -1441,9 +1461,12 @@ void GRAPH::removeVexAllEdges(VertexID u) {
         break;
       }
     }
+
+    _adjVertex[w].erase(u);
   }
 
   _adjList[u].clear();
+  _adjVertex[u].clear();
 }
 
 void GRAPH::removeEdge(VertexID v, VertexID w) {
@@ -1462,6 +1485,9 @@ void GRAPH::removeEdge(VertexID v, VertexID w) {
       break;
     }
   }
+
+  _adjVertex[v].erase(w);
+  _adjVertex[w].erase(v);
 }
 
 void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt,
