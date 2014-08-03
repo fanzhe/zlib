@@ -46,6 +46,32 @@ InputReader::InputReader(const char* input_file_name, const char* input_type) {
   ASSERT(m_InputStream.is_open());
 }
 
+InputReader::InputReader(const char* input_g_name, const char* input_vl_name,
+                         const char* input_el_name) {
+  m_InputStream.open(input_g_name);
+  m_VLInputStream.open(input_vl_name);
+  m_ELInputStream.open(input_el_name);
+
+  if (!m_InputStream.is_open()) {
+    cout << "input file " << input_g_name << " doesn't exist." << endl;
+    exit(1);
+  }
+
+  if (!m_VLInputStream.is_open()) {
+    cout << "input file " << input_vl_name << " doesn't exist." << endl;
+    exit(1);
+  }
+
+  if (!m_ELInputStream.is_open()) {
+    cout << "input file " << input_el_name << " doesn't exist." << endl;
+    exit(1);
+  }
+
+  ASSERT(m_InputStream.is_open());
+  ASSERT(m_VLInputStream.is_open());
+  ASSERT(m_ELInputStream.is_open());
+}
+
 InputReader::~InputReader() {
   m_InputStream.close();
 }
@@ -119,6 +145,30 @@ void InputReader::EndOfFile(GRAPH& graph, vector<RawVertex>& v_list,
 
   ASSERT(graph.E() == (int )e_list.size());
   ASSERT(graph.V() == (int )v_list.size());
+}
+
+void InputReader::_New_DiGraph_Original(
+    DIGRAPH& diGraph, map<VertexID, VertexLabel>& _vLabels,
+    map<EdgeID, EdgeLabel>& _eLabels, map<VertexID, set<Triple> >& _adj_list) {
+  // initialize size of diGraph
+  diGraph.resetVcnt((int) _adj_list.size());
+
+  // vertices
+  for (map<VertexID, VertexLabel>::iterator it = _vLabels.begin();
+      it != _vLabels.end(); it++) {
+    diGraph.setVLabel(it->first, it->second);
+  }
+
+  // edges
+  int e_id = 0;
+  for (map<VertexID, set<Triple> >::iterator it = _adj_list.begin();
+      it != _adj_list.end(); it++) {
+    for (set<Triple>::iterator it1 = it->second.begin();
+        it1 != it->second.end(); it1++) {
+      const Triple& tri = *it1;
+      diGraph.insertEdge(Edge(e_id++, tri.o, tri.d, _eLabels[tri.e]));
+    }
+  }
 }
 
 void InputReader::_New_Graph_Original(GRAPH& graph, vector<RawVertex>& v_list,
@@ -197,6 +247,106 @@ void InputReader::_New_Graph(GRAPH& graph, vector<RawVertex>& v_list,
   ASSERT(graph.V() == (int )v_list.size());
 }
 
+void InputReader::GetKBDiGraph(DIGRAPH& diGraph) {
+  // read vertex label
+  VertexID vid;
+  VertexLabel vl;
+  map<VertexID, VertexLabel> vl_map;  // org
+
+  while (!m_VLInputStream.eof()) {
+    m_VLInputStream >> vid >> vl;
+    vl_map[vid] = vl;
+  }
+
+  // read edge label
+  EdgeID eid;
+  EdgeLabel el;
+  map<EdgeID, EdgeLabel> el_map;
+  while (!m_ELInputStream.eof()) {
+    m_ELInputStream >> eid >> el;
+    el_map[eid] = el;
+  }
+
+  // read linkage
+  map<VertexID, VertexID> v_map;  // orgV -> newV
+//  map<VertexID, set<Triple> > org_adj_list;
+  map<VertexID, set<Triple> > new_adj_list;
+  VertexID org_src, org_dest, org_edge;
+  VertexID new_src, new_dest, new_edge;
+  vid = 0;
+
+  while (!m_InputStream.eof()) {
+    m_InputStream >> org_src >> org_edge >> org_dest;
+
+    if (v_map.find(org_src) == v_map.end()) {
+      new_src = vid;
+      v_map[org_src] = vid;
+      vid++;
+    } else {
+      new_src = v_map[org_src];
+    }
+
+    if (v_map.find(org_dest) == v_map.end()) {
+      new_dest = vid;
+      v_map[org_dest] = vid;
+      vid++;
+    } else {
+      new_dest = v_map[org_dest];
+    }
+
+//    org_adj_list[org_src].insert(Triple(org_src, org_edge, org_dest));
+    new_adj_list[new_src].insert(Triple(new_src, org_edge, new_dest));
+  }
+
+  // update vl_map
+  map<VertexID, VertexLabel> new_vl_map;
+  for (map<VertexID, VertexLabel>::iterator it = vl_map.begin();
+      it != vl_map.end(); it++) {
+    VertexID ov = it->first;
+    VertexLabel vl = it->second;
+    VertexID nv = v_map[ov];
+    new_vl_map[nv] = vl;
+  }
+
+  // to graph
+  _New_DiGraph_Original(diGraph, new_vl_map, el_map, new_adj_list);
+
+}
+
+void InputReader::GetSnapDiGraph(DIGRAPH& diGraph) {
+  map<VertexID, VertexID> v_map;
+  map<VertexID, set<VertexID> > org_adj_list;
+  map<VertexID, set<VertexID> > new_adj_list;
+  VertexID org_src, org_dest, org_edge;
+  VertexID new_src, new_dest, new_edge;
+  VertexID id = 0;
+
+  while (!m_InputStream.eof()) {
+    m_InputStream >> org_src >> org_dest;
+
+    if (v_map.find(org_src) == v_map.end()) {
+      new_src = id;
+      v_map[org_src] = id;
+      id++;
+    } else {
+      new_src = v_map[org_src];
+    }
+
+    if (v_map.find(org_dest) == v_map.end()) {
+      new_dest = id;
+      v_map[org_dest] = id;
+      id++;
+    } else {
+      new_dest = v_map[org_dest];
+    }
+    org_adj_list[org_src].insert(org_dest);
+    new_adj_list[new_src].insert(new_dest);
+  }
+
+// to graph
+
+}
+
 void InputReader::GetSnapGraph(GRAPH& graph) {
   map<VertexID, VertexID> v_map;
   map<VertexID, set<VertexID> > org_adj_list;
@@ -205,7 +355,7 @@ void InputReader::GetSnapGraph(GRAPH& graph) {
   VertexID new_src, new_dest;
   VertexID new_id = 0;
 
-  // read file
+// read file
   while (!m_InputStream.eof()) {
     m_InputStream >> org_src >> org_dest;
 
@@ -230,12 +380,12 @@ void InputReader::GetSnapGraph(GRAPH& graph) {
 
   cout << new_adj_list.size() << endl;
 
-  // to graph
+// to graph
   vector<RawVertex> v_list;
   vector<RawEdge> e_list;
   map<VertexLabel, int> label_count_map;
 
-  // vertices and edges
+// vertices and edges
   for (map<VertexID, set<VertexID> >::iterator it = new_adj_list.begin();
       it != new_adj_list.end(); it++) {
     RawVertex src;
@@ -246,7 +396,8 @@ void InputReader::GetSnapGraph(GRAPH& graph) {
 
     for (set<VertexID>::iterator it1 = it->second.begin();
         it1 != it->second.end(); it1++) {
-      if (src.id >= *it1) continue;
+      if (src.id >= *it1)
+        continue;
       RawEdge edge;
 
       // TODO set all edge label as the same

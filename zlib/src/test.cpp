@@ -9,6 +9,7 @@
 #include "test/testVFLib.h"
 #include "test/testGenDataSet.h"
 #include "test/testCrypto.h"
+#include "test/testKB.h"
 //#include "utility/EVector.h"
 
 #include <vector>
@@ -84,6 +85,19 @@ void testDebug(int argc, char** argv) {
   g_test->debugSubIso(atoi(argv[5]), atoi(argv[6]));
 
   delete g_test;
+}
+
+void testKB(int argc, char** argv) {
+  cout << "testKB " << endl;
+  if (argc < 4) {
+    cout << "please input correctly!" << endl;
+    return;
+  }
+
+  TestKB* dg_test = new TestKB(atoi(argv[1]));
+
+  dg_test->loadFromInputFile(argv[2], argv[3], argv[4]);
+
 }
 
 void testVF(int argc, char** argv) {
@@ -227,6 +241,7 @@ void testPlain() {
 }
 
 int main(int argc, char** argv) {
+  cout << "========= start main.cpp by Zhe ===========" << endl;
 //  test VFLib
 //  testVF(argc, argv);
 //	test input multiple vertex label graph
@@ -265,6 +280,8 @@ int main(int argc, char** argv) {
     testTransformSNAP(argc - 1, argv + 1);
   } else if (argv[1][0] == 'v') {
     testVF(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'k'){
+    testKB(argc - 1, argv + 1);
   } else {
     testPlain();
   }
