@@ -9,7 +9,6 @@
 #define DIGRAPH_H_
 
 #include "GlobalDefinition.h"
-#include "graph.h"
 #include <vector>
 #include <tr1/unordered_map>
 
@@ -18,41 +17,41 @@ using namespace std;
 class DIGRAPH {
  public:
   /*
-   * basic data structures
+   * data structures for basic operations
    */
   GraphID graphId;
   int Vcnt, Ecnt;
-  int max_vcnt;
-  VertexLabel *_vlabels;  // vertex label
-  vector<vector<AdjElement> > _outEdges;  // out edge list
-  vector<unordered_map<VertexID, bool> > _outVertex;  // _outVertex[v][u]: check if (v, u)
-  vector<unordered_map<VertexID, bool> > _inVertex;  // in vertex
+  VLabels _vlabels;  // vertex label
+  OutEdge _outEdges;  // out edge list
+  InVertex _inVertex;  // in vertex
 
   /*
    * basic operations
    */
   DIGRAPH();
-  DIGRAPH(int V);
   ~DIGRAPH();
+  void reset();
 
-  void resetVcnt(int V);
+  VLabels& getVLabel();
+  OutEdge& getOutEdge();
+  InVertex& getInVertex();
   int getVcnt();
   int getEcnt();
-  void setVLabel(VertexID v, VertexLabel label);
-  VertexLabel getVLabel(VertexID v);
+
+  bool isEdge(VertexID s, VertexID d);
+  bool isVertex(VertexID v);
+  void insertVertex(VertexID v, VertexLabel label);
+  void insertEdge(VertexID s, VertexID d, EdgeLabel el);
   void insertEdge(Edge e);
+  void setVLabel(VertexID v, VertexLabel label);
+  void setELabel(VertexID s, VertexID d, EdgeLabel el);
+  VertexLabel getVLabel(VertexID v);
+  EdgeLabel getELabel(VertexID s, VertexID d);
+  void removeEdge(VertexID s, VertexID d, bool verify);
+  void removeAllEdges(VertexID s);
   int getOutDegree(VertexID v);
   int getInDegree(VertexID v);
-  void printGraphNew(ostream& out);
-
-  /*
-   * data structures for EL algorithm
-   */
-  VertexID e;
-  vector<unordered_map<Label, int> > _outLabelCnt;
-  vector<unordered_map<Label, int> > _inLabelCnt;
-  void initEL();
-  void constLabelCnt();
+  void printGraph(ostream& out);
 
   /*
    * data structures for subIso
@@ -61,6 +60,19 @@ class DIGRAPH {
   /*
    * data structures for simulation
    */
+
+  /*
+   * data structures for EL algorithm
+   */
+  VertexID e;
+  MapLabelCnt _outLabelCnt;
+  MapLabelCnt _inLabelCnt;
+  CandQtoG Cq;
+
+  void initEL(VertexID x);
+  void initEdgeVisited();
+  void constLabelCnt();
+
 };
 
 #endif /* DIGRAPH_H_ */

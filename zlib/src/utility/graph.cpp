@@ -1470,6 +1470,8 @@ void GRAPH::removeVexAllEdges(VertexID u) {
 }
 
 void GRAPH::removeEdge(VertexID v, VertexID w) {
+  Ecnt --;
+
   for (vector<AdjElement>::iterator it = _adjList[v].begin();
       it != _adjList[v].end(); it++) {
     if ((*it).v == w) {

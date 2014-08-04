@@ -15,38 +15,11 @@ DIGRAPH::DIGRAPH()
     : Vcnt(0),
       Ecnt(0),
       graphId(INVALID_GRAPH_ID) {
-  _vlabels = new VertexLabel[DEFAULT_VERTEX_NUMBER];
-  _outEdges.resize(DEFAULT_VERTEX_NUMBER);
-  _outVertex.resize(DEFAULT_VERTEX_NUMBER);
-  _inVertex.resize(DEFAULT_VERTEX_NUMBER);
-
-  max_vcnt = DEFAULT_VERTEX_NUMBER;
-
-  for (int i = 0; i < DEFAULT_VERTEX_NUMBER; i++) {
-    _vlabels[i] = NO_LABEL;
-  }
-}
-
-DIGRAPH::DIGRAPH(int V)
-    : Vcnt(V),
-      Ecnt(0),
-      graphId(INVALID_GRAPH_ID) {
-  _vlabels = new VertexLabel[V];
-  _outEdges.resize(V);
-  _outVertex.resize(V);
-  _inVertex.resize(V);
-
-  max_vcnt = V;
-
-  for (int i = 0; i < V; i++) {
-    _vlabels[i] = NO_LABEL;
-  }
 }
 
 DIGRAPH::~DIGRAPH() {
-  delete[] _vlabels;
+  _vlabels.clear();
   _outEdges.clear();
-  _outVertex.clear();
   _inVertex.clear();
 }
 
@@ -58,81 +31,129 @@ int DIGRAPH::getEcnt() {
   return Ecnt;
 }
 
-void DIGRAPH::resetVcnt(int V) {
-  if (max_vcnt > V) {
-    Vcnt = V;
-  } else {
-    max_vcnt = V;
-    int prev_Vcnt = getVcnt();
-
-    Vcnt = V;
-
-    delete[] _vlabels;
-    _vlabels = new VertexLabel[V];
-    for (int i = 0; i < V; i++) {
-      _vlabels[i] = NO_LABEL;
-    }
-
-    for (int i = 0; i < prev_Vcnt; i++) {
-      _outEdges[i].clear();
-      _outVertex[i].clear();
-      _inVertex[i].clear();
-    }
-    _outEdges.clear();
-    _outVertex.clear();
-    _inVertex.clear();
-
-    _outEdges.resize(V);
-    _outVertex.resize(V);
-    _inVertex.resize(V);
-  }
+bool DIGRAPH::isEdge(VertexID s, VertexID d) {
+  ASSERT(isVertex(s));
+  ASSERT(isVertex(d));
+  return (_outEdges[s].find(d) != _outEdges[s].end());
 }
 
-void DIGRAPH::setVLabel(VertexID v, VertexLabel label) {
-  ASSERT(v < max_vcnt);
+bool DIGRAPH::isVertex(VertexID v) {
+  return (_vlabels.find(v) != _vlabels.end());
+}
+
+VLabels& DIGRAPH::getVLabel() {
+  return _vlabels;
+}
+
+OutEdge& DIGRAPH::getOutEdge() {
+  return _outEdges;
+}
+
+InVertex& DIGRAPH::getInVertex() {
+  return _inVertex;
+}
+
+void DIGRAPH::reset() {
+  _vlabels.clear();
+  _outEdges.clear();
+  _inVertex.clear();
+}
+
+void DIGRAPH::insertVertex(VertexID v, VertexLabel label) {
+  Vcnt++;
   _vlabels[v] = label;
 }
 
-void DIGRAPH::insertEdge(Edge e) {
-  VertexID v = e.v, w = e.w;
+void DIGRAPH::insertEdge(VertexID s, VertexID d, EdgeLabel el) {
   Ecnt++;
-  _outEdges[v].push_back(AdjElement(w, e.edge_id, e.label));
-  _outVertex[v][w] = true;  // out vertex
-  _inVertex[w][v] = true;  // in vertex
+  _outEdges[s][d] = AdjElement(s, Ecnt, el);
+  _inVertex[d][s] = true;
+}
+
+void DIGRAPH::insertEdge(Edge e) {
+  VertexID s = e.v, d = e.w;
+  Ecnt++;
+  _outEdges[s][d] = AdjElement(d, e.edge_id, e.label);
+  _inVertex[d][s] = true;  // in vertex
+}
+
+void DIGRAPH::setVLabel(VertexID v, VertexLabel label) {
+  ASSERT(isVertex(v));
+  _vlabels[v] = label;
+}
+
+void DIGRAPH::setELabel(VertexID s, VertexID d, EdgeLabel el) {
+  ASSERT(isEdge(s, d));
+  _outEdges[s][d].elabel = el;
+}
+
+void DIGRAPH::removeEdge(VertexID s, VertexID d, bool verify = true) {
+  if (verify)
+    ASSERT(isEdge(s, d));
+  Ecnt--;
+//   remove out edge
+  _outEdges[s].erase(d);
+
+// remove in vertex
+  _inVertex[d].erase(s);
+}
+
+void DIGRAPH::removeAllEdges(VertexID s) {
+  ASSERT(isVertex(s));
+
+  for (AdjList::iterator it = getOutEdge()[s].begin(); it != _outEdges[s].end();
+      it++) {
+    VertexID d = it->first;
+    removeEdge(s, d, false);
+  }
 }
 
 VertexLabel DIGRAPH::getVLabel(VertexID v) {
+  ASSERT(isVertex(v));
   return _vlabels[v];
 }
 
+EdgeLabel DIGRAPH::getELabel(VertexID s, VertexID d) {
+  ASSERT(isEdge(s, d));
+  return _outEdges[s][d].elabel;
+}
+
 int DIGRAPH::getInDegree(VertexID v) {
-//  return _vInDeg[v];
-  return _inVertex[v].size();
+  ASSERT(isVertex(v));
+  return (int) _inVertex[v].size();
 }
 
 int DIGRAPH::getOutDegree(VertexID v) {
-  ASSERT(v < Vcnt);
+  ASSERT(isVertex(v));
   return (int) _outEdges[v].size();
 }
 
-void DIGRAPH::printGraphNew(ostream& out) {
-  cout << "vid " << "out " << "in " << endl;
-  for (int i = 0; i < getVcnt(); i++) {
-    VertexID v = i;
+void DIGRAPH::printGraph(ostream& out) {
+  out << "Vcnt " << "Ecnt " << endl;
+  out << getVcnt() << " " << getEcnt() << " " << endl;
+
+  out << "vid " << "out " << "in " << endl;
+  for (VLabels::iterator it = getVLabel().begin(); it != getVLabel().end();
+      it++) {
+    VertexID v = it->first;
     out << v << " " << getOutDegree(v) << " " << getInDegree(v) << endl;
   }
 
-  cout << "src " << "vl " << "el " << "dest " << "vl " << endl;
-  for (int i = 0; i < getVcnt(); i++) {
-    VertexID s = i;
+  out << "eid " << "src " << "vl " << "el " << "dest " << "vl " << endl;
+  for (VLabels::iterator it = getVLabel().begin(); it != getVLabel().end();
+      it++) {
+    VertexID s = it->first;
     VertexLabel sl = getVLabel(s);
 
-    for (int j = 0; j < getOutDegree(s); j++) {
-      VertexID d = _outEdges[s][j].v;
+    for (AdjList::iterator it1 = getOutEdge()[s].begin();
+        it1 != getOutEdge()[s].end(); it1++) {
+      VertexID d = it1->first;
       VertexLabel dl = getVLabel(d);
 
-      EdgeLabel el = _outEdges[s][j].elabel;
-      out << s << " " << sl << " " << el << " " << d << " " << dl << endl;
+      EdgeID eid = it1->second.eid;
+      EdgeLabel el = it1->second.elabel;
+      out << eid << " " << s << " " << sl << " " << el << " " << d << " " << dl
+          << endl;
     }
   }
 }
@@ -140,17 +161,16 @@ void DIGRAPH::printGraphNew(ostream& out) {
 void DIGRAPH::constLabelCnt() {
   _outLabelCnt.clear();
   _inLabelCnt.clear();
-  _outLabelCnt.resize(getVcnt());
-  _inLabelCnt.resize(getVcnt());
 
-  for (int i = 0; i < getVcnt(); i++) {
-    VertexID s = i;
+  for (VLabels::iterator it = getVLabel().begin(); it != getVLabel().end();
+      it++) {
+    VertexID s = it->first;
     VertexLabel sl = getVLabel(s);
 
-    for (int j = 0; j < getOutDegree(s); j++) {
-      VertexID d = _outEdges[s][j].v;
+    for (AdjList::iterator it1 = getOutEdge()[s].begin();
+        it1 != _outEdges[s].end(); it1++) {
+      VertexID d = it1->first;
       VertexLabel dl = getVLabel(d);
-//      EdgeLabel el = _outEdges[s][j].elabel;
 
       // out label
       if (_outLabelCnt[s].find(dl) == _outLabelCnt[s].end()) {
@@ -169,6 +189,18 @@ void DIGRAPH::constLabelCnt() {
   }
 }
 
-void DIGRAPH::initEL() {
+void DIGRAPH::initEdgeVisited() {
+  for (VLabels::iterator it = getVLabel().begin(); it != getVLabel().end();
+      it++) {
+    VertexID s = it->first;
+    for (AdjList::iterator it1 = getOutEdge()[s].begin();
+        it1 != getOutEdge()[s].end(); it1++) {
+      it1->second.isVisited = false;
+    }
+  }
+}
+
+void DIGRAPH::initEL(VertexID x) {
+  e = x;
   constLabelCnt();
 }

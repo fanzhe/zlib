@@ -31,65 +31,6 @@
 
 using namespace std;
 
-class Edge {
- public:
-  VertexID v, w;
-  EdgeID edge_id;
-
-  EdgeLabel label;
-
-  Edge(EdgeID edge_id = NO_EDGE, VertexID v = NO_EDGE, VertexID w = NO_EDGE,
-       EdgeLabel l = NO_LABEL)
-      : v(v),
-        w(w),
-        edge_id(edge_id),
-        label(l) {
-  }
-
-  Edge(std::string s1, std::string s2) {
-    v = atoi(s1.c_str());
-    w = atoi(s2.c_str());
-  }
-
-  ~Edge() {
-  }
-
-  bool operator ==(Edge e) {
-    if (e.v == v && e.w == w)
-      return true;
-    else if (e.w == v && e.v == w)
-      return true;
-
-    return false;
-  }
-
-  void operator =(const Edge& e) {
-    this->v = e.v;
-    this->w = e.w;
-    this->label = e.label;
-    this->edge_id = e.edge_id;
-  }
-};
-
-class AdjElement {
- public:
-  VertexID v;
-  EdgeID eid;
-  EdgeLabel elabel;
-
-  AdjElement() {
-    v = eid = elabel = -1;
-  }
-
-  AdjElement(VertexID v, EdgeID eid, EdgeLabel _elabel)
-      : v(v),
-        eid(eid),
-        elabel(_elabel) {
-  }
-  ~AdjElement() {
-  }
-};
-
 class GRAPH {
  public:
   bool digraph;

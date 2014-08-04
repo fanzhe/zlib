@@ -89,15 +89,16 @@ void testDebug(int argc, char** argv) {
 
 void testKB(int argc, char** argv) {
   cout << "testKB " << endl;
-  if (argc < 4) {
+  if (argc < 6) {
     cout << "please input correctly!" << endl;
     return;
   }
 
-  TestKB* dg_test = new TestKB(atoi(argv[1]));
+  TestKB* dg_test = new TestKB(atoi(argv[1]), atoi(argv[5]));
 
-  dg_test->loadFromInputFile(argv[2], argv[3], argv[4]);
+  dg_test->loadFromInputFile(argv[2], argv[3], argv[4], argv[6], argv[7]);
 
+  dg_test->testEL();
 }
 
 void testVF(int argc, char** argv) {

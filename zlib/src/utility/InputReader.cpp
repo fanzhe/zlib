@@ -151,16 +151,16 @@ void InputReader::_New_DiGraph_Original(
     DIGRAPH& diGraph, map<VertexID, VertexLabel>& _vLabels,
     map<EdgeID, EdgeLabel>& _eLabels, map<VertexID, set<Triple> >& _adj_list) {
   // initialize size of diGraph
-  diGraph.resetVcnt((int) _adj_list.size());
+//  diGraph.resetVcnt((int) _adj_list.size());
 
-  // vertices
+//  vertices
   for (map<VertexID, VertexLabel>::iterator it = _vLabels.begin();
       it != _vLabels.end(); it++) {
-    diGraph.setVLabel(it->first, it->second);
+    diGraph.insertVertex(it->first, it->second);
   }
 
   // edges
-  int e_id = 0;
+  int e_id = 1;
   for (map<VertexID, set<Triple> >::iterator it = _adj_list.begin();
       it != _adj_list.end(); it++) {
     for (set<Triple>::iterator it1 = it->second.begin();
@@ -268,49 +268,17 @@ void InputReader::GetKBDiGraph(DIGRAPH& diGraph) {
   }
 
   // read linkage
-  map<VertexID, VertexID> v_map;  // orgV -> newV
-//  map<VertexID, set<Triple> > org_adj_list;
-  map<VertexID, set<Triple> > new_adj_list;
-  VertexID org_src, org_dest, org_edge;
-  VertexID new_src, new_dest, new_edge;
-  vid = 0;
+  map<VertexID, set<Triple> > _adj_list;
+  VertexID s, d, e;
+  VertexLabel sl, dl;
 
   while (!m_InputStream.eof()) {
-    m_InputStream >> org_src >> org_edge >> org_dest;
-
-    if (v_map.find(org_src) == v_map.end()) {
-      new_src = vid;
-      v_map[org_src] = vid;
-      vid++;
-    } else {
-      new_src = v_map[org_src];
-    }
-
-    if (v_map.find(org_dest) == v_map.end()) {
-      new_dest = vid;
-      v_map[org_dest] = vid;
-      vid++;
-    } else {
-      new_dest = v_map[org_dest];
-    }
-
-//    org_adj_list[org_src].insert(Triple(org_src, org_edge, org_dest));
-    new_adj_list[new_src].insert(Triple(new_src, org_edge, new_dest));
-  }
-
-  // update vl_map
-  map<VertexID, VertexLabel> new_vl_map;
-  for (map<VertexID, VertexLabel>::iterator it = vl_map.begin();
-      it != vl_map.end(); it++) {
-    VertexID ov = it->first;
-    VertexLabel vl = it->second;
-    VertexID nv = v_map[ov];
-    new_vl_map[nv] = vl;
+    m_InputStream >> s >> e >> d;
+    _adj_list[s].insert(Triple(s, e, d));
   }
 
   // to graph
-  _New_DiGraph_Original(diGraph, new_vl_map, el_map, new_adj_list);
-
+  _New_DiGraph_Original(diGraph, vl_map, el_map, _adj_list);
 }
 
 void InputReader::GetSnapDiGraph(DIGRAPH& diGraph) {
