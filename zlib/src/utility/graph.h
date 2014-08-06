@@ -31,6 +31,28 @@
 
 using namespace std;
 
+/**
+ * Adj definition.
+ */
+class AdjElement {
+ public:
+  VertexID v;
+  EdgeID eid;
+  EdgeLabel elabel;
+
+  AdjElement() {
+    v = eid = elabel = -1;
+  }
+
+  AdjElement(VertexID v, EdgeID eid, EdgeLabel _elabel)
+      : v(v),
+        eid(eid),
+        elabel(_elabel) {
+  }
+  ~AdjElement() {
+  }
+};
+
 class GRAPH {
  public:
   bool digraph;

@@ -148,7 +148,7 @@ void InputReader::EndOfFile(GRAPH& graph, vector<RawVertex>& v_list,
 }
 
 void InputReader::_New_DiGraph_Original(
-    DIGRAPH& diGraph, map<VertexID, VertexLabel>& _vLabels,
+    DIGRAPHBASIC& diGraph, map<VertexID, VertexLabel>& _vLabels,
     map<EdgeID, EdgeLabel>& _eLabels, map<VertexID, set<Triple> >& _adj_list) {
   // initialize size of diGraph
 //  diGraph.resetVcnt((int) _adj_list.size());
@@ -166,7 +166,7 @@ void InputReader::_New_DiGraph_Original(
     for (set<Triple>::iterator it1 = it->second.begin();
         it1 != it->second.end(); it1++) {
       const Triple& tri = *it1;
-      diGraph.insertEdge(Edge(e_id++, tri.o, tri.d, _eLabels[tri.e]));
+      diGraph.insertEdge(tri.o, tri.d, _eLabels[tri.e]);
     }
   }
 }
@@ -247,7 +247,7 @@ void InputReader::_New_Graph(GRAPH& graph, vector<RawVertex>& v_list,
   ASSERT(graph.V() == (int )v_list.size());
 }
 
-void InputReader::GetKBDiGraph(DIGRAPH& diGraph) {
+void InputReader::GetKBDiGraph(DIGRAPHBASIC& diGraph) {
   // read vertex label
   VertexID vid;
   VertexLabel vl;
@@ -281,7 +281,7 @@ void InputReader::GetKBDiGraph(DIGRAPH& diGraph) {
   _New_DiGraph_Original(diGraph, vl_map, el_map, _adj_list);
 }
 
-void InputReader::GetSnapDiGraph(DIGRAPH& diGraph) {
+void InputReader::GetSnapDiGraph(DIGRAPHBASIC& diGraph) {
   map<VertexID, VertexID> v_map;
   map<VertexID, set<VertexID> > org_adj_list;
   map<VertexID, set<VertexID> > new_adj_list;

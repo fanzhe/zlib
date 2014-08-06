@@ -89,7 +89,7 @@ class InputReader {
               const char* input_el_name);
   ~InputReader();
 
-  void _New_DiGraph_Original(DIGRAPH& diGraph,
+  void _New_DiGraph_Original(DIGRAPHBASIC& diGraph,
                              map<VertexID, VertexLabel>& _vLabels,
                              map<EdgeID, EdgeLabel>& _eLabels,
                              map<VertexID, set<Triple> >& _org_adj_list);
@@ -107,8 +107,8 @@ class InputReader {
   bool GetNextGraph_Original(GRAPH& graph);
   bool GetNextGraph_MultiVertexLabel(GRAPH& graph);
   void GetSnapGraph(GRAPH& graph);
-  void GetSnapDiGraph(DIGRAPH& diGraph);
-  void GetKBDiGraph(DIGRAPH& diGraph);
+  void GetSnapDiGraph(DIGRAPHBASIC& diGraph);
+  void GetKBDiGraph(DIGRAPHBASIC& diGraph);
   bool GetNextGraph_MultiVertexLabel_Original(GRAPH& graph);
 
  public:

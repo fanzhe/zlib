@@ -35,8 +35,7 @@ typedef int Status;
 #define     NO_VERTEX     (-1)
 #define     NO_LABEL      (-1)
 #define     INVALID_GRAPH_ID  (-1)
-#define     ALGORITHM_FGINDEX   (-1)  // useless, for gspan compile
-#define     FILENAME_BUFF_SIZE  (256)
+#define     ALGORITHM_FGINDEX   (-1)  // useless, for gspan compile#define     FILENAME_BUFF_SIZE  (256)
 #define     DEFAULT_VERTEX_NUMBER (256)
 //#define     max(X,Y)      ((X) > (Y) ? : (X) : (Y);)
 //#define     min(X,Y)      ((X) < (Y) ? : (X) : (Y);)
@@ -92,40 +91,21 @@ class Edge {
   }
 };
 
-/**
- * Adj definition.
- */
-class AdjElement {
- public:
-  VertexID v;
-  EdgeID eid;
-  EdgeLabel elabel;
-  /**
-   * used and initialized in EL
-   */
-  bool isVisited;
-
-  AdjElement() {
-    v = eid = elabel = -1;
-  }
-
-  AdjElement(VertexID v, EdgeID eid, EdgeLabel _elabel)
-      : v(v),
-        eid(eid),
-        elabel(_elabel) {
-  }
-  ~AdjElement() {
-  }
-};
-
-typedef unordered_map<VertexID, VertexLabel> VLabels;
-typedef unordered_map<VertexID, AdjElement> AdjList;
-typedef unordered_map<VertexID, AdjList> OutEdge;
-typedef unordered_map<VertexID, bool> AdjListBool;
-typedef unordered_map<VertexID, AdjListBool> InVertex;
-
+//typedef unordered_map<VertexID, VertexLabel> VLabels;
+//typedef unordered_map<VertexID, AdjElement> AdjList;
+//typedef unordered_map<VertexID, AdjList> OutEdge;
+//typedef unordered_map<VertexID, bool> AdjListBool;
+//typedef unordered_map<VertexID, AdjListBool> InVertex;
+//
 typedef unordered_map<Label, int> LabelCnt;
 typedef unordered_map<VertexID, LabelCnt> MapLabelCnt;
 typedef unordered_map<VertexID, set<VertexID> > CandQtoG;
 
+template<class VLabelType, class ELabelType>
+class DIGRAPH;
+
+class DGQVertex;
+
+typedef DIGRAPH<VertexLabel, EdgeLabel> DIGRAPHBASIC;
+typedef DIGRAPH<DGQVertex, EdgeLabel> DIGRAPHDGQ;
 #endif

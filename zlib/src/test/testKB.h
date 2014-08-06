@@ -14,8 +14,8 @@
 
 class TestKB {
  public:
-  vector<DIGRAPH*> graphDB;
-  vector<DIGRAPH*> queryDB;
+  vector<DIGRAPHBASIC*> graphDB;
+  vector<DIGRAPHBASIC*> queryDB;
   int g_cnt;
   int q_cnt;
 
@@ -43,7 +43,7 @@ class TestKB {
     InputReader q_reader(input_q_name, input_qvl_name, input_el_name);
 
     for (int i = 0; i < q_cnt; i++) {
-      DIGRAPH *dq = new DIGRAPH();
+      DIGRAPHBASIC *dq = new DIGRAPHBASIC();
 
       q_reader.GetKBDiGraph(*dq);
       dq->printGraph(cout);
@@ -53,7 +53,7 @@ class TestKB {
     InputReader g_reader(input_g_name, input_gvl_name, input_el_name);
 
     for (int i = 0; i < g_cnt; i++) {
-      DIGRAPH *dg = new DIGRAPH();
+      DIGRAPHBASIC *dg = new DIGRAPHBASIC();
 
       g_reader.GetKBDiGraph(*dg);
       dg->printGraph(cout);
@@ -63,12 +63,13 @@ class TestKB {
 
   void testEL() {
     VertexID u = 1;
-    VertexID v = 1;
+    VertexID v1 = 1;
+    VertexID v2 = 1;
     for (int i = 0; i < q_cnt; i++) {
       for (int j = 0; j < g_cnt; j++) {
-        EL* el = new EL(queryDB[i], u, graphDB[j], v);
+        EL* el = new EL(queryDB[i], u, graphDB[j], v1, v2);
         // TODO
-        el->search();
+        el->run();
         delete el;
       }
     }
