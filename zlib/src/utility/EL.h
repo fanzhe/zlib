@@ -76,6 +76,7 @@ class EL {
   DIGRAPHDGQ* dGq;
   VertexID e1, e2;
   CandQtoG Cq1, Cq2, Cqg;  // (dq, e1, dg), (dq, e2, dg), (dq, dGq)
+  Map M;
 
   EL(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID v1,
      VertexID v2) {
@@ -91,23 +92,43 @@ class EL {
     dGq = new DIGRAPHDGQ();
   }
 
+  /**
+   * main portal
+   * 1. search Cq1 and Cq2
+   * 2. refine Cq1 and Cq2
+   * 3. produce dGq by Cq1 and Cq2
+   * 4. minimize dGq
+   * 5. final check mapping
+   */
   void run() {
+//    dq->removeAllInEdges(6);
+//    dq->printGraph(cout);
+//    return;
     // check if (dg, dq) |= (e1, e2)
 
     // search candidate Cq1 and Cq2
     dq->initEdgeVisited();
     search(Cq1, e1);
+    refineCQ(Cq1);
     dq->initEdgeVisited();
     search(Cq2, e2);
+    refineCQ(Cq2);
 
-    // product
+    // product dGq
     dq->initEdgeVisited();
-    dGq->reset();
-    product();
+    productGQ();
 
-    cout << "product graph: " << endl;
+    cout << "product graph before: " << endl;
     dGq->printGraph(cout);
+
+    // minimize dGq
+    minimizeGQ();
+
+    cout << "product graph after: " << endl;
+    dGq->printGraph(cout);
+
     // check
+    check();
   }
 
   bool checkLabelAndDeg(VertexID u, VertexID v) {
@@ -136,8 +157,48 @@ class EL {
     return true;
   }
 
+  /**
+   * refine the candidate set before product
+   * trick: special case
+   */
+  void refineCQ(CandQtoG& Cq) {
+    bool finish = true;
+    while (finish) {
+      bool terminate = false;
+      // for each u in dq
+      for (typename DIGRAPHBASIC::VLabels::iterator itq =
+          dq->getVLabel().begin(); itq != dq->getVLabel().end(); itq++) {
+        VertexID u = itq->first;
+
+        if (Cq[u].size() == 1) {
+          VertexID v = *Cq[u].begin();
+          for (typename DIGRAPHBASIC::VLabels::iterator itq1 = dq->getVLabel()
+              .begin(); itq1 != dq->getVLabel().end(); itq1++) {
+            VertexID u1 = itq1->first;
+            if (u == u1) {
+              continue;
+            }
+
+            // erase v
+            if (Cq[u1].find(v) != Cq[u1].end()) {
+              Cq[u1].erase(v);
+              terminate = true;
+            }
+          }
+        }
+      }
+
+      if (terminate) {
+        finish = true;
+      } else {
+        finish = false;
+      }
+    }
+
+  }
+
   /*
-   * TODO: test
+   * TODO:
    * G_{e}^Q
    */
   void search(CandQtoG& Cq, VertexID v) {
@@ -165,6 +226,7 @@ class EL {
         }
         itq->second.isVisited = true;
         // Cq[up] was check before
+        // TODO: we can do more here
         if (Cq.find(up) != Cq.end()) {
           continue;
         }
@@ -239,16 +301,16 @@ class EL {
   void insertInverse(VertexID u, VertexID up, VertexID& vid) {
     // (up, u)
     DGQVertex tmp_dGqv;
-    // for each *dGqvid* that u mapped in Cqg
-    for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
-        itq2++) {
-      VertexID dGqvid = *itq2;
-      const DGQVertex& dGqv = dGq->getVLabel(dGqvid);
-      VertexID v1 = dGqv.vp.u;
-      VertexID v2 = dGqv.vp.v;
+    // if up is check before
+    if (Cqg.find(up) != Cqg.end()) {
+      // for each *dGqvid* that u mapped in Cqg
+      for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
+          itq2++) {
+        VertexID dGqvid = *itq2;
+        const DGQVertex& dGqv = dGq->getVLabel(dGqvid);
+        VertexID v1 = dGqv.vp.u;
+        VertexID v2 = dGqv.vp.v;
 
-      // if up is check before
-      if (Cqg.find(up) != Cqg.end()) {
         // for each *dGqvidp* that up map to in Cqg
         for (set<VertexID>::iterator it1 = Cqg[up].begin();
             it1 != Cqg[up].end(); it1++) {
@@ -264,8 +326,16 @@ class EL {
             }
           }
         }
-      } else {
-        // never check
+      }
+    } else {  // never check
+      // for each *dGqvid* that u mapped in Cqg
+      for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
+          itq2++) {
+        VertexID dGqvid = *itq2;
+        const DGQVertex& dGqv = dGq->getVLabel(dGqvid);
+        VertexID v1 = dGqv.vp.u;
+        VertexID v2 = dGqv.vp.v;
+
         // for each v1p that up maps in Cq1
         for (set<VertexID>::iterator it1 = Cq1[up].begin();
             it1 != Cq1[up].end(); it1++) {
@@ -296,16 +366,17 @@ class EL {
   void insert(VertexID u, VertexID up, VertexID& vid) {
     // (u, up)
     DGQVertex tmp_dGqv;
-    // for each *dGqvid* that u mapped in Cqg
-    for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
-        itq2++) {
-      VertexID dGqvid = *itq2;
-      const DGQVertex& dGqv = dGq->getVLabel(dGqvid);
-      VertexID v1 = dGqv.vp.u;
-      VertexID v2 = dGqv.vp.v;
 
-      // if up is check before
-      if (Cqg.find(up) != Cqg.end()) {
+    // if up is check before
+    if (Cqg.find(up) != Cqg.end()) {
+      // for each *dGqvid* that u mapped in Cqg
+      for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
+          itq2++) {
+        VertexID dGqvid = *itq2;
+        const DGQVertex& dGqv = dGq->getVLabel(dGqvid);
+        VertexID v1 = dGqv.vp.u;
+        VertexID v2 = dGqv.vp.v;
+
         // for each *dGqvidp* that up map to in Cqg
         for (set<VertexID>::iterator it1 = Cqg[up].begin();
             it1 != Cqg[up].end(); it1++) {
@@ -321,8 +392,16 @@ class EL {
             }
           }
         }
-      } else {
-        // never check
+      }
+    } else {  // never check
+      // for each *dGqvid* that u mapped in Cqg
+      for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
+          itq2++) {
+        VertexID dGqvid = *itq2;
+        const DGQVertex& dGqv = dGq->getVLabel(dGqvid);
+        VertexID v1 = dGqv.vp.u;
+        VertexID v2 = dGqv.vp.v;
+
         // for each v1p that up maps in Cq1
         for (set<VertexID>::iterator it1 = Cq1[up].begin();
             it1 != Cq1[up].end(); it1++) {
@@ -354,7 +433,7 @@ class EL {
    * TODO
    * G^Q = G_{e1}^Q \times G_{e2}^Q
    */
-  void product() {
+  void productGQ() {
     VertexID u = dq->e;
     VertexID up;
     stack<VertexID> S;
@@ -362,12 +441,12 @@ class EL {
 
     VertexID vid = 1;
 
-    // init: insert vertex (v1, v2)
+    // initialize: insert vertex (v1, v2)
     VertexID v1 = *(Cq1[u].begin());
     VertexID v2 = *(Cq2[u].begin());
-    DGQVertex tmp_dGqv(u, Pair(v1, v2));  // use in the following
-    Cqg[u].insert(vid);  // q -> dGq
-    dGq->insertVertex(vid++, tmp_dGqv);  // dGq -> (vid, dgqv)
+    DGQVertex tmp_dGqv(u, Pair(v1, v2));          // use in the following
+    Cqg[u].insert(vid);          // q -> dGq
+    dGq->insertVertex(vid++, tmp_dGqv);          // dGq -> (vid, dgqv)
 
     while (!S.empty()) {
       u = S.top();
@@ -401,13 +480,153 @@ class EL {
     }
   }
 
+  /**
+   * optimization: minimize dGq
+   */
+  void minimizeGQ() {
+    // dGq, dq, Cqg
+    bool changed = true;
+
+    while (changed) {
+      bool terminate = false;
+      // for each u in dq
+      for (typename DIGRAPHBASIC::VLabels::iterator itq1 =
+          dq->getVLabel().begin(); itq1 != dq->getVLabel().end(); itq1++) {
+        VertexID u = itq1->first;
+
+        // for each up in dq, where (u, up)
+        for (typename DIGRAPHBASIC::AdjList::iterator itq2 = dq->getOutEdge()[u]
+            .begin(); itq2 != dq->getOutEdge()[u].end(); itq2++) {
+          VertexID up = itq2->first;
+
+          // start do something
+          // for each v in dGq, v \in Cqg[u]
+          for (set<VertexID>::iterator itGq1 = Cqg[u].begin();
+              itGq1 != Cqg[u].end();) {
+            VertexID v = *itGq1;
+
+            bool flag = true;
+            // for each vp in dGq, u \in Cqg[up]
+            for (set<VertexID>::iterator itGq2 = Cqg[up].begin();
+                itGq2 != Cqg[up].end(); itGq2++) {
+              VertexID vp = *itGq2;
+
+              if (dGq->isEdge(v, vp)) {
+                flag = false;
+                break;
+              }
+            }
+
+            // no edge
+            if (flag) {
+              // remove v from Cqg[u] and dGq
+              dGq->removeVertex(v);
+              Cqg[u].erase(itGq1++);
+              terminate = true;
+            } else {
+              itGq1++;
+            }
+          }
+        }
+
+        // for each up in dq, where (up, u)
+        for (typename DIGRAPHBASIC::AdjListBool::iterator itq2 =
+            dq->getInVertex()[u].begin(); itq2 != dq->getInVertex()[u].end();
+            itq2++) {
+          VertexID up = itq2->first;
+
+          // start do something
+          // for each v in dGq, v \in Cqg[u]
+          for (set<VertexID>::iterator itGq1 = Cqg[u].begin();
+              itGq1 != Cqg[u].end();) {
+            VertexID v = *itGq1;
+
+            bool flag = true;
+            // for each vp in dGq, u \in Cqg[up]
+            for (set<VertexID>::iterator itGq2 = Cqg[up].begin();
+                itGq2 != Cqg[up].end(); itGq2++) {
+              VertexID vp = *itGq2;
+
+              if (dGq->isEdge(vp, v)) {
+                flag = false;
+                break;
+              }
+            }
+
+            // no edge
+            if (flag) {
+              // remove v
+              dGq->removeVertex(v);
+              Cqg[u].erase(itGq1++);
+              terminate = true;
+            } else {
+              itGq1++;
+            }
+          }
+        }
+
+      }
+
+      if (terminate)
+        changed = true;
+      else
+        changed = false;
+    }
+  }
+
   /*
    * TODO
-   * check e1 = e2 by q via subIso
+   * check e1 <=> e2 by dGq and Cqg
    */
-  bool check(DIGRAPHBASIC* gq) {
+  void check() {
+    // dq, dGq, Cqg
+    /**
+     * Cqg[1] -> {v1 ...}
+     * Cqg[2] -> {v2 ...}
+     * Cqg[3] -> {v3 ...}
+     * ...
+     * Cqg[m] -> {vn ...}
+     */
+
+    // initialize the first mapping
+    VertexID u = dq->e;
+    VertexID v = *(Cqg[u].begin());
+    M[u] = v;
+    enumMatch(0, u);
+  }
+
+  void enumMatch(int depth, VertexID u) {
+    if (depth == dq->Vcnt) {
+      // check
+
+    }
+
+    VertexID v = M[u];
+    // for each up, where (u, up)
+    for (typename DIGRAPHBASIC::AdjList::iterator it = dq->getOutEdge()[u].begin();
+        it != dq->getOutEdge()[u].end(); it++) {
+      VertexID up = it->first;
+
+      for (set<VertexID>::iterator it1 = Cqg[up].begin();
+          it1 != Cqg[up].end(); it1++) {
+        VertexID vp = *it1;
+
+        // if (v, vp) is not an edge
+        if (!dGq->isEdge(v, vp)) {
+          continue;
+        }
+
+        //
+
+        //
+        M[up] = vp;
+        enumMatch(depth + 1, up);
+      }
+    }
 
   }
-};
+
+}
+;
 
 #endif /* EL_H_ */

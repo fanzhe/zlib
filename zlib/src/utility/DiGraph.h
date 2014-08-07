@@ -84,7 +84,11 @@ class DIGRAPH {
   const VLabelType& getVLabel(VertexID v);
   const ELabelType& getELabel(VertexID s, VertexID d);
   void removeEdge(VertexID s, VertexID d, bool verify);
-  void removeAllEdges(VertexID s);
+  void removeAllOutEdges(VertexID s);
+  void removeAllInEdges(VertexID s);
+  void removeVertex(VertexID s);
+  void eraseVertex(VertexID s);
+  int getDegree(VertexID v);
   int getOutDegree(VertexID v);
   int getInDegree(VertexID v);
   void printGraph(ostream& out);
@@ -127,9 +131,9 @@ DIGRAPH<VLabelType, ELabelType>::DIGRAPH()
 
 template<class VLabelType, class ELabelType>
 DIGRAPH<VLabelType, ELabelType>::~DIGRAPH() {
-  _vlabels.clear();
-  _outEdges.clear();
-  _inVertex.clear();
+  getVLabel().clear();
+  getOutEdge().clear();
+  getInVertex().clear();
 }
 
 template<class VLabelType, class ELabelType>
@@ -146,12 +150,12 @@ template<class VLabelType, class ELabelType>
 bool DIGRAPH<VLabelType, ELabelType>::isEdge(VertexID s, VertexID d) {
   ASSERT(isVertex(s));
   ASSERT(isVertex(d));
-  return (_outEdges[s].find(d) != _outEdges[s].end());
+  return (getOutEdge()[s].find(d) != getOutEdge()[s].end());
 }
 
 template<class VLabelType, class ELabelType>
 bool DIGRAPH<VLabelType, ELabelType>::isVertex(VertexID v) {
-  return (_vlabels.find(v) != _vlabels.end());
+  return (getVLabel().find(v) != getVLabel().end());
 }
 
 template<class VLabelType, class ELabelType>
@@ -174,37 +178,37 @@ typename DIGRAPH<VLabelType, ELabelType>::InVertex& DIGRAPH<VLabelType,
 
 template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::reset() {
-  _vlabels.clear();
-  _outEdges.clear();
-  _inVertex.clear();
+  getVLabel().clear();
+  getOutEdge().clear();
+  getInVertex().clear();
 }
 
 template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::insertVertex(VertexID v,
                                                    const VLabelType& label) {
   Vcnt++;
-  _vlabels[v] = label;
+  getVLabel()[v] = label;
 }
 
 template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::insertEdge(VertexID s, VertexID d,
                                                  const ELabelType& el) {
   Ecnt++;
-  _outEdges[s][d] = AdjElement<ELabelType>(s, Ecnt, el);
-  _inVertex[d][s] = true;
+  getOutEdge()[s][d] = AdjElement<ELabelType>(s, Ecnt, el);
+  getInVertex()[d][s] = true;
 }
 
 template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::setVLabel(VertexID v, VLabelType& label) {
   ASSERT(isVertex(v));
-  _vlabels[v] = label;
+  getVLabel()[v] = label;
 }
 
 template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::setELabel(VertexID s, VertexID d,
                                                 ELabelType& el) {
   ASSERT(isEdge(s, d));
-  _outEdges[s][d].elabel = el;
+  getOutEdge()[s][d].elabel = el;
 }
 
 template<class VLabelType, class ELabelType>
@@ -214,46 +218,106 @@ void DIGRAPH<VLabelType, ELabelType>::removeEdge(VertexID s, VertexID d,
     ASSERT(isEdge(s, d));
   Ecnt--;
 //   remove out edge
-  _outEdges[s].erase(d);
+  getOutEdge()[s].erase(d);
 
 // remove in vertex
-  _inVertex[d].erase(s);
+  getInVertex()[d].erase(s);
+
+  // check isolated
+  if (getDegree(s) == 0) {
+    eraseVertex(s);
+  }
+  if (getDegree(d) == 0) {
+    eraseVertex(d);
+  }
 }
 
 template<class VLabelType, class ELabelType>
-void DIGRAPH<VLabelType, ELabelType>::removeAllEdges(VertexID s) {
+void DIGRAPH<VLabelType, ELabelType>::removeAllOutEdges(VertexID s) {
   ASSERT(isVertex(s));
 
   for (typename AdjList::iterator it = getOutEdge()[s].begin();
-      it != _outEdges[s].end(); it++) {
+      it != getOutEdge()[s].end(); it++) {
     VertexID d = it->first;
-    removeEdge(s, d, false);
+    // d will be isolated after removing s
+    if (getDegree(d) == 1) {
+      eraseVertex(d);
+    } else {
+      getInVertex()[d].erase(s);
+    }
+    Ecnt--;
   }
+  getOutEdge().erase(s);
+}
+
+template<class VLabelType, class ELabelType>
+void DIGRAPH<VLabelType, ELabelType>::eraseVertex(VertexID s) {
+  ASSERT(isVertex(s));
+
+  getVLabel().erase(s);
+  getOutEdge().erase(s);
+  getInVertex().erase(s);
+  Vcnt--;
+}
+
+template<class VLabelType, class ELabelType>
+void DIGRAPH<VLabelType, ELabelType>::removeVertex(VertexID s) {
+  ASSERT(isVertex(s));
+
+  removeAllOutEdges(s);
+  removeAllInEdges(s);
+  getVLabel().erase(s);
+  Vcnt--;
+}
+
+template<class VLabelType, class ELabelType>
+void DIGRAPH<VLabelType, ELabelType>::removeAllInEdges(VertexID s) {
+  ASSERT(isVertex(s));
+
+  for (typename AdjListBool::iterator it = getInVertex()[s].begin();
+      it != getInVertex()[s].end(); it++) {
+    VertexID ps = it->first;
+
+    // ps will be isolated after removing s
+    if (getDegree(ps) == 1) {
+      eraseVertex(ps);
+    } else {
+      getOutEdge()[ps].erase(s);
+    }
+    Ecnt--;
+  }
+  getInVertex().erase(s);
 }
 
 template<class VLabelType, class ELabelType>
 const VLabelType& DIGRAPH<VLabelType, ELabelType>::getVLabel(VertexID v) {
   ASSERT(isVertex(v));
-  return _vlabels[v];
+  return getVLabel()[v];
 }
 
 template<class VLabelType, class ELabelType>
 const ELabelType& DIGRAPH<VLabelType, ELabelType>::getELabel(VertexID s,
                                                              VertexID d) {
   ASSERT(isEdge(s, d));
-  return _outEdges[s][d].elabel;
+  return getOutEdge()[s][d].elabel;
 }
 
 template<class VLabelType, class ELabelType>
 int DIGRAPH<VLabelType, ELabelType>::getInDegree(VertexID v) {
   ASSERT(isVertex(v));
-  return (int) _inVertex[v].size();
+  return (int) getInVertex()[v].size();
+}
+
+template<class VLabelType, class ELabelType>
+int DIGRAPH<VLabelType, ELabelType>::getDegree(VertexID v) {
+  ASSERT(isVertex(v));
+  return (int) (getInVertex()[v].size() + getOutEdge()[v].size());
 }
 
 template<class VLabelType, class ELabelType>
 int DIGRAPH<VLabelType, ELabelType>::getOutDegree(VertexID v) {
   ASSERT(isVertex(v));
-  return (int) _outEdges[v].size();
+  return (int) getOutEdge()[v].size();
 }
 
 template<class VLabelType, class ELabelType>

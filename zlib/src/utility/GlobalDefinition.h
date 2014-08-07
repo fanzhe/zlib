@@ -100,6 +100,7 @@ class Edge {
 typedef unordered_map<Label, int> LabelCnt;
 typedef unordered_map<VertexID, LabelCnt> MapLabelCnt;
 typedef unordered_map<VertexID, set<VertexID> > CandQtoG;
+typedef unordered_map<VertexID, VertexID> Map;
 
 template<class VLabelType, class ELabelType>
 class DIGRAPH;
