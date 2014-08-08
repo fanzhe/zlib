@@ -107,10 +107,12 @@ class DIGRAPH {
   VertexID e;
   MapLabelCnt _outLabelCnt;
   MapLabelCnt _inLabelCnt;
+  AdjListBool _vVisited;
 
   void initEL(VertexID x);
   void initEdgeVisited();
   void constLabelCnt();
+  void setVertexVisited();
 
 };
 
@@ -386,6 +388,15 @@ void DIGRAPH<VLabelType, ELabelType>::constLabelCnt() {
         _inLabelCnt[d][sl]++;
       }
     }
+  }
+}
+
+template<class VLabelType, class ELabelType>
+void DIGRAPH<VLabelType, ELabelType>::setVertexVisited() {
+  for (typename VLabels::iterator it = getVLabel().begin();
+      it != getVLabel().end(); it++) {
+    VertexID s = it->first;
+    _vVisited[s] = false;
   }
 }
 

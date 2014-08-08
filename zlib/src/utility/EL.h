@@ -9,31 +9,8 @@
 #define EL_H_
 
 #include "DiGraph.h"
+#include "BoolEqn.h"
 #include <stack>
-
-class Pair {
- public:
-  VertexID u;
-  VertexID v;
-
-  Pair() {
-
-  }
-
-  Pair(VertexID _u, VertexID _v)
-      : u(_u),
-        v(_v) {
-  }
-
-  ~Pair() {
-
-  }
-
-  void operator =(const Pair& _p) {
-    u = _p.u;
-    v = _p.v;
-  }
-};
 
 class DGQVertex {
  public:
@@ -77,6 +54,8 @@ class EL {
   VertexID e1, e2;
   CandQtoG Cq1, Cq2, Cqg;  // (dq, e1, dg), (dq, e2, dg), (dq, dGq)
   Map M;
+
+  BoolEqn Xe1e2;
 
   EL(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID v1,
      VertexID v2) {
@@ -127,7 +106,20 @@ class EL {
     cout << "product graph after: " << endl;
     dGq->printGraph(cout);
 
+    // print Cq
+    cout << "Cqg: " << endl;
+    for (CandQtoG::iterator it = Cqg.begin(); it != Cqg.end(); it++) {
+      cout << it->first << "-> ";
+
+      for (set<VertexID>::iterator it1 = it->second.begin();
+          it1 != it->second.end(); it1++) {
+        cout << *it1 << " ";
+      }
+      cout << endl;
+    }
+
     // check
+    cout << "start check~" << endl;
     check();
     cout << "finish!" << endl;
   }
@@ -329,6 +321,13 @@ class EL {
         }
       }
     } else {  // never check
+      // TODO:
+      // basic, can be optimized
+      // avoid redundancy
+      // intersect Cq1[up] and Cq2[up]
+      set<VertexID> temp;
+      twoSetsIntersection(Cq1[up], Cq2[up], temp);
+
       // for each *dGqvid* that u mapped in Cqg
       for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
           itq2++) {
@@ -341,10 +340,21 @@ class EL {
         for (set<VertexID>::iterator it1 = Cq1[up].begin();
             it1 != Cq1[up].end(); it1++) {
           VertexID v1p = *it1;
+
+          bool isInter1 = (temp.find(v1p) != temp.end());
+
           // for each v2p that up maps in Cq2
           for (set<VertexID>::iterator it2 = Cq2[up].begin();
               it2 != Cq2[up].end(); it2++) {
             VertexID v2p = *it2;
+
+            bool isInter2 = (temp.find(v2p) != temp.end());
+
+            if (isInter1 && isInter2) {
+              if (v1p > v2p) {
+                continue;
+              }
+            }
 
             // (v1p, v1) and (v2p, v2) are edges, and label are consistent
             if (dg->isEdge(v1p, v1) && dg->isEdge(v2p, v2)) {
@@ -395,6 +405,13 @@ class EL {
         }
       }
     } else {  // never check
+      // TODO:
+      // basic, can be optimized
+      // avoid redundancy
+      // intersect Cq1[up] and Cq2[up]
+      set<VertexID> temp;
+      twoSetsIntersection(Cq1[up], Cq2[up], temp);
+
       // for each *dGqvid* that u mapped in Cqg
       for (set<VertexID>::iterator itq2 = Cqg[u].begin(); itq2 != Cqg[u].end();
           itq2++) {
@@ -407,10 +424,21 @@ class EL {
         for (set<VertexID>::iterator it1 = Cq1[up].begin();
             it1 != Cq1[up].end(); it1++) {
           VertexID v1p = *it1;
+
+          bool isInter1 = (temp.find(v1p) != temp.end());
+
           // for each v2p that up maps in Cq2
           for (set<VertexID>::iterator it2 = Cq2[up].begin();
               it2 != Cq2[up].end(); it2++) {
             VertexID v2p = *it2;
+
+            bool isInter2 = (temp.find(v2p) != temp.end());
+
+            if (isInter1 && isInter2) {
+              if (v1p > v2p) {
+                continue;
+              }
+            }
 
             // (v1, v1p) and (v2, v2p) are edges, and label are consistent
             if (dg->isEdge(v1, v1p) && dg->isEdge(v2, v2p)) {
@@ -591,78 +619,152 @@ class EL {
 
     // initialize the first mapping
     dq->initEdgeVisited();
+    // TODO
+    // may change dg to $G_{d_q}$
+    dg->setVertexVisited();
     VertexID u = dq->e;
-    VertexID v = *(Cqg[u].begin());
+    CandQtoG::iterator itCqg = Cqg.begin();
+    VertexID v = *(itCqg->second.begin());
     M[u] = v;
-//    enumMatch(0 + 1);
-    _enumMatch(1, u);
+    enumMatch(++itCqg);
   }
 
-  void enumMatch(int depth) {
-//    if (depth == Cqg.size()) {
-//      // end
-//
-//    }
-//
-//    CandQtoG::iterator it = Cqg.begin() + depth;
-//    VertexID u = it->first;
-//    for (set<VertexID>::iterator it1 = it->second.begin(); it1 != Cqg.end();
-//        it1++) {
-//      VertexID v = *it1;
-//
-//    }
-  }
-
-  void _enumMatch(int depth, VertexID u) {
-//    cout << "d: " << depth << " ";
-    if (depth == dq->Vcnt) {
+  void enumMatch(CandQtoG::iterator itCqg) {
+//    cout << itCqg->first << endl;
+    if (itCqg == Cqg.end()) {
       // check
       // output M first
       cout << "++++Mapping:" << endl;
       for (typename DIGRAPHBASIC::VLabels::iterator it =
           dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
         VertexID u = it->first;
-        cout << M[u] << " ";
+        VertexID v = M[u];
+        VertexID vg1 = dGq->getVLabel(v).vp.u;
+        VertexID vg2 = dGq->getVLabel(v).vp.v;
+        cout << v << ": (" << vg1 << ", " << vg2 << ") ";
       }
-      cout << endl;
+      cout << endl << "----Mapping" << endl;
+
+      // TODO
+      // generate boolean conjunction
+
+      //
+      return;
     }
 
-    VertexID v = M[u];
-    cout << v << " ";
-    // for each vp in dGq, where (v, vp)
-    for (typename DIGRAPHDGQ::AdjList::iterator itgq = dGq->getOutEdge()[v]
-        .begin(); itgq != dGq->getOutEdge()[v].end(); itgq++) {
-      VertexID vp = itgq->first;
-      VertexID up = dGq->getVLabel(vp).u;
+    VertexID u = itCqg->first;
+    for (set<VertexID>::iterator itSet = itCqg->second.begin();
+        itSet != itCqg->second.end(); itSet++) {
+      VertexID v = *itSet;
+      bool flag = false;
 
-      // if (u, up) is visited
-      if (dq->getOutEdge()[u][up].isVisited)
+      // check if nodes in vp are check before
+      VertexID vg1 = dGq->getVLabel(v).vp.u;
+      VertexID vg2 = dGq->getVLabel(v).vp.v;
+      if (dg->_vVisited[vg1] || dg->_vVisited[vg2]) {
         continue;
-      dq->getOutEdge()[u][up].isVisited = true;
+      }
 
-      M[up] = vp;
-      _enumMatch(depth + 1, up);
+//      cout << u << " " << v << endl;
 
-      dq->getOutEdge()[u][up].isVisited = false;
-    }
+      // check if for all (u, up) \in dq => (v, vp) \in dGq
+      flag = false;
+      for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
+          .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
+        if (M.find(itq->first) == M.end())
+          continue;
 
-    // for each vp in dGq, where (vp, v)
-    for (typename DIGRAPHDGQ::AdjListBool::iterator itgq = dGq->getInVertex()[v]
-        .begin(); itgq != dGq->getInVertex()[v].end(); itgq++) {
-      VertexID vp = itgq->first;
-      VertexID up = dGq->getVLabel(vp).u;
-
-      // if (up, u) is visited
-      if (dq->getOutEdge()[up][u].isVisited)
+        VertexID up = itq->first;
+        VertexID vp = M[up];
+        // if (u, up) => (v, vp)
+        if (!dGq->isEdge(v, vp)) {
+          flag = true;
+          break;
+        }
+      }
+      if (flag) {
         continue;
-      dq->getOutEdge()[up][u].isVisited = true;
+      }
 
-      M[up] = vp;
-      _enumMatch(depth + 1, up);
+      // check if for all (up, u) \in dq => (vp, v) \in dGq
+      flag = false;
+      for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
+          dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
+          itq++) {
+        if (M.find(itq->first) == M.end())
+          continue;
 
-      dq->getOutEdge()[up][u].isVisited = false;
+        VertexID up = itq->first;
+        VertexID vp = M[up];
+        // if (u, up) => (v, vp)
+        if (!dGq->isEdge(vp, v)) {
+          flag = true;
+          break;
+        }
+      }
+      if (flag) {
+        continue;
+      }
+
+      M[u] = v;
+      dg->_vVisited[vg1] = dg->_vVisited[vg2] = true;
+      CandQtoG::iterator itCqg1 = itCqg;
+      enumMatch(++itCqg1);
+      dg->_vVisited[vg1] = dg->_vVisited[vg2] = false;
     }
+
   }
+
+//  void _enumMatch(int depth, VertexID u) {
+////    cout << "d: " << depth << " ";
+//    if (depth == dq->Vcnt) {
+//      // check
+//      // output M first
+//      cout << "++++Mapping:" << endl;
+//      for (typename DIGRAPHBASIC::VLabels::iterator it =
+//          dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
+//        VertexID u = it->first;
+//        cout << M[u] << " ";
+//      }
+//      cout << endl;
+//    }
+//
+//    VertexID v = M[u];
+//    cout << v << " ";
+//    // for each vp in dGq, where (v, vp)
+//    for (typename DIGRAPHDGQ::AdjList::iterator itgq = dGq->getOutEdge()[v]
+//        .begin(); itgq != dGq->getOutEdge()[v].end(); itgq++) {
+//      VertexID vp = itgq->first;
+//      VertexID up = dGq->getVLabel(vp).u;
+//
+//      // if (u, up) is visited
+//      if (dq->getOutEdge()[u][up].isVisited)
+//        continue;
+//      dq->getOutEdge()[u][up].isVisited = true;
+//
+//      M[up] = vp;
+//      _enumMatch(depth + 1, up);
+//
+//      dq->getOutEdge()[u][up].isVisited = false;
+//    }
+//
+//    // for each vp in dGq, where (vp, v)
+//    for (typename DIGRAPHDGQ::AdjListBool::iterator itgq = dGq->getInVertex()[v]
+//        .begin(); itgq != dGq->getInVertex()[v].end(); itgq++) {
+//      VertexID vp = itgq->first;
+//      VertexID up = dGq->getVLabel(vp).u;
+//
+//      // if (up, u) is visited
+//      if (dq->getOutEdge()[up][u].isVisited)
+//        continue;
+//      dq->getOutEdge()[up][u].isVisited = true;
+//
+//      M[up] = vp;
+//      _enumMatch(depth + 1, up);
+//
+//      dq->getOutEdge()[up][u].isVisited = false;
+//    }
+//  }
 
 //  void enumMatch(int depth, VertexID u) {
 //    cout << "d: " << depth << " ";
