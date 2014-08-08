@@ -10,8 +10,6 @@
 
 #include "GlobalDefinition.h"
 
-class EntityPair;
-
 class Pair {
  public:
   VertexID u;
@@ -19,6 +17,11 @@ class Pair {
 
   Pair() {
 
+  }
+
+  Pair(const Pair& _p) {
+    u = _p.u;
+    v = _p.v;
   }
 
   Pair(VertexID _u, VertexID _v)
@@ -86,11 +89,11 @@ class EntityPair {
     return *this;
   }
 
-  EntityPair& operator =(const Pair& _p) {
-    p = _p;
-    determined = false;
-    return *this;
-  }
+//  EntityPair& operator =(const Pair& _p) {
+//    p = _p;
+//    determined = false;
+//    return *this;
+//  }
 
   bool operator ==(const EntityPair& _p1) {
     return (p == _p1.p);

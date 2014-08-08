@@ -70,6 +70,7 @@ class EL {
   MapPairHash AllXPairHash;
   MapListPair LXPair;
   bool terminate;
+  bool determined;
 
   EL(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID v1,
      VertexID v2) {
@@ -636,6 +637,7 @@ class EL {
     dq->initEdgeVisited();
     Mcnt = 0;
     terminate = false;
+    determined = false;
     // TODO
     // may change dg to $G_{d_q}$
     dg->setVertexVisited();
@@ -644,6 +646,12 @@ class EL {
     VertexID v = *(itCqg->second.begin());
     M[u] = v;
     enumMatch(++itCqg);
+
+    // no mapping => false
+    if (AllXPairHash.size() == 0) {
+      terminate = false;
+      determined = true;
+    }
     // end
 
     // see the Xpair
@@ -719,6 +727,7 @@ class EL {
       // early termination
       if (LXPair[Mcnt].size() == 0) {
         terminate = true;
+        determined = true;
       }
       //
       return;

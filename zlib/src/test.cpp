@@ -98,7 +98,8 @@ void testKB(int argc, char** argv) {
 
   dg_test->loadFromInputFile(argv[2], argv[3], argv[4], argv[6], argv[7]);
 
-  dg_test->testEL(atoi(argv[8]), atoi(argv[9]));
+//  dg_test->testEL(atoi(argv[8]), atoi(argv[9]));
+  dg_test->run(atoi(argv[8]), atoi(argv[9]));
 }
 
 void testVF(int argc, char** argv) {

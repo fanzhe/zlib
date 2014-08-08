@@ -22,7 +22,13 @@ class DDGVertex {
   MapPairVertex AllXPairV;
 
   friend inline ostream& operator<<(ostream& out, const DDGVertex& obj) {
-    out << "(" << obj.p.u << obj.p.v << ")";
+    out << obj.p;
+    out << "[";
+    for (MapPairHash::iterator it = obj.AllXPairHash.begin();
+        it != obj.AllXPairHash.end(); it++) {
+      out << it->second << ", ";
+    }
+    out << "]";
     return out;
   }
 };
@@ -87,11 +93,11 @@ class TestKB {
     }
   }
 
-   /**
+  /**
    * TODO:
    * put them into a single class
    */
-  /*
+
   // global
   MapPairVertex GlobalAllXPairHash;
   DIGRAPHDDG* ddg;
@@ -132,6 +138,9 @@ class TestKB {
 
         // update Xe1e2
         updateDependency(i, el, v1, v2);
+
+        ddg->printGraph(cout);
+        return;
       }
 
       // determine next
@@ -142,32 +151,31 @@ class TestKB {
   }
 
   void propagate(VertexID v, ULong ul) {
-    // if v is determined
+    // if v (in ddg) is determined
     if (ddg->getVLabel(v).determined) {
       // propagate by inEdges.
-      ddg->getVLabel(v).p;
-      EntityPair p = ddg->getVLabel(v).AllXPairHash[ul];
+//      ddg->getVLabel(v).AllXPairHash[ul];
 
-      // for each vp in ddg, (vp, v)
-      for (typename DIGRAPHDDG::AdjListBool::iterator it = ddg->getInVertex()[v]
-          .begin(); it != ddg->getInVertex()[v].end(); it++) {
-        VertexID vp = it->first;
-
-        DDGVertex& ddgvp = ddg->getVLabel()[vp];
-        // for each mapping
-        for (MapListPair::iterator it1 = ddgvp.LXPair.begin();
-            it1 != ddgvp.LXPair.end(); it1++) {
-          // for each pair
-          for (int k = 0; k < it1->second.size(); k++) {
-
-          }
-        }
-
-      }
-
-    } else {
-      // v is not determined
-      return;
+//      // for each vp in ddg, (vp, v)
+//      for (typename DIGRAPHDDG::AdjListBool::iterator it = ddg->getInVertex()[v]
+//          .begin(); it != ddg->getInVertex()[v].end(); it++) {
+//        VertexID vp = it->first;
+//
+//        DDGVertex& ddgvp = ddg->getVLabel()[vp];
+//        // for each mapping
+//        for (MapListPair::iterator it1 = ddgvp.LXPair.begin();
+//            it1 != ddgvp.LXPair.end(); it1++) {
+//          // for each pair
+//          for (int k = 0; k < it1->second.size(); k++) {
+//
+//          }
+//        }
+//
+//      }
+//
+//    } else {
+//      // v is not determined
+//      return;
     }
   }
 
@@ -176,34 +184,29 @@ class TestKB {
     DDGVertex tmp_ddgv;
     tmp_ddgv.p.u = v1;
     tmp_ddgv.p.v = v2;
-    // result
-    if (el.terminate) {
-      // true
-      tmp_ddgv.Xv1v2Qi = true;
-      tmp_ddgv.determined = true;
 
+    // result
+    if (el.determined) {
+      if (el.terminate) {
+        // true
+        tmp_ddgv.Xv1v2Qi = true;
+        tmp_ddgv.determined = true;
+      } else {
+        // no mapping, false
+        tmp_ddgv.Xv1v2Qi = false;
+        tmp_ddgv.determined = true;
+      }
       // insert vertex
       ddg->insertVertex(vid, tmp_ddgv);
       // insert edge
       ddg->insertEdge(pvid, vid, i);
       vid++;
       return;
-    } else if (el.AllXPairHash.size() > 0) {
+    } else {
       // have mapping, boolean variables
       tmp_ddgv.determined = false;
       tmp_ddgv.AllXPairHash = el.AllXPairHash;
       tmp_ddgv.LXPair = el.LXPair;
-    } else {
-      // no mapping, false
-      tmp_ddgv.Xv1v2Qi = false;
-      tmp_ddgv.determined = true;
-
-      // insert vertex
-      ddg->insertVertex(vid, tmp_ddgv);
-      // insert edge
-      ddg->insertEdge(pvid, vid, i);
-      vid++;
-      return;
     }
 
     // check conflict
@@ -234,7 +237,7 @@ class TestKB {
     // determine pvid
     pvid;
   }
-  */
+
 };
 
 #endif /* TESTKB_H_ */
