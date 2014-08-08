@@ -11,6 +11,9 @@
 #include "DiGraph.h"
 #include "BoolEqn.h"
 #include <stack>
+#include <vector>
+
+using namespace std;
 
 class DGQVertex {
  public:
@@ -46,16 +49,27 @@ class DGQVertex {
   }
 };
 
+/**
+ * TODO:
+ * 1. We need to treat *data value* and *variable* separately
+ * 2.
+ */
 class EL {
  public:
+  typedef unordered_map<VertexID, set<VertexID> > CandQtoG;
+
   DIGRAPHBASIC* dg;
   DIGRAPHBASIC* dq;
   DIGRAPHDGQ* dGq;
   VertexID e1, e2;
   CandQtoG Cq1, Cq2, Cqg;  // (dq, e1, dg), (dq, e2, dg), (dq, dGq)
-  Map M;
 
-  BoolEqn Xe1e2;
+  Map M;
+  int Mcnt;
+
+  MapPairHash AllXPairHash;
+  MapListPair LXPair;
+  bool terminate;
 
   EL(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID v1,
      VertexID v2) {
@@ -66,6 +80,8 @@ class EL {
     e2 = v2;
     // initialize size
     dq->initEL(u);
+    // TODO:
+    // BFS to locate $G_{d_Q}$
     dg->initEL(v1);
 
     dGq = new DIGRAPHDGQ();
@@ -77,14 +93,11 @@ class EL {
    * 2. refine Cq1 and Cq2
    * 3. produce dGq by Cq1 and Cq2
    * 4. minimize dGq
-   * 5. final check mapping
+   * 5. check mapping
+   * 6. get results (T/F or a set of vertex pairs)
    */
   void run() {
-//    dq->removeAllInEdges(6);
-//    dq->printGraph(cout);
-//    return;
     // check if (dg, dq) |= (e1, e2)
-
     // search candidate Cq1 and Cq2
     dq->initEdgeVisited();
     search(Cq1, e1);
@@ -121,6 +134,8 @@ class EL {
     // check
     cout << "start check~" << endl;
     check();
+
+    // finish
     cout << "finish!" << endl;
   }
 
@@ -619,6 +634,8 @@ class EL {
 
     // initialize the first mapping
     dq->initEdgeVisited();
+    Mcnt = 0;
+    terminate = false;
     // TODO
     // may change dg to $G_{d_q}$
     dg->setVertexVisited();
@@ -627,13 +644,28 @@ class EL {
     VertexID v = *(itCqg->second.begin());
     M[u] = v;
     enumMatch(++itCqg);
+    // end
+
+    // see the Xpair
+    cout << "X" << endl;
+    for (MapListPair::iterator it = LXPair.begin(); it != LXPair.end(); it++) {
+      cout << it->first << "-> ";
+      for (int i = 0; i < it->second.size(); i++) {
+        cout << "X" << it->second[i] << ", ";
+      }
+      cout << endl;
+    }
+
   }
 
   void enumMatch(CandQtoG::iterator itCqg) {
-//    cout << itCqg->first << endl;
+    // early terminate
+    if (terminate)
+      return;
+
     if (itCqg == Cqg.end()) {
       // check
-      // output M first
+      // print M first
       cout << "++++Mapping:" << endl;
       for (typename DIGRAPHBASIC::VLabels::iterator it =
           dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
@@ -645,9 +677,49 @@ class EL {
       }
       cout << endl << "----Mapping" << endl;
 
+      Mcnt++;
+      LXPair[Mcnt];
       // TODO
       // generate boolean conjunction
+      for (typename DIGRAPHBASIC::VLabels::iterator it =
+          dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
+        VertexID u = it->first;
+        if (u == dq->e)
+          continue;
 
+        VertexID v = M[u];
+        VertexID vg1 = dGq->getVLabel(v).vp.u;
+        VertexID vg2 = dGq->getVLabel(v).vp.v;
+
+        // X_{(vg1, vg2)} = true
+        if (vg1 == vg2) {
+          continue;
+        } else {
+          // X_{(vg1, vg2)} = false
+          EntityPair p(vg1, vg2);
+          LXPair[Mcnt].push_back(p);
+
+          // generate pair hash
+          ULong ulong;
+          if (vg1 < vg2) {
+            ulong = pairFunction(vg1, vg2);
+          } else {
+            ulong = pairFunction(vg2, vg1);
+          }
+
+          if (AllXPairHash.find(ulong) != AllXPairHash.end()) {
+            continue;
+          }
+
+          AllXPairHash[ulong].u = p.p.u;
+          AllXPairHash[ulong].v = p.p.v;
+        }
+      }
+
+      // early termination
+      if (LXPair[Mcnt].size() == 0) {
+        terminate = true;
+      }
       //
       return;
     }
@@ -710,6 +782,12 @@ class EL {
       dg->_vVisited[vg1] = dg->_vVisited[vg2] = true;
       CandQtoG::iterator itCqg1 = itCqg;
       enumMatch(++itCqg1);
+
+      // early terminate
+      if (terminate) {
+        return;
+      }
+
       dg->_vVisited[vg1] = dg->_vVisited[vg2] = false;
     }
 
@@ -838,6 +916,7 @@ class EL {
 //    }
 //  }
 
+  // end of class
 }
 ;
 

@@ -6,11 +6,13 @@
 #include <set>
 #include <iostream>
 #include <tr1/unordered_map>
+#include <vector>
 #include <cstdlib>
 
 using namespace std;
 using namespace std::tr1;
 
+//typedef unsigned long ULong;
 typedef int GraphID;
 typedef int VertexID;
 typedef int EdgeID;
@@ -35,11 +37,7 @@ typedef int Status;
 #define     NO_VERTEX     (-1)
 #define     NO_LABEL      (-1)
 #define     INVALID_GRAPH_ID  (-1)
-#define     ALGORITHM_FGINDEX   (-1)  // useless, for gspan compile#define     FILENAME_BUFF_SIZE  (256)
-#define     DEFAULT_VERTEX_NUMBER (256)
-//#define     max(X,Y)      ((X) > (Y) ? : (X) : (Y);)
-//#define     min(X,Y)      ((X) < (Y) ? : (X) : (Y);)
-
+#define     ALGORITHM_FGINDEX   (-1)  // useless, for gspan compile#define     FILENAME_BUFF_SIZE  (256)#define     DEFAULT_VERTEX_NUMBER (256)//#define     max(X,Y)      ((X) > (Y) ? : (X) : (Y);)//#define     min(X,Y)      ((X) < (Y) ? : (X) : (Y);)
 #define     DEFAULT_MAX_VCNT    (10000)
 
 #define     MATRIX_INDEX(u,v,Vcnt)    ((u) * (Vcnt) + (v))
@@ -99,14 +97,25 @@ class Edge {
 //
 typedef unordered_map<Label, int> LabelCnt;
 typedef unordered_map<VertexID, LabelCnt> MapLabelCnt;
-typedef unordered_map<VertexID, set<VertexID> > CandQtoG;
+
 typedef unordered_map<VertexID, VertexID> Map;
 
 template<class VLabelType, class ELabelType>
 class DIGRAPH;
 
 class DGQVertex;
+class DDGVertex;
+class Pair;
+class EntityPair;
 
 typedef DIGRAPH<VertexLabel, EdgeLabel> DIGRAPHBASIC;
 typedef DIGRAPH<DGQVertex, EdgeLabel> DIGRAPHDGQ;
+typedef DIGRAPH<DDGVertex, EdgeLabel> DIGRAPHDDG;
+
+typedef unsigned long ULong;
+typedef vector<EntityPair> ListPair;
+typedef unordered_map<int, ListPair> MapListPair;
+typedef unordered_map<ULong, Pair> MapPairHash;
+typedef unordered_map<ULong, VertexID> MapPairVertex;
+
 #endif

@@ -190,4 +190,6 @@ double gettime(clock_t s, clock_t e);
 long long sumUpVertexLabelCnt(VertexLabelMapCnt a, VertexLabelMapCnt b);
 long long permutation(int k, int n);
 long long factorial(int r);
+ULong pairFunction(VertexID a, VertexID b);
+
 #endif
