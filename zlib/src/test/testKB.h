@@ -24,10 +24,10 @@ class DDGVertex {
   friend inline ostream& operator<<(ostream& out, const DDGVertex& obj) {
     out << obj.p;
     out << "[";
-    for (MapPairHash::iterator it = obj.AllXPairHash.begin();
-        it != obj.AllXPairHash.end(); it++) {
-      out << it->second << ", ";
-    }
+//    for (MapPairHash::iterator it = obj.AllXPairHash.begin();
+//        it != obj.AllXPairHash.end(); it++) {
+//      out << it->second << ", ";
+//    }
     out << "]";
     return out;
   }

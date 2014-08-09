@@ -644,6 +644,12 @@ class EL {
     VertexID u = dq->e;
     CandQtoG::iterator itCqg = Cqg.begin();
     VertexID v = *(itCqg->second.begin());
+    //
+    for (typename DIGRAPHBASIC::VLabels::iterator it = dq->getVLabel().begin();
+        it != dq->getVLabel().end(); it++) {
+      M[it->first] = NO_VERTEX;
+    }
+    //
     M[u] = v;
     enumMatch(++itCqg);
 
@@ -752,10 +758,11 @@ class EL {
       flag = false;
       for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
           .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
-        if (M.find(itq->first) == M.end())
+        VertexID up = itq->first;
+//        if (M.find(itq->first) == M.end())
+        if (M[up] == NO_VERTEX)
           continue;
 
-        VertexID up = itq->first;
         VertexID vp = M[up];
         // if (u, up) => (v, vp)
         if (!dGq->isEdge(v, vp)) {
@@ -772,10 +779,11 @@ class EL {
       for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
           dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
           itq++) {
-        if (M.find(itq->first) == M.end())
+        VertexID up = itq->first;
+//        if (M.find(itq->first) == M.end())
+        if (M[up] == NO_VERTEX)
           continue;
 
-        VertexID up = itq->first;
         VertexID vp = M[up];
         // if (u, up) => (v, vp)
         if (!dGq->isEdge(vp, v)) {
@@ -798,6 +806,7 @@ class EL {
       }
 
       dg->_vVisited[vg1] = dg->_vVisited[vg2] = false;
+      M[u] = -1;
     }
 
   }
