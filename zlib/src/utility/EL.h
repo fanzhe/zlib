@@ -65,6 +65,8 @@ class EL {
   CandQtoG Cq1, Cq2, Cqg;  // (dq, e1, dg), (dq, e2, dg), (dq, dGq)
 
   Map M;
+  MapVerPair MVP;
+
   int Mcnt;
 
   MapPairHash AllXPairHash;
@@ -107,34 +109,43 @@ class EL {
     search(Cq2, e2);
     refineCQ(Cq2);
 
-    // product dGq
-    dq->initEdgeVisited();
-    productGQ();
+    // first round
+    if (false) {
+      // product dGq
+      dq->initEdgeVisited();
+      productGQ();
 
-    cout << "product graph before: " << endl;
-    dGq->printGraph(cout);
+      cout << "product graph before: " << endl;
+      dGq->printGraph(cout);
 
-    // minimize dGq
-    minimizeGQ();
+      // minimize dGq
+      minimizeGQ();
 
-    cout << "product graph after: " << endl;
-    dGq->printGraph(cout);
+      cout << "product graph after: " << endl;
+      dGq->printGraph(cout);
 
-    // print Cq
-    cout << "Cqg: " << endl;
-    for (CandQtoG::iterator it = Cqg.begin(); it != Cqg.end(); it++) {
-      cout << it->first << "-> ";
+      // print Cq
+      cout << "Cqg: " << endl;
+      for (CandQtoG::iterator it = Cqg.begin(); it != Cqg.end(); it++) {
+        cout << it->first << "-> ";
 
-      for (set<VertexID>::iterator it1 = it->second.begin();
-          it1 != it->second.end(); it1++) {
-        cout << *it1 << " ";
+        for (set<VertexID>::iterator it1 = it->second.begin();
+            it1 != it->second.end(); it1++) {
+          cout << *it1 << " ";
+        }
+        cout << endl;
       }
-      cout << endl;
+
+      // check
+      cout << "start check~" << endl;
+      check();
     }
 
-    // check
-    cout << "start check~" << endl;
-    check();
+    // second round
+    if (true) {
+      dq->initEdgeVisited();
+      secondRoundFun();
+    }
 
     // finish
     cout << "finish!" << endl;
@@ -933,6 +944,193 @@ class EL {
 //      dq->getOutEdge()[up][u].isVisited = false;
 //    }
 //  }
+
+  /**
+   * TODO:
+   * 1. Second round function.
+   * 2. don't explicitly generate dGq
+   * 3. directly generate the boolean equations.
+   * 4. generate all the dependency pairs.
+   */
+  void secondRoundFun() {
+    // initialize the first mapping
+    Mcnt = 0;
+    terminate = false;
+    determined = false;
+
+    dg->setVertexVisited();
+    VertexID u = dq->e;
+    CandQtoG::iterator itCq1 = Cq1.begin();
+    CandQtoG::iterator itCq2 = Cq2.begin();
+    VertexID v1 = *(itCq1->second.begin());
+    VertexID v2 = *(itCq2->second.begin());
+
+    // initialize mapping
+    for (typename DIGRAPHBASIC::VLabels::iterator it = dq->getVLabel().begin();
+        it != dq->getVLabel().end(); it++) {
+      MVP[it->first] = Pair(-1, -1);
+    }
+    //
+    MVP[u] = Pair(v1, v2);
+    //
+    cout << "gogogo" << endl;
+    directEnumMatch(++itCq1, ++itCq2);
+
+    // no mapping => false
+    if (AllXPairHash.size() == 0) {
+      terminate = false;
+      determined = true;
+    }
+    // end
+
+    // see the Xpair
+    cout << "X" << endl;
+    for (MapListPair::iterator it = LXPair.begin(); it != LXPair.end(); it++) {
+      cout << it->first << "-> ";
+      for (int i = 0; i < it->second.size(); i++) {
+        cout << "X" << it->second[i] << ", ";
+      }
+      cout << endl;
+    }
+
+  }
+
+  void directEnumMatch(CandQtoG::iterator itCq1, CandQtoG::iterator itCq2) {
+    // early terminate
+    if (terminate)
+      return;
+
+    if (itCq1 == Cq1.end() && itCq2 == Cq2.end()) {
+      // check
+      // print M first
+      cout << "++++Mapping:" << endl;
+      for (typename DIGRAPHBASIC::VLabels::iterator it =
+          dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
+        VertexID u = it->first;
+        cout << u << ": " << MVP[u];
+      }
+      cout << endl << "----Mapping" << endl;
+
+      Mcnt++;
+      LXPair[Mcnt];
+      // TODO
+      // generate boolean conjunction
+      for (typename DIGRAPHBASIC::VLabels::iterator it =
+          dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
+        VertexID u = it->first;
+        if (u == dq->e)
+          continue;
+
+        VertexID v1 = MVP[u].u;
+        VertexID v2 = MVP[u].v;
+
+        // X_{(vg1, vg2)} = true
+        if (v1 == v2) {
+          continue;
+        } else {
+          // X_{(vg1, vg2)} = false
+          EntityPair p(v1, v2);
+          LXPair[Mcnt].push_back(p);
+
+          // generate pair hash
+          ULong ulong;
+          if (v1 < v2) {
+            ulong = pairFunction(v1, v2);
+          } else {
+            ulong = pairFunction(v2, v1);
+          }
+
+          if (AllXPairHash.find(ulong) != AllXPairHash.end()) {
+            continue;
+          }
+
+          AllXPairHash[ulong].u = p.p.u;
+          AllXPairHash[ulong].v = p.p.v;
+        }
+      }
+
+      // early termination
+      if (LXPair[Mcnt].size() == 0) {
+        terminate = true;
+        determined = true;
+      }
+      //
+      return;
+    }
+
+    VertexID u = itCq1->first;
+    for (set<VertexID>::iterator itSet1 = itCq1->second.begin();
+        itSet1 != itCq1->second.end(); itSet1++) {
+      VertexID v1 = *itSet1;
+
+      for (set<VertexID>::iterator itSet2 = itCq2->second.begin();
+          itSet2 != itCq2->second.end(); itSet2++) {
+        VertexID v2 = *itSet2;
+        bool flag;
+
+        // check if nodes v1 and v2 are check before
+        if (dg->_vVisited[v1] || dg->_vVisited[v2]) {
+          continue;
+        }
+
+        // check if for all (u, up) \in dq => (v, vp) \in dGq
+        flag = false;
+        for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
+            .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
+          VertexID up = itq->first;
+          if (MVP[up] == Pair(-1, -1))
+            continue;
+
+          VertexID vp1 = MVP[up].u;
+          VertexID vp2 = MVP[up].v;
+          // if (u, up) => (v, vp)
+          if (!dg->isEdge(v1, vp1) || !dg->isEdge(v2, vp2)) {
+            flag = true;
+            break;
+          }
+        }
+        if (flag) {
+          continue;
+        }
+
+        // check if for all (up, u) \in dq => (vp, v) \in dGq
+        flag = false;
+        for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
+            dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
+            itq++) {
+          VertexID up = itq->first;
+          if (MVP[up] == Pair(-1, -1))
+            continue;
+
+          VertexID vp1 = MVP[up].u;
+          VertexID vp2 = MVP[up].v;
+          // if (u, up) => (v, vp)
+          if (!dg->isEdge(vp1, v1) || !dg->isEdge(vp2, v2)) {
+            flag = true;
+            break;
+          }
+        }
+        if (flag) {
+          continue;
+        }
+
+        // That is it!
+        MVP[u] = Pair(v1, v2);
+        dg->_vVisited[v1] = dg->_vVisited[v2] = true;
+        CandQtoG::iterator _itCq1 = itCq1;
+        CandQtoG::iterator _itCq2 = itCq2;
+        directEnumMatch(++_itCq1, ++_itCq2);
+
+        // early terminate
+        if (terminate) {
+          return;
+        }
+
+        dg->_vVisited[v1] = dg->_vVisited[v2] = false;
+        MVP[u] = Pair(-1, -1);
+      }
+    }
+  }
 
   // end of class
 }

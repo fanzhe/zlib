@@ -117,5 +117,5 @@ typedef vector<EntityPair> ListPair;
 typedef unordered_map<int, ListPair> MapListPair;
 typedef unordered_map<ULong, Pair> MapPairHash;
 typedef unordered_map<ULong, VertexID> MapPairVertex;
-
+typedef unordered_map<VertexID, Pair> MapVerPair;
 #endif
