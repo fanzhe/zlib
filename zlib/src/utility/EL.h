@@ -971,7 +971,8 @@ class EL {
       MVP[it->first] = Pair(-1, -1);
     }
     //
-    MVP[u] = Pair(v1, v2);
+    MVP[u].u = v1;
+    MVP[u].v = v2;
     //
     cout << "gogogo" << endl;
     directEnumMatch(++itCq1, ++itCq2);
@@ -1058,19 +1059,40 @@ class EL {
       return;
     }
 
+    // intersect to avoid redundant
+    set<VertexID> temp;
+    twoSetsIntersection(itCq1->second, itCq2->second, temp);
+
     VertexID u = itCq1->first;
+    // for each v1
     for (set<VertexID>::iterator itSet1 = itCq1->second.begin();
         itSet1 != itCq1->second.end(); itSet1++) {
       VertexID v1 = *itSet1;
 
+      // if v1 is check before
+      if (dg->_vVisited[v1]) {
+        continue;
+      }
+
+      bool isInter1 = (temp.find(v1) != temp.end());
+
+      // for each v2
       for (set<VertexID>::iterator itSet2 = itCq2->second.begin();
           itSet2 != itCq2->second.end(); itSet2++) {
         VertexID v2 = *itSet2;
         bool flag;
 
-        // check if nodes v1 and v2 are check before
-        if (dg->_vVisited[v1] || dg->_vVisited[v2]) {
+        // check if v2 is check before
+        if (dg->_vVisited[v2]) {
           continue;
+        }
+
+        bool isInter2 = (temp.find(v2) != temp.end());
+
+        if (isInter1 && isInter2) {
+          if (v1 > v2) {
+            continue;
+          }
         }
 
         // check if for all (u, up) \in dq => (v, vp) \in dGq
@@ -1115,7 +1137,8 @@ class EL {
         }
 
         // That is it!
-        MVP[u] = Pair(v1, v2);
+        MVP[u].u = v1;
+        MVP[u].v = v2;
         dg->_vVisited[v1] = dg->_vVisited[v2] = true;
         CandQtoG::iterator _itCq1 = itCq1;
         CandQtoG::iterator _itCq2 = itCq2;
@@ -1127,7 +1150,8 @@ class EL {
         }
 
         dg->_vVisited[v1] = dg->_vVisited[v2] = false;
-        MVP[u] = Pair(-1, -1);
+        MVP[u].u = -1;
+        MVP[u].v = -1;
       }
     }
   }
