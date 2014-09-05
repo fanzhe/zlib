@@ -45,10 +45,10 @@ class DIGRAPH {
 
     }
   };
+
   /*
    * data structures for basic operations
    */
-
   typedef unordered_map<VertexID, VLabelType> VLabels;
   typedef AdjElement<ELabelType> ADJELE;
   typedef unordered_map<VertexID, ADJELE> AdjList;

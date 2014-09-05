@@ -10,7 +10,7 @@
 
 #include "../utility/DiGraph.h"
 #include "../utility/InputReader.h"
-#include "../utility/EL.h"
+#include "../EL/EL.h"
 
 class DDGVertex {
  public:
@@ -82,12 +82,14 @@ class TestKB {
     }
   }
 
-  // test EL function
-  void testEL(VertexID v1, VertexID v2) {
+  /**
+   * (G, Q) |= (e_1, e_2)
+   */
+  void testEL(VertexID e1, VertexID e2) {
     VertexID u = 1;
     for (int i = 0; i < g_cnt; i++) {
       for (int j = 0; j < q_cnt; j++) {
-        EL el(queryDB[j], u, graphDB[i], v1, v2);
+        EL el(queryDB[j], u, graphDB[i], e1, e2);
         el.run();
       }
     }

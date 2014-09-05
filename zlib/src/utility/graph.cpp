@@ -1434,13 +1434,12 @@ bool GRAPH::isSubgrpahOfByVF2(GRAPH* g) {
   node_id ni1[g->maximum_vertex];
   node_id ni2[g->maximum_vertex];
 
-  if (match(&sub_state, &n, ni1, ni2)) {
-  /*
+//  if (match(&sub_state, &n, ni1, ni2)) {
+
   vf2_match_cnt = 0;
   vf2_match_cnt_max = 1000;
   int _cnt = match(&sub_state, my_vf2_match_visitor, NULL);
   if (_cnt > 0) {
-  */
 //    cout << _cnt << endl;
     return true;
   }
@@ -1509,6 +1508,10 @@ void GRAPH::clientPreProcess(VertexLabelMapCnt& _glabel_cnt,
 
   // init stat
   myStat = new STAT();
+}
+
+void GRAPH::clientPreProcessWoEnc(VertexLabelMapCnt& _glabel_cnt) {
+  start_label = getLabel(getMinTreeHeight(_glabel_cnt));
 }
 
 void GRAPH::encryptInit(const int _encode_size, const int _agg_size) {

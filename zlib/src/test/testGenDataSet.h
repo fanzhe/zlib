@@ -132,10 +132,10 @@ class TestGenDataSet {
 
         q->graphId = j;
         generateQueryDFS(g, q, vcnt);
-        if (!isAvailable(q, vcnt)) {
-          j--;
-          continue;
-        }
+//        if (!isAvailable(q, vcnt)) {
+//          j--;
+//          continue;
+//        }
         q->printGraph(output);
 
         q->makeEmpty();

@@ -1,60 +1,22 @@
 /*
- * EL.h
+ * EL_old.h
  *
- *  Created on: 2014¦~8¤ë2¤é
+ *  Created on: Sep 5, 2014
  *      Author: zfan
  */
 
-#ifndef EL_H_
-#define EL_H_
+#ifndef EL_OLD_H_
+#define EL_OLD_H_
 
-#include "DiGraph.h"
-#include "BoolEqn.h"
+
+#include "../utility/DiGraph.h"
+#include "../utility/BoolEqn.h"
+#include "EL.h"
 #include <stack>
 #include <vector>
 
-using namespace std;
-
-class DGQVertex {
+class EL_old {
  public:
-  VertexID u;  // query vertex
-  Pair vp;  // graph vertices pair
-
-  DGQVertex() {
-
-  }
-
-  DGQVertex(VertexID _u, const Pair& _vp)
-      : u(_u),
-        vp(_vp) {
-  }
-
-  ~DGQVertex() {
-
-  }
-
-  void operator=(const DGQVertex& _dgqv) {
-    u = _dgqv.u;
-    vp = _dgqv.vp;
-  }
-
-  friend inline ostream& operator<<(ostream& out, const DGQVertex& obj) {
-    out << "(" << obj.u << ", (" << obj.vp.u << ", " << obj.vp.v << "))";
-    return out;
-  }
-
-  void set(VertexID _u, const Pair& _vp) {
-    u = _u;
-    vp = _vp;
-  }
-};
-
-/**
- * TODO:
- * 1. We need to treat *data value* and *variable* separately
- * 2.
- */
-class EL {
  public:
   typedef unordered_map<VertexID, set<VertexID> > CandQtoG;
 
@@ -74,8 +36,8 @@ class EL {
   bool terminate;
   bool determined;
 
-  EL(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID v1,
-     VertexID v2) {
+  EL_old(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID v1,
+         VertexID v2) {
     dg = _dg;
     dq = _dq;
 
@@ -88,6 +50,10 @@ class EL {
     dg->initEL(v1);
 
     dGq = new DIGRAPHDGQ();
+  }
+
+  ~EL_old() {
+
   }
 
   /**
@@ -142,9 +108,13 @@ class EL {
     }
 
     // second round
-    if (true) {
+    if (false) {
       dq->initEdgeVisited();
       secondRoundFun();
+    }
+
+    if (true) {
+      newRun();
     }
 
     // finish
@@ -968,7 +938,7 @@ class EL {
     // initialize mapping
     for (typename DIGRAPHBASIC::VLabels::iterator it = dq->getVLabel().begin();
         it != dq->getVLabel().end(); it++) {
-      MVP[it->first] = Pair(-1, -1);
+      MVP[it->first] = Pair(NO_VERTEX, NO_VERTEX);
     }
     //
     MVP[u].u = v1;
@@ -1074,13 +1044,22 @@ class EL {
         continue;
       }
 
+      // check if for all (u, up) \in dq => (v1, vp) \in dGq
+      if (cmpUVOutEdges(u, v1, 1)) {
+        continue;
+      }
+
+      // check if for all (up, u) \in dq => (vp, v1) \in dGq
+      if (cmpUVInEdges(u, v1, 1)) {
+        continue;
+      }
+
       bool isInter1 = (temp.find(v1) != temp.end());
 
       // for each v2
       for (set<VertexID>::iterator itSet2 = itCq2->second.begin();
           itSet2 != itCq2->second.end(); itSet2++) {
         VertexID v2 = *itSet2;
-        bool flag;
 
         // check if v2 is check before
         if (dg->_vVisited[v2]) {
@@ -1095,44 +1074,13 @@ class EL {
           }
         }
 
-        // check if for all (u, up) \in dq => (v, vp) \in dGq
-        flag = false;
-        for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
-            .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
-          VertexID up = itq->first;
-          if (MVP[up] == Pair(-1, -1))
-            continue;
-
-          VertexID vp1 = MVP[up].u;
-          VertexID vp2 = MVP[up].v;
-          // if (u, up) => (v, vp)
-          if (!dg->isEdge(v1, vp1) || !dg->isEdge(v2, vp2)) {
-            flag = true;
-            break;
-          }
-        }
-        if (flag) {
+        // check if for all (u, up) \in dq => (v2, vp) \in dGq
+        if (cmpUVOutEdges(u, v2, 2)) {
           continue;
         }
 
-        // check if for all (up, u) \in dq => (vp, v) \in dGq
-        flag = false;
-        for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
-            dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
-            itq++) {
-          VertexID up = itq->first;
-          if (MVP[up] == Pair(-1, -1))
-            continue;
-
-          VertexID vp1 = MVP[up].u;
-          VertexID vp2 = MVP[up].v;
-          // if (u, up) => (v, vp)
-          if (!dg->isEdge(vp1, v1) || !dg->isEdge(vp2, v2)) {
-            flag = true;
-            break;
-          }
-        }
-        if (flag) {
+        // check if for all (up, u) \in dq => (vp, v2) \in dGq
+        if (cmpUVInEdges(u, v2, 2)) {
           continue;
         }
 
@@ -1156,8 +1104,283 @@ class EL {
     }
   }
 
-  // end of class
-}
-;
+  bool cmpUVInEdges(VertexID u, VertexID v, VertexID vf) {
+    bool flag = false;
+    if (vf == 1) {
+      for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
+          dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
+          itq++) {
+        VertexID up = itq->first;
+        if (MVP[up] == Pair(NO_VERTEX, NO_VERTEX))
+          continue;
 
-#endif /* EL_H_ */
+        VertexID vp1 = MVP[up].u;
+        // if (u, up) => (v, vp)
+        if (!dg->isEdge(vp1, v)) {
+          flag = true;
+          break;
+        }
+      }
+    } else if (vf == 2) {
+      for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
+          dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
+          itq++) {
+        VertexID up = itq->first;
+        if (MVP[up] == Pair(NO_VERTEX, NO_VERTEX))
+          continue;
+
+        VertexID vp2 = MVP[up].v;
+        // if (u, up) => (v, vp)
+        if (!dg->isEdge(vp2, v)) {
+          flag = true;
+          break;
+        }
+      }
+    } else {
+      // error
+      exit(0);
+    }
+    return flag;
+  }
+
+  bool cmpUVOutEdges(VertexID u, VertexID v, VertexID vf) {
+    bool flag = false;
+    if (vf == 1) {
+      for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
+          .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
+        VertexID up = itq->first;
+        if (MVP[up] == Pair(NO_VERTEX, NO_VERTEX))
+          continue;
+
+        VertexID vp1 = MVP[up].u;
+        // if (u, up) => (v, vp)
+        if (!dg->isEdge(v, vp1)) {
+          flag = true;
+          break;
+        }
+      }
+    } else if (vf == 2) {
+      for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
+          .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
+        VertexID up = itq->first;
+        if (MVP[up] == Pair(NO_VERTEX, NO_VERTEX))
+          continue;
+
+        VertexID vp2 = MVP[up].v;
+        // if (u, up) => (v, vp)
+        if (!dg->isEdge(v, vp2)) {
+          flag = true;
+          break;
+        }
+      }
+    } else {
+      // error
+      exit(0);
+    }
+    return flag;
+  }
+
+  /**
+   * TODO:
+   * 1. directly generate dependency without search step for e1 and e2.
+   */
+  void newRun() {
+    cout << "start newRun" << endl;
+
+    // initialize the first mapping
+    Mcnt = 0;
+    terminate = false;
+    determined = false;
+
+    dg->setVertexVisited();
+    VertexID u = dq->e;
+
+    // initialize mapping
+    for (typename DIGRAPHBASIC::VLabels::iterator it = dq->getVLabel().begin();
+        it != dq->getVLabel().end(); it++) {
+      MVP[it->first] = Pair(NO_VERTEX, NO_VERTEX);
+    }
+    //
+    MVP[u].u = e1;
+    MVP[u].v = e2;
+    MapVerPair::iterator itMVP = MVP.begin();
+    //
+    cout << "gogogo" << endl;
+    newEnumMatch(itMVP);
+
+    // no mapping => false
+    if (AllXPairHash.size() == 0) {
+      terminate = false;
+      determined = true;
+    }
+    // end
+
+    // see the Xpair
+    cout << "X" << endl;
+    for (MapListPair::iterator it = LXPair.begin(); it != LXPair.end(); it++) {
+      cout << it->first << "-> ";
+      for (int i = 0; i < it->second.size(); i++) {
+        cout << "X" << it->second[i] << ", ";
+      }
+      cout << endl;
+    }
+
+    cout << "end newRun" << endl;
+
+  }
+
+  void newEnumMatch(MapVerPair::iterator itMVP) {
+    // early terminate
+    if (terminate)
+      return;
+
+    MapVerPair::iterator postItMVP = itMVP;
+    postItMVP++;
+
+    if (postItMVP == MVP.end()) {
+      // check
+      // print M first
+      cout << "++++Mapping:" << endl;
+      for (typename DIGRAPHBASIC::VLabels::iterator it =
+          dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
+        VertexID u = it->first;
+        cout << u << ": " << MVP[u];
+      }
+      cout << endl << "----Mapping" << endl;
+
+      Mcnt++;
+      LXPair[Mcnt];
+      // TODO
+      // generate boolean conjunction
+      for (typename DIGRAPHBASIC::VLabels::iterator it =
+          dq->getVLabel().begin(); it != dq->getVLabel().end(); it++) {
+        VertexID u = it->first;
+        if (u == dq->e)
+          continue;
+
+        VertexID v1 = MVP[u].u;
+        VertexID v2 = MVP[u].v;
+
+        // X_{(vg1, vg2)} = true
+        if (v1 == v2) {
+          continue;
+        } else {
+          // X_{(vg1, vg2)} = false
+          EntityPair p(v1, v2);
+          LXPair[Mcnt].push_back(p);
+
+          // generate pair hash
+          ULong ulong;
+          if (v1 < v2) {
+            ulong = pairFunction(v1, v2);
+          } else {
+            ulong = pairFunction(v2, v1);
+          }
+
+          if (AllXPairHash.find(ulong) != AllXPairHash.end()) {
+            continue;
+          }
+
+          AllXPairHash[ulong].u = p.p.u;
+          AllXPairHash[ulong].v = p.p.v;
+        }
+      }
+
+      // early termination
+      if (LXPair[Mcnt].size() == 0) {
+        terminate = true;
+        determined = true;
+      }
+      //
+      return;
+    }
+
+    // intersect to avoid redundant
+//    set<VertexID> temp;
+//    twoSetsIntersection(itCq1->second, itCq2->second, temp);
+
+    VertexID u = postItMVP->first;
+    // for each v1
+    // TODO: A bug here, cannot just outEdge
+    for (typename DIGRAPHBASIC::AdjList::iterator itg1 = dg->getOutEdge()[itMVP
+        ->second.u].begin(); itg1 != dg->getOutEdge()[itMVP->second.u].end();
+        itg1++) {
+      VertexID v1 = itg1->first;
+
+      if (dg->getVLabel(v1) != dq->getVLabel(u)) {
+        continue;
+      }
+
+      // if v1 is check before
+      if (dg->_vVisited[v1]) {
+        continue;
+      }
+
+      // check if for all (u, up) \in dq => (v1, vp) \in dg
+      if (cmpUVOutEdges(u, v1, 1)) {
+        continue;
+      }
+
+      // check if for all (up, u) \in dq => (vp, v1) \in dg
+      if (cmpUVInEdges(u, v1, 1)) {
+        continue;
+      }
+
+//      bool isInter1 = (temp.find(v1) != temp.end());
+
+      // for each v2
+      for (typename DIGRAPHBASIC::AdjList::iterator itg2 =
+          dg->getOutEdge()[itMVP->second.v].begin();
+          itg2 != dg->getOutEdge()[itMVP->second.v].end(); itg2++) {
+        VertexID v2 = itg2->first;
+
+        if (dg->getVLabel(v2) != dq->getVLabel(u)) {
+          continue;
+        }
+
+        // check if v2 is check before
+        if (dg->_vVisited[v2]) {
+          continue;
+        }
+
+//        bool isInter2 = (temp.find(v2) != temp.end());
+
+//        if (isInter1 && isInter2) {
+//          if (v1 > v2) {
+//            continue;
+//          }
+//        }
+
+        // check if for all (u, up) \in dq => (v2, vp) \in dg
+        if (cmpUVOutEdges(u, v2, 2)) {
+          continue;
+        }
+
+        // check if for all (up, u) \in dq => (vp, v2) \in dg
+        if (cmpUVInEdges(u, v2, 2)) {
+          continue;
+        }
+
+        // That is it!
+        MVP[u].u = v1;
+        MVP[u].v = v2;
+        dg->_vVisited[v1] = dg->_vVisited[v2] = true;
+        newEnumMatch(postItMVP);
+
+        // early terminate
+        if (terminate) {
+          return;
+        }
+
+        dg->_vVisited[v1] = dg->_vVisited[v2] = false;
+        MVP[u].u = NO_EDGE;
+        MVP[u].v = NO_EDGE;
+      }
+    }
+  }
+
+  // end of class
+};
+
+
+#endif /* EL_OLD_H_ */

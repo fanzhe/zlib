@@ -12,6 +12,8 @@
 #include "../vflib/ull_sub_state.h"
 #include "../vflib/vf2_sub_state.h"
 
+#include "../subIso/cache.h"
+
 class TestVFLib {
  public:
   vector<GRAPH*> graphDB, queryDB;
@@ -82,23 +84,101 @@ class TestVFLib {
       GRAPH* q = queryDB[i];
 //      q->printGraphNew(cout);
 
-      clock_t start = clock();
       for (int j = 0; j < g_cnt; j++) {
         GRAPH* g = graphDB[j];
 //        g->printGraphNew(cout);
+        clock_t start = clock();
 
         bool res = q->isSubgrpahOfByVF2(g);
 //        cout << i << " " << j << " " << res << endl;
-        if (res)
+        if (res) {
+          clock_t end = clock();
+          double runTime = gettime(start, end) * CLOCKS_PER_SEC;
+          result[runTime]++;
           cnt_res++;
+          continue;
+        }
+        clock_t end = clock();
+        double runTime = gettime(start, end) * CLOCKS_PER_SEC;
+        result[runTime]++;
       }
-      clock_t end = clock();
 
-      double runTime = gettime(start, end) * CLOCKS_PER_SEC;
-      result[runTime] ++;
     }
     printMapTT(result);
     cout << "total:" << cnt_res << endl;
+  }
+
+  /**
+   * for PI DEMO submission
+   * 2014/09/05
+   */
+
+  Cache cache;
+  void testForPI() {
+    map<double, double> result;
+    int _cnt = 0;
+    int res_cnt = 0;
+    for (int i = 0; i < q_cnt; i++) {
+      GRAPH* q = queryDB[i];
+      cout << i << endl;
+      for (int j = 0; j < g_cnt; j++) {
+        GRAPH* g = graphDB[j];
+
+        clock_t start = clock();
+
+        // gogogo
+        bool res = _testForPI(q, g);
+
+        clock_t end = clock();
+        // ms
+        double runTime = gettime(start, end) * CLOCKS_PER_SEC;
+        result[_cnt++] = runTime;
+        if (res)
+          res_cnt++;
+      }
+
+    }
+    cout << "true: " << res_cnt << endl;
+    printMapTT(result);
+    // calculate std dev.
+  }
+
+  bool _testForPI(GRAPH* q, GRAPH* g) {
+    GRAPH* cs = new GRAPH();
+    // Pre-process q
+    g->setVertexLabelMap();
+    g->setVertexLabelMapCnt();
+    q->setVertexLabelMap();
+    q->setVertexLabelMapCnt();
+
+    q->clientPreProcessWoEnc(g->vlabels_map_cnt);
+    if (g->vlabels_map_cnt.find(q->start_label) == g->vlabels_map_cnt.end()) {
+      return false;
+    }
+
+    set<VertexID>::iterator it = g->vlabels_map[q->start_label].begin();
+    for (; it != g->vlabels_map[q->start_label].end(); it++) {
+      VertexID r_vertex = *it;
+      cache.ifRootVertex.insert(r_vertex);
+
+      // BFS
+      set<VertexID> visit_v;
+      g->BFSwithConst(r_vertex, q->min_tree_height, visit_v, q->vlabels_map_cnt, cache);
+
+      // Construct CS
+      g->getInducedSubGraph(visit_v, cs);
+
+      // VF2
+      bool res = q->isSubgrpahOfByVF2(cs);
+      if (res)
+        return res;
+
+      // reset cs
+      cs->makeEmpty();
+    }
+
+    delete cs;
+    return false;
   }
 
 };

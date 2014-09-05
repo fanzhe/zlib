@@ -100,6 +100,8 @@ class GRAPH {
   // for client
   void clientPreProcess(VertexLabelMapCnt& _glabel_cnt, const int _encode_size,
                         const int _agg_size);
+  void clientPreProcessWoEnc(VertexLabelMapCnt& _glabel_cnt);
+
   STAT* myStat;
 
   // -------- for subiso --------
@@ -202,6 +204,9 @@ class GRAPH {
 
   // for generating selective size-k subgraphs
 
+
+  // for ullman (only for TKDE revision)
+  int** AM;
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include "test/testGenDataSet.h"
 #include "test/testCrypto.h"
 #include "test/testKB.h"
+#include "test/testUllman.h"
 //#include "utility/EVector.h"
 
 #include <vector>
@@ -59,6 +60,10 @@ void testMinDFS(int argc, char** argv) {
   delete g_test;
 }
 
+/**
+ * For ICDE submission.
+ * Asymetric structure preserving subgraph queries
+ */
 void testSubIso(int argc, char** argv) {
   if (argc < 4) {
     cout << "please input" << endl;
@@ -112,8 +117,25 @@ void testVF(int argc, char** argv) {
 
   g_test->loadFromInputFile(argv[1], argv[3]);
 
-  g_test->testSubIso();
+//  g_test->testSubIso();
 //  g_test->testIndSub();
+  g_test->testForPI();
+
+  delete g_test;
+}
+
+void testUllman(int argc, char** argv) {
+  if (argc < 4) {
+    cout << "please input" << endl;
+    return;
+  }
+
+  TestUllman* g_test = new TestUllman(atoi(argv[2]), atoi(argv[4]));
+
+  g_test->loadFromInputFile(argv[1], argv[3]);
+
+//  cout << "right?" << endl;
+  g_test->testUllman();
 
   delete g_test;
 }
@@ -257,6 +279,8 @@ int main(int argc, char** argv) {
 //  test subIso
   if (argv[1][0] == 'd') {
     testDebug(argc - 1, argv + 1);
+  } else if (argv[1][0] == 'u') {
+    testUllman(argc - 1, argv + 1);
   } else if (argv[1][0] == 'r') {
     testSubIso(argc - 1, argv + 1);
   } else if (argv[1][0] == 't') {
