@@ -12,6 +12,9 @@
 #include "../utility/InputReader.h"
 #include "../EL/EL.h"
 
+/**
+ * Directed Dependency Graph
+ */
 class DDGVertex {
  public:
   Pair p;  // (v1, v2)
@@ -132,7 +135,7 @@ class TestKB {
         DIGRAPHBASIC *dq = queryDB[i];
 
         // TODO
-        // do BFS before that
+        // BFS: generate CS
 
         // run
         EL el(dq, u, dg, v1, v2);
@@ -188,8 +191,8 @@ class TestKB {
     tmp_ddgv.p.v = v2;
 
     // result
-    if (el.determined) {
-      if (el.terminate) {
+    if (el.terminate.determined) {
+      if (el.terminate.value) {
         // true
         tmp_ddgv.Xv1v2Qi = true;
         tmp_ddgv.determined = true;

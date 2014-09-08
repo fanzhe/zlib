@@ -11,9 +11,42 @@
 
 #include "../utility/DiGraph.h"
 #include "../utility/BoolEqn.h"
-#include "EL.h"
 #include <stack>
 #include <vector>
+
+class DGQVertex {
+ public:
+  VertexID u;  // query vertex
+  Pair vp;  // graph vertices pair
+
+  DGQVertex() {
+
+  }
+
+  DGQVertex(VertexID _u, const Pair& _vp)
+      : u(_u),
+        vp(_vp) {
+  }
+
+  ~DGQVertex() {
+
+  }
+
+  void operator=(const DGQVertex& _dgqv) {
+    u = _dgqv.u;
+    vp = _dgqv.vp;
+  }
+
+  friend inline ostream& operator<<(ostream& out, const DGQVertex& obj) {
+    out << "(" << obj.u << ", (" << obj.vp.u << ", " << obj.vp.v << "))";
+    return out;
+  }
+
+  void set(VertexID _u, const Pair& _vp) {
+    u = _u;
+    vp = _vp;
+  }
+};
 
 class EL_old {
  public:

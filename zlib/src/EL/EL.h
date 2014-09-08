@@ -10,45 +10,11 @@
 
 #include "../utility/DiGraph.h"
 #include "../utility/BoolEqn.h"
+#include "../utility/BoolVar.h"
 #include <stack>
 #include <vector>
 
 using namespace std;
-
-class DGQVertex {
- public:
-  VertexID u;  // query vertex
-  Pair vp;  // graph vertices pair
-
-  DGQVertex() {
-
-  }
-
-  DGQVertex(VertexID _u, const Pair& _vp)
-      : u(_u),
-        vp(_vp) {
-  }
-
-  ~DGQVertex() {
-
-  }
-
-  void operator=(const DGQVertex& _dgqv) {
-    u = _dgqv.u;
-    vp = _dgqv.vp;
-  }
-
-  friend inline ostream& operator<<(ostream& out, const DGQVertex& obj) {
-    out << "(" << obj.u << ", (" << obj.vp.u << ", " << obj.vp.v << "))";
-    return out;
-  }
-
-  void set(VertexID _u, const Pair& _vp) {
-    u = _u;
-    vp = _vp;
-  }
-};
-
 
 /**
  * TODO:
@@ -57,22 +23,17 @@ class DGQVertex {
  */
 class EL {
  public:
-  typedef unordered_map<VertexID, set<VertexID> > CandQtoG;
-
   DIGRAPHBASIC* dg;
   DIGRAPHBASIC* dq;
   VertexID e1, e2;
-  CandQtoG Cq1, Cq2;  // (dq, e1, dg), (dq, e2, dg)
 
-  Map M;
   MapVerPair MVP;
 
   int Mcnt;
 
   MapPairHash AllXPairHash;
   MapListPair LXPair;
-  bool terminate;
-  bool determined;
+  BoolVar terminate;
 
   EL(DIGRAPHBASIC* _dq, VertexID u, DIGRAPHBASIC* _dg, VertexID _e1,
      VertexID _e2) {
@@ -83,13 +44,12 @@ class EL {
     e2 = _e2;
     // initialize size
     dq->initEL(u);
-    // TODO:
-    // BFS to locate $G_{d_Q}$
     dg->initEL(e1);
   }
 
   /**
-   * main portal
+   * Main
+   * the algorithm conceptually works as follows:
    * 1. search Cq1 and Cq2
    * 2. refine Cq1 and Cq2
    * 3. produce dGq by Cq1 and Cq2
@@ -98,185 +58,15 @@ class EL {
    * 6. get results (T/F or a set of vertex pairs)
    */
   void run() {
-    // check if (dg, dq) |= (e1, e2)
-    // search candidate Cq1 and Cq2
-    dq->initEdgeVisited();
-    search(Cq1, e1);
-    refineCQ(Cq1);
-    dq->initEdgeVisited();
-    search(Cq2, e2);
-    refineCQ(Cq2);
+    // initialize flag
+    terminate.value = false;
+    terminate.determined = false;
 
+    // check if (dg, dq) |= (e1, e2)
     _run();
 
     // finish
     cout << "finish!" << endl;
-  }
-
-  bool checkLabelAndDeg(VertexID u, VertexID v) {
-    if (dq->getVLabel(u) != dg->getVLabel(v)) {
-      return false;
-    }
-    for (LabelCnt::iterator it = dq->_outLabelCnt[u].begin();
-        it != dq->_outLabelCnt[u].end(); it++) {
-      Label ul = it->first;
-      if (dg->_outLabelCnt[v].find(ul) == dg->_outLabelCnt[v].end())
-        return false;
-      if (dq->_outLabelCnt[u][ul] > dg->_outLabelCnt[v][ul]) {
-        return false;
-      }
-    }
-
-    for (LabelCnt::iterator it = dq->_inLabelCnt[u].begin();
-        it != dq->_inLabelCnt[u].end(); it++) {
-      Label ul = it->first;
-      if (dg->_inLabelCnt[v].find(ul) == dg->_inLabelCnt[v].end())
-        return false;
-      if (dq->_inLabelCnt[u][ul] > dg->_inLabelCnt[v][ul]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * refine the candidate set before product
-   * trick: special case
-   */
-  void refineCQ(CandQtoG& Cq) {
-    bool finish = true;
-    while (finish) {
-      bool terminate = false;
-      // for each u in dq
-      for (typename DIGRAPHBASIC::VLabels::iterator itq =
-          dq->getVLabel().begin(); itq != dq->getVLabel().end(); itq++) {
-        VertexID u = itq->first;
-
-        if (Cq[u].size() == 1) {
-          VertexID v = *Cq[u].begin();
-          for (typename DIGRAPHBASIC::VLabels::iterator itq1 = dq->getVLabel()
-              .begin(); itq1 != dq->getVLabel().end(); itq1++) {
-            VertexID u1 = itq1->first;
-            if (u == u1) {
-              continue;
-            }
-
-            // erase v
-            if (Cq[u1].find(v) != Cq[u1].end()) {
-              Cq[u1].erase(v);
-              terminate = true;
-            }
-          }
-        }
-      }
-
-      if (terminate) {
-        finish = true;
-      } else {
-        finish = false;
-      }
-    }
-  }
-
-  /*
-   * TODO:
-   * G_{e}^Q
-   */
-  void search(CandQtoG& Cq, VertexID v) {
-    // L(q, e) != L(g, e)
-    VertexID u = dq->e;
-    VertexID up, vp;
-    if (!checkLabelAndDeg(u, v)) {
-      return;
-    }
-    Cq[u].insert(v);
-    stack<VertexID> S;
-    S.push(u);
-
-    while (!S.empty()) {
-      u = S.top();
-      S.pop();
-
-      // for each unvisited edge (u, up) in dq
-      for (typename DIGRAPHBASIC::AdjList::iterator itq = dq->getOutEdge()[u]
-          .begin(); itq != dq->getOutEdge()[u].end(); itq++) {
-        up = itq->first;
-        // (u, up) is visited
-        if (itq->second.isVisited) {
-          continue;
-        }
-        itq->second.isVisited = true;
-        // Cq[up] was check before
-        // TODO: we can do more here
-        if (Cq.find(up) != Cq.end()) {
-          continue;
-        }
-
-        S.push(up);
-
-        // for each v in dg, u -> v
-        for (set<VertexID>::iterator itq1 = Cq[u].begin(); itq1 != Cq[u].end();
-            itq1++) {
-          v = *itq1;
-          // pick vp in dg
-          for (typename DIGRAPHBASIC::AdjList::iterator itg =
-              dg->getOutEdge()[v].begin(); itg != dg->getOutEdge()[v].end();
-              itg++) {
-            vp = itg->first;
-            if (dq->getELabel(u, up) != dg->getELabel(v, vp))
-              continue;
-            if (!checkLabelAndDeg(up, vp))
-              continue;
-            Cq[up].insert(vp);
-          }
-        }
-      }
-
-      // for each unvisited edge (up, u) in dq
-      for (typename DIGRAPHBASIC::AdjListBool::iterator itq =
-          dq->getInVertex()[u].begin(); itq != dq->getInVertex()[u].end();
-          itq++) {
-        up = itq->first;
-        if (dq->getOutEdge()[up][u].isVisited) {
-          continue;
-        }
-        dq->getOutEdge()[up][u].isVisited = true;
-        // Cq[up] was check before
-        if (Cq.find(up) != Cq.end())
-          continue;
-
-        S.push(up);
-
-        // for each v in dg, u -> v
-        for (set<VertexID>::iterator itq1 = Cq[u].begin(); itq1 != Cq[u].end();
-            itq1++) {
-          v = *itq1;
-          // pick vp in dg
-          for (typename DIGRAPHBASIC::AdjListBool::iterator itg = dg
-              ->getInVertex()[v].begin(); itg != dg->getInVertex()[v].end();
-              itg++) {
-            vp = itg->first;
-            if (dq->getELabel(up, u) != dg->getELabel(vp, v))
-              continue;
-            if (!checkLabelAndDeg(up, vp))
-              continue;
-            Cq[up].insert(vp);
-          }
-        }
-      }
-    }
-
-    cout << "---- match test" << endl;
-    for (CandQtoG::iterator it = Cq.begin(); it != Cq.end(); it++) {
-      cout << it->first << " ";
-      for (set<VertexID>::iterator it1 = it->second.begin();
-          it1 != it->second.end(); it1++) {
-        cout << *it1 << " ";
-      }
-      cout << endl;
-    }
-
-    return;
   }
 
   bool cmpUVInEdges(VertexID u, VertexID v, VertexID vf) {
@@ -364,8 +154,6 @@ class EL {
 
     // initialize the first mapping
     Mcnt = 0;
-    terminate = false;
-    determined = false;
 
     dg->setVertexVisited();
     VertexID u = dq->e;
@@ -380,13 +168,13 @@ class EL {
     MVP[u].v = e2;
     MapVerPair::iterator itMVP = MVP.begin();
     //
-    cout << "gogogo" << endl;
+    cout << "Start enumeration" << endl;
     enumMatch(itMVP);
 
     // no mapping => false
     if (AllXPairHash.size() == 0) {
-      terminate = false;
-      determined = true;
+      terminate.value = false;
+      terminate.determined = true;
     }
     // end
 
@@ -406,7 +194,7 @@ class EL {
 
   void enumMatch(MapVerPair::iterator itMVP) {
     // early terminate
-    if (terminate)
+    if (terminate.value)
       return;
 
     MapVerPair::iterator postItMVP = itMVP;
@@ -463,8 +251,8 @@ class EL {
 
       // early termination
       if (LXPair[Mcnt].size() == 0) {
-        terminate = true;
-        determined = true;
+        terminate.value = true;
+        terminate.determined = true;
       }
       //
       return;
@@ -476,7 +264,7 @@ class EL {
 
     VertexID u = postItMVP->first;
     // for each v1
-    // TODO: A bug here, cannot just outEdge
+    // TODO: may be a bug here, only outEdge here
     for (typename DIGRAPHBASIC::AdjList::iterator itg1 = dg->getOutEdge()[itMVP
         ->second.u].begin(); itg1 != dg->getOutEdge()[itMVP->second.u].end();
         itg1++) {
@@ -543,7 +331,7 @@ class EL {
         enumMatch(postItMVP);
 
         // early terminate
-        if (terminate) {
+        if (terminate.value) {
           return;
         }
 
