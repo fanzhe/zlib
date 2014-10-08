@@ -72,7 +72,7 @@ class TestGenDataSet {
   }
 
   void genDataSet(const char* input_g_file_name, char* output_g_file_name,
-                  int _distinctLabel) {
+                  int _distinctLabel, int _maxLabelCnt = 0) {
     InputReader g_reader(input_g_file_name);
     ofstream output(output_g_file_name);
     distinctLabel = _distinctLabel;
@@ -82,7 +82,8 @@ class TestGenDataSet {
       g_reader.GetNextGraph_MultiVertexLabel_Original(*g);
       graphDB[i] = g;
 
-      assignLabelByDegree(g);
+//      assignLabelByDegree(g);
+      assignLabelByRandom(g, _maxLabelCnt);
       g->printGraph(output);
     }
   }
@@ -93,9 +94,9 @@ class TestGenDataSet {
     }
   }
 
-  void assignLabelByRandom(GRAPH* g) {
+  void assignLabelByRandom(GRAPH* g, int _maxLabelCnt) {
     int rand = 0;
-    int maxLabelCnt = g->V() / distinctLabel + 1;
+    int maxLabelCnt = _maxLabelCnt;
     unordered_map<VertexID, int> mymap;
     for (int i = 0; i < g->V();) {
       rand = randGen->genRanInt(distinctLabel);
