@@ -183,8 +183,7 @@ void testGenDataSet(int argc, char** argv) {
   }
   TestGenDataSet* g_test = new TestGenDataSet(atoi(argv[2]));
 
-//  g_test->genDataSet(argv[1], argv[3], atoi(argv[4]));
-  g_test->genDataSet(argv[1], argv[3], atoi(argv[4]), atoi(argv[5]));
+  g_test->genDataSet(argv[1], argv[3], atoi(argv[4]));
 
   delete g_test;
 }

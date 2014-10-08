@@ -47,7 +47,8 @@ class TestGenDataSet {
 
       cout << "Vcnt: " << g->V() << endl;
       cout << "Ecnt: " << g->E() << endl;
-      cout << "Density: " << double( (2 * g->E()) / (g->V()) ) / (g->V() - 1) << endl;
+      cout << "Density: " << double((2 * g->E()) / (g->V())) / (g->V() - 1)
+           << endl;
 
       unordered_map<VertexLabel, int> mymap;
       double avg_deg = 0;
@@ -72,7 +73,7 @@ class TestGenDataSet {
   }
 
   void genDataSet(const char* input_g_file_name, char* output_g_file_name,
-                  int _distinctLabel, int _maxLabelCnt = 0) {
+                  int _distinctLabel) {
     InputReader g_reader(input_g_file_name);
     ofstream output(output_g_file_name);
     distinctLabel = _distinctLabel;
@@ -83,7 +84,7 @@ class TestGenDataSet {
       graphDB[i] = g;
 
 //      assignLabelByDegree(g);
-      assignLabelByRandom(g, _maxLabelCnt);
+      assignLabelByRandom(g);
       g->printGraph(output);
     }
   }
@@ -94,23 +95,17 @@ class TestGenDataSet {
     }
   }
 
-  void assignLabelByRandom(GRAPH* g, int _maxLabelCnt) {
+  void assignLabelByRandom(GRAPH* g) {
     int rand = 0;
-    int maxLabelCnt = _maxLabelCnt;
     unordered_map<VertexID, int> mymap;
     for (int i = 0; i < g->V();) {
       rand = randGen->genRanInt(distinctLabel);
 
       g->setLabel(i, rand);
       if (mymap.find(rand) != mymap.end()) {
-        if (mymap[rand] > maxLabelCnt) {
-//          rand++;
-          continue;
-        } else {
-          cout << i << " " << rand << endl;
-          mymap[rand]++;
-          i++;
-        }
+        cout << i << " " << rand << endl;
+        mymap[rand]++;
+        i++;
       } else {
         mymap[rand] = 1;
         i++;
