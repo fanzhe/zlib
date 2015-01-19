@@ -112,6 +112,10 @@ typedef DIGRAPH<VertexLabel, EdgeLabel> DIGRAPHBASIC;
 typedef DIGRAPH<DGQVertex, EdgeLabel> DIGRAPHDGQ;
 typedef DIGRAPH<DDGVertex, EdgeLabel> DIGRAPHDDG;
 
+// product graph
+typedef DIGRAPH<Pair, EdgeLabel> DIKEYS;
+typedef DIGRAPH<Pair, EdgeLabel> DIPRODUCTGRAPH;
+
 typedef unsigned long ULong;
 typedef vector<EntityPair> ListPair;
 typedef unordered_map<int, ListPair> MapListPair;

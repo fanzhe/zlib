@@ -11,7 +11,8 @@
 #include "GlobalDefinition.h"
 #include <vector>
 #include <tr1/unordered_map>
-
+#include <iostream>
+#include <queue>
 using namespace std;
 
 template<class VLabelType, class ELabelType>
@@ -23,7 +24,7 @@ class DIGRAPH {
   template<class ELableType>
   class AdjElement {
    public:
-    VertexID v;
+//    VertexID v;
     EdgeID eid;
     ELableType elabel;
     /**
@@ -32,11 +33,13 @@ class DIGRAPH {
     bool isVisited;
 
     AdjElement() {
-      v = eid = elabel = -1;
+//      v =
+        eid = elabel = -1;
     }
 
-    AdjElement(VertexID v, EdgeID eid, const ELableType& _elabel)
-        : v(v),
+    // VertexID v : can be removed?
+    AdjElement(EdgeID eid, const ELableType& _elabel)
+        : //v(v),
           eid(eid),
           elabel(_elabel) {
     }
@@ -61,7 +64,7 @@ class DIGRAPH {
   VLabels _vlabels;  // vertex label
   OutEdge _outEdges;  // out edge list
   InVertex _inVertex;  // in vertex
-
+  int diameter;
   /*
    * basic operations
    */
@@ -92,6 +95,7 @@ class DIGRAPH {
   int getOutDegree(VertexID v);
   int getInDegree(VertexID v);
   void printGraph(ostream& out);
+  void getDiameter(VertexID s);
 
   /*
    * data structures for subIso
@@ -103,6 +107,7 @@ class DIGRAPH {
 
   /*
    * data structures for EL algorithm
+   * Do *NOT* use the below data structures
    */
   VertexID e;
   MapLabelCnt _outLabelCnt;
@@ -188,7 +193,9 @@ void DIGRAPH<VLabelType, ELabelType>::reset() {
 template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::insertVertex(VertexID v,
                                                    const VLabelType& label) {
-  Vcnt++;
+  if (!isVertex(v)) {
+    Vcnt++;
+  }
   getVLabel()[v] = label;
 }
 
@@ -196,7 +203,8 @@ template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::insertEdge(VertexID s, VertexID d,
                                                  const ELabelType& el) {
   Ecnt++;
-  getOutEdge()[s][d] = AdjElement<ELabelType>(s, Ecnt, el);
+//  getOutEdge()[s][d] = AdjElement<ELabelType>(s, Ecnt, el);
+  getOutEdge()[s][d] = AdjElement<ELabelType>(Ecnt, el);
   getInVertex()[d][s] = true;
 }
 
@@ -416,6 +424,62 @@ template<class VLabelType, class ELabelType>
 void DIGRAPH<VLabelType, ELabelType>::initEL(VertexID x) {
   e = x;
   constLabelCnt();
+}
+
+template<class VLabelType, class ELabelType>
+void DIGRAPH<VLabelType, ELabelType>::getDiameter(VertexID x) {
+  diameter = 0;
+
+  unordered_map<VertexID, int> map_hop;
+  queue<VertexID> nodes;
+
+  nodes.push(x);
+  map_hop[x] = 0;
+
+  // Begin BFS
+  while (!nodes.empty()) {
+    // for each node v
+    VertexID v = nodes.front();
+    nodes.pop();
+
+    // for each out node u of v
+    for (typename AdjList::iterator it1 = getOutEdge()[v].begin();
+        it1 != getOutEdge()[v].end(); it1++) {
+      VertexID u = it1->first;
+
+      // u is visited
+      if (map_hop.find(u) != map_hop.end()) {
+        continue;
+      }
+
+      // add u into queue for next iteration
+      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
+
+      if (diameter < map_hop[u]) {
+        diameter = map_hop[u];
+      }
+    }
+
+    // for each in node u of v
+    for (typename AdjListBool::iterator it2 = getInVertex()[v].begin();
+        it2 != getInVertex()[v].end(); it2++) {
+      VertexID u = it2->first;
+
+      // u is visited
+      if (map_hop.find(u) != map_hop.end()) {
+        continue;
+      }
+
+      // add u into queue for next iteration
+      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
+
+      if (diameter < map_hop[u]) {
+        diameter = map_hop[u];
+      }
+    }
+  }
 }
 
 #endif /* DIGRAPH_H_ */

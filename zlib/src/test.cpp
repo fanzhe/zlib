@@ -12,6 +12,7 @@
 #include "test/testKB.h"
 #include "test/testUllman.h"
 //#include "utility/EVector.h"
+#include "KBQuality/testKBQuality.h"
 
 #include <vector>
 
@@ -105,6 +106,26 @@ void testKB(int argc, char** argv) {
 
 //  dg_test->testEL(atoi(argv[8]), atoi(argv[9]));
   dg_test->run(atoi(argv[8]), atoi(argv[9]));
+}
+
+void testKBQuality(int argc, char** argv) {
+  cout << "testKBQuality " << endl;
+  if (argc < 2) {
+    cout << "please input correctly!" << endl;
+    return;
+  }
+
+  TestKBQuality* dg_test = new TestKBQuality();
+
+  // load data
+  dg_test->loadFromInputFile(argv[1], atoi(argv[2]), argv[3], atoi(argv[4]));
+  cout << "load finish" << endl;
+
+  // load G^d for each e
+  dg_test->loadDNeighbor();
+
+//  dg_test->testEL(atoi(argv[8]), atoi(argv[9]));
+//  dg_test->run();
 }
 
 void testVF(int argc, char** argv) {
@@ -307,7 +328,8 @@ int main(int argc, char** argv) {
   } else if (argv[1][0] == 'v') {
     testVF(argc - 1, argv + 1);
   } else if (argv[1][0] == 'k'){
-    testKB(argc - 1, argv + 1);
+//    testKB(argc - 1, argv + 1);
+    testKBQuality(argc - 1, argv + 1);
   } else {
     testPlain();
   }
