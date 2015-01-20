@@ -34,12 +34,12 @@ class DIGRAPH {
 
     AdjElement() {
 //      v =
-        eid = elabel = -1;
+      eid = elabel = -1;
     }
 
     // VertexID v : can be removed?
     AdjElement(EdgeID eid, const ELableType& _elabel)
-        : //v(v),
+        ://v(v),
           eid(eid),
           elabel(_elabel) {
     }
@@ -96,6 +96,7 @@ class DIGRAPH {
   int getInDegree(VertexID v);
   void printGraph(ostream& out);
   void getDiameter(VertexID s);
+  void getDNeighbor(VertexID s, int hops, set<VertexID>& visit_v);
 
   /*
    * data structures for subIso
@@ -478,6 +479,59 @@ void DIGRAPH<VLabelType, ELabelType>::getDiameter(VertexID x) {
       if (diameter < map_hop[u]) {
         diameter = map_hop[u];
       }
+    }
+  }
+}
+
+template<class VLabelType, class ELabelType>
+void DIGRAPH<VLabelType, ELabelType>::getDNeighbor(VertexID s, int hops,
+                                                   set<VertexID>& visit_v) {
+  visit_v.insert(s);
+
+  unordered_map<VertexID, int> map_hop;
+  queue<VertexID> nodes;
+  nodes.push(s);
+  map_hop[s] = 0;
+
+  // for each node v
+  while (!nodes.empty()) {
+    VertexID v = nodes.front();
+    nodes.pop();
+
+    // for each out-node u of v
+    for (typename AdjList::iterator it1 = getOutEdge()[v].begin();
+        it1 != getOutEdge()[v].end(); it1++) {
+      VertexID u = it1->first;
+
+      // u is visited
+      if (map_hop.find(u) != map_hop.end()) {
+        continue;
+      }
+
+      map_hop[u] = map_hop[v] + 1;
+      if (map_hop[u] == hops)
+        continue;
+      // add u to next_nodes for iteration
+      nodes.push(u);
+      visit_v.insert(u);
+    }
+
+    // for each in-node u of v
+    for (typename AdjListBool::iterator it2 = getInVertex()[v].begin();
+        it2 != getInVertex()[v].end(); it2++) {
+      VertexID u = it2->first;
+
+      // u is visited
+      if (map_hop.find(u) != map_hop.end()) {
+        continue;
+      }
+
+      map_hop[u] = map_hop[v] + 1;
+      if (map_hop[u] == hops)
+        continue;
+      // add u to next_nodes for iteration
+      nodes.push(u);
+      visit_v.insert(u);
     }
   }
 }
