@@ -59,16 +59,11 @@ class TestKBQuality {
                          const char* input_q_name, int _q_cnt);
 
   unordered_map<VertexID, DIGRAPHBASIC*> GdDB;
+  unordered_map<VertexID, set<VertexID>*> GdVDB;
   /**
    * load G^d for all e
    */
   void loadDNeighbor();
-  /**
-   * d-neighbor graph of e
-   * BFS by edges
-   * *without* simulation
-   */
-  void dNeighbor(DIGRAPHBASIC *G, VertexID e, DIKEYS *Q, DIGRAPHBASIC *Gd);
   bool checkPredicateObjectFeasibility(DIGRAPHBASIC *dg, EdgeLabel p_1,
                                        VertexID o_1, DIKEYS *dq, EdgeLabel p_Q,
                                        VertexID o_Q);

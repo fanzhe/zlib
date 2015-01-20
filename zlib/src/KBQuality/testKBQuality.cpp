@@ -8,6 +8,7 @@
 #include "testKBQuality.h"
 #include "../utility/GlobalDefinition.h"
 #include "../utility/Pair.h"
+#include "../utility/utilityFunction.h"
 
 TestKBQuality::TestKBQuality() {
 
@@ -40,7 +41,9 @@ void TestKBQuality::loadFromInputFile(const char* input_g_name, int _g_cnt,
         if (!dg->isVertex(out_v_id)) {
           dg->insertVertex(out_v_id, out_v_id);
         }
-        dg->insertEdge(in_v_id, out_v_id, e_l);
+        if (!dg->isEdge(in_v_id, out_v_id)) {
+          dg->insertEdge(in_v_id, out_v_id, e_l);
+        }
       }
     }
 
@@ -113,10 +116,10 @@ void TestKBQuality::loadDNeighbor() {
       if (dg->getVLabel(e) < 0) {
         continue;
       }
-      cout << "d-neighbor graph from " << e << endl;
+      cout << "d-neighbor nodes from " << e << endl;
 
-      // initialize G^d for e
-      DIGRAPHBASIC *Gd = new DIGRAPHBASIC();
+      // initialize nodes within d hops from e
+      set<VertexID>* visit_v = new set<VertexID>();
 
       // for each Q(x) where x and e are with same type
       for (int j = 0; j < q_cnt; j++) {
@@ -127,125 +130,12 @@ void TestKBQuality::loadDNeighbor() {
           continue;
         }
 
-        // construct G^d by Q(x)
-        dNeighbor(dg, e, dq, Gd);
+        // construct nodes by Q(x)
+        dg->getDNeighbor(e, dq->diameter, *visit_v);
       }  // end of Q
-      GdDB[e] = Gd;
-      Gd->printGraph(cout);
+      GdVDB[e] = visit_v;
     }  // end of e
   }  // end of G
-}
-
-void TestKBQuality::dNeighbor(DIGRAPHBASIC *dg, VertexID e, DIKEYS *dq,
-                              DIGRAPHBASIC *Gd) {
-  unordered_map<VertexID, int> map_hop;  // for graph
-  queue<Pair> Qu;
-  Qu.push(Pair(0, e));
-  map_hop[e] = 0;
-  Gd->insertVertex(e, dg->getVLabel(e));
-  dq->initEdgeVisited();
-  // on dq: start from x = 0
-  // on dg: start from e
-
-  while (!Qu.empty()) {
-    Pair cur_p = Qu.front();
-    Qu.pop();
-    VertexID s_Q = cur_p.u;
-    VertexID s = cur_p.v;
-
-//      cout << cur_p << endl;
-
-    // for each out-triple of s_Q in Q
-    for (typename DIKEYS::AdjList::iterator qit = dq->getOutEdge()[s_Q].begin();
-        qit != dq->getOutEdge()[s_Q].end(); qit++) {
-      VertexID o_Q = qit->first;
-      Pair o_Q_t(dq->getVLabel(o_Q));
-      EdgeLabel p_Q = qit->second.elabel;
-
-      if (qit->second.isVisited)
-        continue;
-      qit->second.isVisited = true;
-      // for each out-triple of s in G
-      for (typename DIGRAPHBASIC::AdjList::iterator git = dg->getOutEdge()[s]
-          .begin(); git != dg->getOutEdge()[s].end(); git++) {
-        VertexID o = git->first;
-        EdgeLabel p = git->second.elabel;
-
-        // if o is out of d neighbor
-        if (map_hop.find(o) == map_hop.end()) {
-          map_hop[o] = map_hop[s] + 1;
-        }
-        if (map_hop[o] > dq->diameter) {
-          continue;
-        }
-
-        // check predicate and object feasibility
-        if (!checkPredicateObjectFeasibility(dg, p, o, dq, p_Q, o_Q)) {
-          continue;
-        }
-
-        // insert vertex and edge
-        if (!Gd->isVertex(o)) {
-          Gd->insertVertex(o, o);
-        }
-        if (!Gd->isEdge(s, o)) {
-          Gd->insertEdge(s, o, p);
-        }
-
-        // push (o_Q, o) queue if o_Q is y or _y
-        if ((o_Q_t.u == 2 || o_Q_t.u == 4)) {
-          Qu.push(Pair(o_Q, o));
-        }
-      }
-    }
-
-    // for each in-triple of s_Q in Q
-    // for each out-triple of s_Q in Q
-    for (typename DIKEYS::AdjListBool::iterator qit = dq->getInVertex()[s_Q]
-        .begin(); qit != dq->getInVertex()[s_Q].end(); qit++) {
-      VertexID s_Qp = qit->first;
-      Pair s_Qp_t(dq->getVLabel(s_Qp));
-      EdgeLabel p_Q = dq->getELabel(s_Qp, s_Q);
-
-      if (dq->getOutEdge()[s_Qp][s_Q].isVisited)
-        continue;
-      dq->getOutEdge()[s_Qp][s_Q].isVisited = true;
-
-      // for each out-triple of s in G
-      for (typename DIGRAPHBASIC::AdjListBool::iterator git =
-          dg->getInVertex()[s].begin(); git != dg->getInVertex()[s].end();
-          git++) {
-        VertexID sp = git->first;
-        EdgeLabel p = dg->getELabel(sp, s);
-
-        // if o is out of d neighbor
-        if (map_hop.find(sp) == map_hop.end()) {
-          map_hop[sp] = map_hop[s] + 1;
-        }
-        if (map_hop[sp] > dq->diameter) {
-          continue;
-        }
-
-        // check predicate and object feasibility
-        if (!checkPredicateObjectFeasibility(dg, p, sp, dq, p_Q, s_Qp)) {
-          continue;
-        }
-
-        // insert vertex and edge
-        if (!Gd->isVertex(sp)) {
-          Gd->insertVertex(sp, sp);
-        }
-        if (!Gd->isEdge(sp, s)) {
-          Gd->insertEdge(sp, s, p);
-        }
-
-        // push (o_Q, o) queue if o_Q is y or _y
-        if ((s_Qp_t.u == 2 || s_Qp_t.u == 4)) {
-          Qu.push(Pair(s_Qp, sp));
-        }
-      }
-    }
-  }  // end while
 }
 
 bool TestKBQuality::checkPredicateObjectFeasibility(DIGRAPHBASIC *dg,

@@ -498,6 +498,9 @@ void DIGRAPH<VLabelType, ELabelType>::getDNeighbor(VertexID s, int hops,
     VertexID v = nodes.front();
     nodes.pop();
 
+    if (map_hop[v] == hops)
+      continue;
+
     // for each out-node u of v
     for (typename AdjList::iterator it1 = getOutEdge()[v].begin();
         it1 != getOutEdge()[v].end(); it1++) {
@@ -508,12 +511,10 @@ void DIGRAPH<VLabelType, ELabelType>::getDNeighbor(VertexID s, int hops,
         continue;
       }
 
-      map_hop[u] = map_hop[v] + 1;
-      if (map_hop[u] == hops)
-        continue;
       // add u to next_nodes for iteration
-      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
       visit_v.insert(u);
+      nodes.push(u);
     }
 
     // for each in-node u of v
@@ -526,14 +527,12 @@ void DIGRAPH<VLabelType, ELabelType>::getDNeighbor(VertexID s, int hops,
         continue;
       }
 
-      map_hop[u] = map_hop[v] + 1;
-      if (map_hop[u] == hops)
-        continue;
       // add u to next_nodes for iteration
-      nodes.push(u);
+      map_hop[u] = map_hop[v] + 1;
       visit_v.insert(u);
+      nodes.push(u);
     }
-  }
+  }  // end of while
 }
 
 #endif /* DIGRAPH_H_ */
