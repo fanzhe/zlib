@@ -121,8 +121,11 @@ void testKBQuality(int argc, char** argv) {
   dg_test->loadFromInputFile(argv[1], atoi(argv[2]), argv[3], atoi(argv[4]));
   cout << "load finish" << endl;
 
-  // load G^d for each e
+  // load G^d for all e
   dg_test->loadDNeighbor();
+
+  // compute simulation for all (G, Q) of e
+  dg_test->comSim();
 
 //  dg_test->testEL(atoi(argv[8]), atoi(argv[9]));
 //  dg_test->run();

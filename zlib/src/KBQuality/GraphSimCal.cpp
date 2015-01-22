@@ -1,5 +1,6 @@
 #include "GraphSimCal.h"
 #include <list>
+#include "../utility/Pair.h"
 
 GraphSimCal::GraphSimCal() {
 
@@ -63,7 +64,7 @@ bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
       while (iter1 != dg->getVLabel().end()) {
         vb = iter1->first;
         // TODO: check feasibility
-        if (checkNodeFeasibility(vb, vq)) {
+        if (checkNodeFeasibility(dg, vb, qg, vq)) {
           hssim.insert(vb);
         }
         iter1++;
@@ -73,7 +74,7 @@ bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
       vb = -1;
       while (iter1 != dg->getVLabel().end()) {
         vb = iter1->first;
-        if (checkNodeFeasibility(vb, vq) && dg->getOutDegree(vb) > 0) {
+        if (checkNodeFeasibility(dg, vb, qg, vq) && dg->getOutDegree(vb) > 0) {
           hssim.insert(vb);
         }
         iter1++;
@@ -114,12 +115,40 @@ bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
   return true;
 }
 
-// TODO: here
+// = , return true
+bool GraphSimCal::checkNodeFeasibility(DIGRAPHBASIC *dg, int g_v, DIKEYS *qg, int q_v) {
+  int Qtype = qg->getVLabel(q_v).u;
+  // q_v = x
+  // fix it to only one node
+  if (Qtype == 1) {
+    if (qg->getVLabel(q_v).v == dg->getVLabel(g_v))
+      return true;
+    else
+      return false;
+  }
+  // q_v = y, _y, d
+  else if (Qtype == 2 || Qtype == 4 || Qtype == 5) {
+    if (qg->getVLabel(q_v).v == dg->getVLabel(g_v))
+      return true;
+    else
+      return false;
+  }
+  // q_v = y*
+  else if (Qtype == 3) {
+    if (dg->getVLabel(g_v) < 0)
+      return true;
+    else
+      return false;
+  } else {
+    return false;
+  }
+}
+
 bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
                                      MapIntHset & simset, MapIntHset & remove) {
   MapIntInt r_m;
-  vector<vector<int> > counter(dg.getGraphNodeNum(),
-                               vector<int>(qg.getGraphNodeNum()));
+  unordered_map<int, unordered_map<int, int> > counter;
+  // dg->getVcnt(), vector<int>(qg->getVcnt()));
   //int *p =  new int [b.getGraphNodeNum() * COUNTER_COL];//TEST!!!!!!!!!!!!!!!
   //int (*counter)[COUNTER_COL] = (int(*)[COUNTER_COL])p;
 
@@ -128,17 +157,19 @@ bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
   int u = findNoEmptyRemove(remove, qg);
   while (u != -2) {
     int u_n = -1;
-    vector<int>::iterator iter_nb;
+//    vector<int>::iterator iter_nb;
+    typename DIKEYS::AdjList::iterator iter_nb;  //= qg->getOutEdge()[vn]
     ////////////////////////////////////
-    for (iter_nb = qg.vertices[u].nbset.begin();
-        iter_nb != qg.vertices[u].nbset.end(); iter_nb++) {
-      u_n = *iter_nb;
+    for (iter_nb = qg->getOutEdge()[u].begin();
+        iter_nb != qg->getOutEdge()[u].end(); iter_nb++) {
+      u_n = iter_nb->first;
       int w = -1;
-      hash_set<int>::iterator iter_remove;
+      unordered_set<int>::iterator iter_remove;
       for (iter_remove = remove.find(u)->second.begin();
           iter_remove != remove.find(u)->second.end(); iter_remove++) {
         w = *iter_remove;
-        hash_set<int>::iterator iter_sim_hs = simset.find(u_n)->second.find(w);
+        unordered_set<int>::iterator iter_sim_hs =
+            simset.find(u_n)->second.find(w);
         if (iter_sim_hs != simset.find(u_n)->second.end()) {
           simset.find(u_n)->second.erase(iter_sim_hs);
           if (simset.find(u_n)->second.size() < 1) {
@@ -146,20 +177,22 @@ bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
           }
           //Update Counter
           int updc = -1;
-          vector<int>::iterator iter_dpdc;
-          for (iter_dpdc = dg.vertices[w].nbset.begin();
-              iter_dpdc != dg.vertices[w].nbset.end(); iter_dpdc++) {
-            updc = *iter_dpdc;
+//          vector<int>::iterator iter_dpdc;
+          typename DIGRAPHBASIC::AdjList::iterator iter_dpdc;
+          for (iter_dpdc = dg->getOutEdge()[w].begin();
+              iter_dpdc != dg->getOutEdge()[w].end(); iter_dpdc++) {
+            updc = iter_dpdc->first;
             if (counter[updc][u_n] > 0) {
               counter[updc][u_n]--;
             }
           }
           //go on
           int w_n = -1;
-          vector<int>::iterator iter_wb;
-          for (iter_wb = dg.vertices[w].nbset.begin();
-              iter_wb != dg.vertices[w].nbset.end(); iter_wb++) {
-            w_n = *iter_wb;
+//          vector<int>::iterator iter_wb;
+          typename DIGRAPHBASIC::AdjList::iterator iter_wb;
+          for (iter_wb = dg->getOutEdge()[w].begin();
+              iter_wb != dg->getOutEdge()[w].end(); iter_wb++) {
+            w_n = iter_wb->first;
             if (counter[w_n][u_n] == 0) {
               remove.find(u_n)->second.insert(w_n);
             }
@@ -175,11 +208,12 @@ bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
   return true;
 }
 
-int GraphSimCal::findNoEmptyRemove(MapIntHset & remove, QGraph & qg) {
-  vector<QVertex>::iterator iter = qg.vertices.begin();
+int GraphSimCal::findNoEmptyRemove(MapIntHset & remove, DIKEYS * qg) {
+//  vector<QVertex>::iterator iter = qg.vertices.begin();
+  typename DIKEYS::VLabels::iterator iter = qg->getVLabel().begin();
   int vq = -1;
-  while (iter != qg.vertices.end()) {
-    vq = iter->id;
+  while (iter != qg->getVLabel().end()) {
+    vq = iter->first;
     iter++;
     if (remove.find(vq)->second.size() != 0) {
       return vq;
@@ -188,20 +222,22 @@ int GraphSimCal::findNoEmptyRemove(MapIntHset & remove, QGraph & qg) {
   return -2;
 }
 
-int GraphSimCal::myIntersection(vector<int> & vec1, hash_set<int> & hs2) {
+int GraphSimCal::myIntersection(typename DIGRAPHBASIC::AdjList& vec1,
+                                unordered_set<int> & hs2) {
   set<int> t;
-  hash_set<int> hs1;
-  vector<int>::iterator iter1;
-  hash_set<int>::iterator iter2;
-  hash_set<int>::iterator iter3;
+  unordered_set<int> hs1;
+//  vector<int>::iterator iter1;
+  typename DIGRAPHBASIC::AdjList::iterator iter1;
+  unordered_set<int>::iterator iter2;
+  unordered_set<int>::iterator iter3;
   set<int>::iterator iter4;
 
   for (iter1 = vec1.begin(); iter1 != vec1.end(); iter1++) {
-    iter2 = hs2.find(*iter1);
+    iter2 = hs2.find(iter1->first);
     if (iter2 != hs2.end()) {
-      t.insert(*iter1);
+      t.insert(iter1->first);
     }
-    hs1.insert(*iter1);
+    hs1.insert(iter1->first);
   }
 
   for (iter2 = hs2.begin(); iter2 != hs2.end(); iter2++) {
@@ -215,18 +251,20 @@ int GraphSimCal::myIntersection(vector<int> & vec1, hash_set<int> & hs2) {
   return t.size();
 }
 
-void GraphSimCal::counterInitilization(vector<vector<int> > & counter,
-                                       MapIntHset & simset, Graph & dg,
-                                       QGraph & qg) {
-  vector<Vertex>::iterator iter1 = dg.vertices.begin();
+void GraphSimCal::counterInitilization(
+    unordered_map<int, unordered_map<int, int> > & counter, MapIntHset & simset,
+    DIGRAPHBASIC *dg, DIKEYS * qg) {
+//  vector<Vertex>::iterator iter1 = dg.vertices.begin();
+  typename DIGRAPHBASIC::VLabels::iterator iter1 = dg->getVLabel().begin();
   int vb = -1;
-  while (iter1 != dg.vertices.end()) {
-    vb = iter1->id;
+  while (iter1 != dg->getVLabel().end()) {
+    vb = iter1->first;
     int vq = -1;
-    vector<QVertex>::iterator iter2 = qg.vertices.begin();
-    while (iter2 != qg.vertices.end()) {
-      vq = iter2->id;
-      int s = myIntersection(dg.vertices[vb].nbset, simset.find(vq)->second);
+//    vector<QVertex>::iteratoriter2 = qg.vertices.begin();
+    typename DIKEYS::VLabels::iterator iter2 = qg->getVLabel().begin();
+    while (iter2 != qg->getVLabel().end()) {
+      vq = iter2->first;
+      int s = myIntersection(dg->getOutEdge()[vb], simset.find(vq)->second);
       counter[vb][vq] = s;
       iter2++;
     }

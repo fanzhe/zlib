@@ -68,6 +68,11 @@ class TestKBQuality {
                                        VertexID o_1, DIKEYS *dq, EdgeLabel p_Q,
                                        VertexID o_Q);
 
+  /**
+   * compute simulation for all e
+   * of (G^d, Q)
+   */
+  void comSim();
 //  unordered_map<pair, set<DIKEYS*> > L;
   /**
    * construct L

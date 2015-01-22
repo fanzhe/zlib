@@ -9,6 +9,7 @@
 #include "../utility/GlobalDefinition.h"
 #include "../utility/Pair.h"
 #include "../utility/utilityFunction.h"
+#include "GraphSimCal.h"
 
 TestKBQuality::TestKBQuality() {
 
@@ -138,6 +139,32 @@ void TestKBQuality::loadDNeighbor() {
   }  // end of G
 }
 
+void TestKBQuality::comSim() {
+  // for each graph
+  for (int i = 0; i < g_cnt; i++) {
+    DIGRAPHBASIC *G = graphDB[i];
+
+      // for each Q
+      for (int j = 0; j < q_cnt; j++) {
+        DIKEYS *Q = queryDB[j];
+
+        MapIntHset simset;
+        GraphSimCal gsc;
+        bool sim_flag = gsc.SimCal(G, Q, simset);
+
+        cout << "simulation result of Q" << j << ": " << endl;
+        for (MapIntHset::iterator it1 = simset.begin(); it1 != simset.end(); it1++) {
+          int u = it1->first;
+          cout << u << "-> ";
+          for (unordered_set<int>::iterator it2 = it1->second.begin(); it2 != it1->second.end(); it2++) {
+            int v = *it2;
+            cout << v << ", ";
+          }
+          cout << endl;
+        }
+      }  // end of Q
+  }  // end of G
+}
 bool TestKBQuality::checkPredicateObjectFeasibility(DIGRAPHBASIC *dg,
                                                     EdgeLabel p_1, VertexID o_1,
                                                     DIKEYS *dq, EdgeLabel p_Q,
@@ -193,9 +220,10 @@ void TestKBQuality::pairing() {
         // check by Q
         for (int j = 0; j < q_cnt; j++) {
           DIKEYS *Q = queryDB[j];
-          if (checkPairing(G_1, G_2, e_1, e_2, Q)) {
+          // TODO
+//          if (checkPairing(G_1, G_2, e_1, e_2, Q)) {
 //            L[pair(e_1, e_2)] = Q;
-          }
+//          }
         }  // end of Q
       }  // end of e_2
     }  // end of e_1

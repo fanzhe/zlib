@@ -1,5 +1,5 @@
 #ifndef GRAPHSIMCAL_H
-#ifndef GRAPHSIMCAL_H
+#define GRAPHSIMCAL_H
 
 #include <time.h>
 #include <string>
@@ -21,9 +21,10 @@ private:
 	bool graphSimMain(DIGRAPHBASIC *, DIKEYS *, MapIntHset &, MapIntHset &);
 	bool graphInitialization(DIGRAPHBASIC *, DIKEYS *, MapIntHset &, MapIntHset &);
 	bool graphSimRefinement(DIGRAPHBASIC *, DIKEYS *, MapIntHset &, MapIntHset &);
-	int myIntersection(vector<int> &, unordered_set<int> &);
+	int myIntersection(typename DIGRAPHBASIC::AdjList& vec1, unordered_set<int> &);
 	int findNoEmptyRemove(MapIntHset &, DIKEYS *);
-	void counterInitilization(vector<vector<int> > &, MapIntHset &, DIGRAPHBASIC *, DIKEYS *);
+	void counterInitilization(unordered_map<int, unordered_map<int, int> > &, MapIntHset &, DIGRAPHBASIC *, DIKEYS *);
+	bool checkNodeFeasibility(DIGRAPHBASIC*, int, DIKEYS*, int);
 
 public:
 	time_t main1;
