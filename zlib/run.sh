@@ -1,49 +1,36 @@
 #!/bin/sh
+# for ICDE response
+# DBLP 32
+#./zlib.exe g data/dblp/dblp.degree 1 data/dblp/dblp.random.32 32
 
-#./zlib.exe r data/yeast/query/paths/yeast_path2.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_path2.detailed data/yeast/result/yeast_path2.avg
-#./zlib.exe r data/yeast/query/paths/yeast_path3.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_path3.detailed data/yeast/result/yeast_path3.avg
-#./zlib.exe r data/yeast/query/paths/yeast_path4.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_path4.detailed data/yeast/result/yeast_path4.avg
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q2 1000 2
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q3 1000 3
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q4 1000 4
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q5 1000 5
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q6 1000 6
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q7 1000 7
+./zlib.exe qbfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_bfs_q8 1000 8
 
-#./zlib.exe r data/yeast/query/cliques/yeast_clique2.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_clique2.detailed data/yeast/result/yeast_clique2.avg 
-#./zlib.exe r data/yeast/query/cliques/yeast_clique3.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_clique3.detailed data/yeast/result/yeast_clique3.avg
-#./zlib.exe r data/yeast/query/cliques/yeast_clique4.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_clique4.detailed data/yeast/result/yeast_clique4.avg
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q2 1000 2
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q3 1000 3
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q4 1000 4
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q5 1000 5
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q6 1000 6
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q7 1000 7
+./zlib.exe qdfs data/dblp/dblp.random.32 1 data/dblp/query_random_32/dblp_dfs_q8 1000 8
 
-#./zlib.exe r data/yeast/query/subgraphs/yeast_q1.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_q1.detailed data/yeast/result/yeast_q1.avg
-#./zlib.exe r data/yeast/query/subgraphs/yeast_q2.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_q2.detailed data/yeast/result/yeast_q2.avg
-#./zlib.exe r data/yeast/query/subgraphs/yeast_q3.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_q3.detailed data/yeast/result/yeast_q3.avg
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q2 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q2.detailed data/dblp/result_random_32/dblp_bfs_q2.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q3 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q3.detailed data/dblp/result_random_32/dblp_bfs_q3.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q4 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q4.detailed data/dblp/result_random_32/dblp_bfs_q4.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q5 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q5.detailed data/dblp/result_random_32/dblp_bfs_q5.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q6 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q6.detailed data/dblp/result_random_32/dblp_bfs_q6.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q7 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q7.detailed data/dblp/result_random_32/dblp_bfs_q7.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_bfs_q8 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_bfs_q8.detailed data/dblp/result_random_32/dblp_bfs_q8.avg 7 100
 
-#./zlib.exe r data/human/query/paths/human_path2.igraph 1000 data/human/human.my 1 data/human/result/human_path2.detailed data/human/result/human_path2.avg
-#./zlib.exe r data/human/query/paths/human_path3.igraph 1000 data/human/human.my 1 data/human/result/human_path3.detailed data/human/result/human_path3.avg
-#./zlib.exe r data/human/query/paths/human_path4.igraph 1000 data/human/human.my 1 data/human/result/human_path4.detailed data/human/result/human_path4.avg
-
-#./zlib.exe r data/human/query/cliques/human_clique2.igraph 1000 data/human/human.my 1 data/human/result/human_clique2.detailed data/human/result/human_clique2.avg
-#./zlib.exe r data/human/query/cliques/human_clique3.igraph 1000 data/human/human.my 1 data/human/result/human_clique3.detailed data/human/result/human_clique3.avg
-#./zlib.exe r data/human/query/cliques/human_clique4.igraph 1000 data/human/human.my 1 data/human/result/human_clique4.detailed data/human/result/human_clique4.avg
-
-#./zlib.exe r data/human/query/subgraphs/human_q1.igraph 1000 data/human/human.my 1 data/human/result/human_q1.detailed data/human/result/human_q1.avg
-#./zlib.exe r data/human/query/subgraphs/human_q2.igraph 1000 data/human/human.my 1 data/human/result/human_q2.detailed data/human/result/human_q2.avg
-#./zlib.exe r data/human/query/subgraphs/human_q3.igraph 1000 data/human/human.my 1 data/human/result/human_q3.detailed data/human/result/human_q3.avg
-
-#./zlib.exe r data/yeast/query/paths/yeast_path5.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_path5.detailed data/yeast/result/yeast_path5.avg
-#./zlib.exe r data/yeast/query/cliques/yeast_clique5.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_clique5.detailed data/yeast/result/yeast_clique5.avg
-#./zlib.exe r data/yeast/query/subgraphs/yeast_q4.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_q4.detailed data/yeast/result/yeast_q4.avg
-
-#./zlib.exe r data/human/query/paths/human_path5.igraph 1000 data/human/human.my 1 data/human/result/human_path5.detailed data/human/result/human_path5.avg
-#./zlib.exe r data/human/query/cliques/human_clique5.igraph 1000 data/human/human.my 1 data/human/result/human_clique5.detailed data/human/result/human_clique5.avg
-#./zlib.exe r data/human/query/subgraphs/human_q4.igraph 1000 data/human/human.my 1 data/human/result/human_q4.detailed data/human/result/human_q4.avg
-
-#./zlib.exe r data/yeast/query/paths/yeast_path6.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_path6.detailed data/yeast/result/yeast_path6.avg
-#./zlib.exe r data/yeast/query/cliques/yeast_clique6.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_clique6.detailed data/yeast/result/yeast_clique6.avg
-./zlib.exe r data/yeast/query/subgraphs/yeast_q5.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_q5.detailed data/yeast/result/yeast_q5.avg
-
-./zlib.exe r data/human/query/paths/human_path6.igraph 1000 data/human/human.my 1 data/human/result/human_path6.detailed data/human/result/human_path6.avg
-./zlib.exe r data/human/query/cliques/human_clique6.igraph 1000 data/human/human.my 1 data/human/result/human_clique6.detailed data/human/result/human_clique6.avg
-./zlib.exe r data/human/query/subgraphs/human_q5.igraph 1000 data/human/human.my 1 data/human/result/human_q5.detailed data/human/result/human_q5.avg
-
-./zlib.exe r data/yeast/query/paths/yeast_path7.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_path7.detailed data/yeast/result/yeast_path7.avg
-./zlib.exe r data/yeast/query/cliques/yeast_clique7.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_clique7.detailed data/yeast/result/yeast_clique7.avg
-./zlib.exe r data/yeast/query/subgraphs/yeast_q6.igraph 1000 data/yeast/yeast.my 1 data/yeast/result/yeast_q6.detailed data/yeast/result/yeast_q6.avg
-
-./zlib.exe r data/human/query/paths/human_path7.igraph 1000 data/human/human.my 1 data/human/result/human_path7.detailed data/human/result/human_path7.avg
-./zlib.exe r data/human/query/cliques/human_clique7.igraph 1000 data/human/human.my 1 data/human/result/human_clique7.detailed data/human/result/human_clique7.avg
-./zlib.exe r data/human/query/subgraphs/human_q6.igraph 1000 data/human/human.my 1 data/human/result/human_q6.detailed data/human/result/human_q6.avg
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q2 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q2.detailed data/dblp/result_random_32/dblp_dfs_q2.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q3 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q3.detailed data/dblp/result_random_32/dblp_dfs_q3.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q4 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q4.detailed data/dblp/result_random_32/dblp_dfs_q4.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q5 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q5.detailed data/dblp/result_random_32/dblp_dfs_q5.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q6 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q6.detailed data/dblp/result_random_32/dblp_dfs_q6.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q7 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q7.detailed data/dblp/result_random_32/dblp_dfs_q7.avg 7 100
+./zlib.exe r data/dblp/query_random_32/dblp_dfs_q8 100 data/dblp/dblp.random.32 1 data/dblp/result_random_32/dblp_dfs_q8.detailed data/dblp/result_random_32/dblp_dfs_q8.avg 7 100
