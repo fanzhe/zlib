@@ -110,6 +110,9 @@ tmp/**/*
 local.properties
 .settings/
 .loadpath
+Release/
+Debug/
+
 
 # External tool builders
 .externalToolBuilders/
