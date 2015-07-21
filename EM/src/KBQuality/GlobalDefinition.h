@@ -16,7 +16,7 @@ using namespace std::tr1;
 
 //typedef unsigned long ULong;
 typedef int GraphID;
-typedef int VertexID;
+typedef long long VertexID;
 typedef int EdgeID;
 typedef int Label;
 typedef Label EdgeLabel;
@@ -47,6 +47,12 @@ typedef int Status;
 #define     DEFAULTMSGSIZE        2048
 #define     DEFAULTRANDOM         32
 #define     DEFAULALPHAFORL       0.1
+
+#define     DEFAULTENTITYFOREACHFILE  1000000
+#define     DEFAULTHETAGD             1000000
+#define     DEFAULTHETAORGGD          1000000
+#define     DEFAULTHETAL              1000000
+
 
 /**
  * edge definition
@@ -152,7 +158,6 @@ class VertexTriple {
   }
 };
 
-class EntityPair;
 
 typedef DIGRAPH<VertexLabel, EdgeLabel> DIGRAPHBASIC;
 typedef DIGRAPH<DGQVertex, EdgeLabel> DIGRAPHDGQ;
@@ -167,8 +172,6 @@ typedef DIGRAPH<Pair, EdgeLabel> DIKEYS;
 typedef DIGRAPH<VertexTriple, EdgeTriple> DIPRODUCTGRAPH;
 
 typedef unsigned long ULong;
-typedef vector<EntityPair> ListPair;
-typedef unordered_map<int, ListPair> MapListPair;
 typedef unordered_map<ULong, Pair> MapPairHash;
 typedef unordered_map<ULong, VertexID> MapPairVertex;
 typedef unordered_map<VertexID, Pair> MapVerPair;

@@ -118,17 +118,18 @@ void testKBQuality(int argc, char** argv) {
   TestKBQuality* dg_test = new TestKBQuality();
 
   // load data
-  dg_test->loadFromInputFile(argv[1], atoi(argv[2]), argv[3], atoi(argv[4]));
+  dg_test->loadFromInputFile(argv[1], atoi(argv[2]), argv[3], atoi(argv[4]), argv[5], argv[6], argv[7]);
   cout << "load finish" << endl;
 
   // load G^d for all e
+  cout << "start load d-neighbor: " << endl;
   dg_test->loadDNeighbor();
 
-  // compute simulation for all (G, Q) of e
-  dg_test->comSim();
+  // pairing L
+  cout << "start pairing: " << endl;
+  dg_test->pairing();
 
-//  dg_test->testEL(atoi(argv[8]), atoi(argv[9]));
-//  dg_test->run();
+  return;
 }
 
 void testVF(int argc, char** argv) {

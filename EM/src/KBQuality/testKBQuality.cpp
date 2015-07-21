@@ -6,22 +6,27 @@
  */
 
 #include "testKBQuality.h"
-#include "../utility/GlobalDefinition.h"
-#include "../utility/Pair.h"
-#include "../utility/utilityFunction.h"
+#include "GlobalDefinition.h"
+#include "Pair.h"
+#include "utilityFunction.h"
 #include "GraphSimCal.h"
 #include "ProductGraphSimCal.h"
 
 TestKBQuality::TestKBQuality() {
   global_Gp = new DIPRODUCTGRAPH();
+  thetaGd = thetaOrgGd = thetaL = 0;
 }
 
 void TestKBQuality::loadFromInputFile(const char* input_g_name, int _g_cnt,
                                       const char* input_q_name, int _q_cnt,
+                                      const char* org_output_Gd_folder,
+                                      const char* org_output_L_folder,
                                       const char* output_Gd_folder,
                                       const char* output_L_folder,
                                       const char* output_Gp_folder) {
   // assign folder name
+  this->org_output_Gd_folder.assign(org_output_Gd_folder);
+  this->org_output_L_folder.assign(org_output_L_folder);
   this->output_Gd_folder.assign(output_Gd_folder);
   this->output_L_folder.assign(output_L_folder);
   this->output_Gp_folder.assign(output_Gp_folder);
@@ -156,7 +161,7 @@ void TestKBQuality::loadDNeighbor() {
     DIGRAPHBASIC *dg = graphDB[i];
 
     // for each entity e
-    for (typename DIGRAPHBASIC::VLabels::iterator eit = dg->getVLabel().begin();
+    for (DIGRAPHBASIC::VLabels::iterator eit = dg->getVLabel().begin();
         eit != dg->getVLabel().end(); eit++) {
       VertexID e = eit->first;
 //      cout << "d-neighbor nodes from " << e;
@@ -204,6 +209,15 @@ void TestKBQuality::outputGd(int i, DIGRAPHBASIC* G,
   getInducedSubgraph(G, vIndG, indG);
   indG->e = e;
 
+  org_E.insert(e);
+  printOrgDGraphChao(org_m_GdOutputStream, indG);
+
+  thetaOrgGd++;
+  if (thetaOrgGd > DEFAULTHETAORGGD) {
+    cout << "out of orgGd" << endl;
+    exit(0);
+  }
+
   // check by Q
   for (int j = 0; j < q_cnt; j++) {
     DIKEYS *Q = queryDB[j];
@@ -223,6 +237,12 @@ void TestKBQuality::outputGd(int i, DIGRAPHBASIC* G,
 //    indGp->printGraph(cout);
     printDGraphChao(m_GdOutputStream, indGp);
 
+    thetaGd++;
+    if (thetaGd > DEFAULTHETAGD) {
+      cout << "out of Gd" << endl;
+      exit(0);
+    }
+
     GdVDB[i][e] = vIndGp;
   } else {
     delete vIndGp;
@@ -231,6 +251,40 @@ void TestKBQuality::outputGd(int i, DIGRAPHBASIC* G,
   // clear
   delete indG;
   delete indGp;
+}
+
+void TestKBQuality::printOrgDGraphChao(ofstream& out, DIGRAPHBASIC* G) {
+  // output G
+  // file name by G.e
+  // open file
+  stringstream ss;
+  ss << G->e;
+  string sub = ss.str();
+  string filename = org_output_Gd_folder + sub;
+  out.open(filename.c_str());
+
+  //  out << "Gd" << G->e << " " << endl;
+  // output node
+  for (DIGRAPHBASIC::VLabels::iterator it = G->getVLabel().begin();
+      it != G->getVLabel().end(); it++) {
+    if (it->first > 0) {
+      out << it->first << " " << it->second << endl;
+    } else {
+      out << it->first << " " << -1 << endl;
+    }
+  }
+
+  // output edge
+  for (DIGRAPHBASIC::VLabels::iterator it = G->getVLabel().begin();
+      it != G->getVLabel().end(); it++) {
+    VertexID u = it->first;
+    for (DIGRAPHBASIC::AdjList::iterator it1 = G->getOutEdge()[u].begin();
+        it1 != G->getOutEdge()[u].end(); it1++) {
+      VertexID v = it1->first;
+      out << u << " " << v << " " << it1->second.elabel << endl;
+    }
+  }
+  out.close();
 }
 
 void TestKBQuality::printDGraphChao(ofstream& out, DIGRAPHBASIC* G) {
@@ -245,7 +299,7 @@ void TestKBQuality::printDGraphChao(ofstream& out, DIGRAPHBASIC* G) {
 
 //  out << "Gd" << G->e << " " << endl;
   // output node
-  for (typename DIGRAPHBASIC::VLabels::iterator it = G->getVLabel().begin();
+  for (DIGRAPHBASIC::VLabels::iterator it = G->getVLabel().begin();
       it != G->getVLabel().end(); it++) {
     if (it->first > 0) {
       out << it->first << " " << it->second << endl;
@@ -254,11 +308,11 @@ void TestKBQuality::printDGraphChao(ofstream& out, DIGRAPHBASIC* G) {
     }
   }
   // output edge
-  for (typename DIGRAPHBASIC::VLabels::iterator it = G->getVLabel().begin();
+  for (DIGRAPHBASIC::VLabels::iterator it = G->getVLabel().begin();
       it != G->getVLabel().end(); it++) {
     VertexID u = it->first;
-    for (typename DIGRAPHBASIC::AdjList::iterator it1 =
-        G->getOutEdge()[u].begin(); it1 != G->getOutEdge()[u].end(); it1++) {
+    for (DIGRAPHBASIC::AdjList::iterator it1 = G->getOutEdge()[u].begin();
+        it1 != G->getOutEdge()[u].end(); it1++) {
       VertexID v = it1->first;
       out << u << " " << v << " " << it1->second.elabel << endl;
     }
@@ -266,14 +320,109 @@ void TestKBQuality::printDGraphChao(ofstream& out, DIGRAPHBASIC* G) {
   out.close();
 }
 
+void TestKBQuality::printOrgLChao(DIGRAPHBASIC* G) {
+  // output L
+  unordered_set<VertexID>::iterator it1 = org_E.begin();
+  unordered_set<VertexID>::iterator it2;
+
+  // collect label
+  unordered_map<VertexLabel, unordered_set<VertexID> > map_org_E;
+  for (it1 = org_E.begin(); it1 != org_E.end(); it1++) {
+    VertexID e = *it1;
+    VertexLabel l = G->getVLabel(e);
+    map_org_E[l].insert(e);
+  }
+
+  // print
+  unordered_map<VertexLabel, unordered_set<VertexID> >::iterator it3;
+  for (it3 = map_org_E.begin(); it3 != map_org_E.end(); it3++) {
+    VertexLabel l = it3->first;
+    ofstream& out = org_m_LOutputStream;
+    // initial open file stream
+    int org_m_LOutputStreamCnt = 0;
+    int org_m_LOutputStreamIndx = 1;  // start from 1
+
+    stringstream ss1, ss2;
+    ss1 << l;
+    ss2 << org_m_LOutputStreamIndx;
+    string filename = org_output_L_folder + "L." + ss1.str() + "." + ss2.str();
+    out.open(filename.c_str());
+
+    for (it1 = it3->second.begin(); it1 != it3->second.end(); it1++) {
+      VertexID e1 = *it1;
+      for (it2 = it1; it2 != it3->second.end(); it2++) {
+        VertexID e2 = *it2;
+        if (e1 == e2)
+          continue;
+        else {
+          out << e1 << " " << e2 << " " << l << endl;
+          org_m_LOutputStreamCnt++;
+          // check overlap
+          if (org_m_LOutputStreamCnt == DEFAULTENTITYFOREACHFILE) {
+            out.close();
+            org_m_LOutputStreamCnt = 0;
+            org_m_LOutputStreamIndx++;
+            stringstream ss1, ss2;
+            ss1 << l;
+            ss2 << org_m_LOutputStreamIndx;
+            string filename = org_output_L_folder + "L." + ss1.str() + "."
+                + ss2.str();
+            out.open(filename.c_str());
+          }
+        }
+      }  // end of e2
+    }  // end of e1
+
+    // close
+    out.close();
+  }  // end of label
+}
+
 void TestKBQuality::printLChao(ofstream& out, DIGRAPHBASIC* G) {
   // output L
-  string filename = output_L_folder + "L";
-  out.open(filename.c_str());
+
+  // collect label
+  unordered_map<VertexLabel, vector<Pair> > map_L;
   for (int i = 0; i < L.size(); i++) {
-    out << L[i].u << " " << L[i].v << " " << G->getVLabel(L[i].u) << endl;
+    VertexLabel l = G->getVLabel(L[i].u);
+    map_L[l].push_back(L[i]);
   }
-  out.close();
+
+  // print
+  unordered_map<VertexLabel, vector<Pair> >::iterator it1;
+  for (it1 = map_L.begin(); it1 != map_L.end(); it1++) {
+    VertexLabel l = it1->first;
+    // initial open file stream
+    int m_LOutputStreamCnt = 0;
+    int m_LOutputStreamIndx = 1;  // start from 1
+
+    stringstream ss1, ss2;
+    ss1 << l;
+    ss2 << m_LOutputStreamIndx;
+    string filename = output_L_folder + "L." + ss1.str() + "." + ss2.str();
+    out.open(filename.c_str());
+
+    for (int i = 0; i < it1->second.size(); i++) {
+      VertexID u = (it1->second)[i].u;
+      VertexID v = (it1->second)[i].v;
+
+      out << u << " " << v << " " << l << endl;
+      m_LOutputStreamCnt++;
+      // check overlap
+      if (m_LOutputStreamCnt == DEFAULTENTITYFOREACHFILE) {
+        out.close();
+        m_LOutputStreamCnt = 0;
+        m_LOutputStreamIndx++;
+        stringstream ss1, ss2;
+        ss1 << l;
+        ss2 << m_LOutputStreamIndx;
+        string filename = output_L_folder + "L." + ss1.str() + "." + ss2.str();
+        out.open(filename.c_str());
+      }
+    }  // end of L[i]
+    // close
+    out.close();
+  }  // end of label
 }
 
 void TestKBQuality::printGpChao(ofstream& out) {
@@ -281,22 +430,29 @@ void TestKBQuality::printGpChao(ofstream& out) {
   // output node
   string filename = output_Gp_folder + "Gp";
   out.open(filename.c_str());
-  typename DIPRODUCTGRAPH::VLabels::iterator it =
-      global_Gp->getVLabel().begin();
+  DIPRODUCTGRAPH::VLabels::iterator it = global_Gp->getVLabel().begin();
   for (; it != global_Gp->getVLabel().end(); it++) {
     out << it->first << " " << it->second.first << " " << it->second.second
-        << " " << it->second.third << endl;
+        << " " << it->second.third;
+
+    if (hash_L.find(hashPair(it->second.first, it->second.second))
+        != hash_L.end()) {
+      out << " " << 0 << endl;
+    } else {
+      out << endl;
+    }
   }
 
 // output edge
-  for (typename DIPRODUCTGRAPH::VLabels::iterator it = global_Gp->getVLabel()
-      .begin(); it != global_Gp->getVLabel().end(); it++) {
+  for (DIPRODUCTGRAPH::VLabels::iterator it = global_Gp->getVLabel().begin();
+      it != global_Gp->getVLabel().end(); it++) {
     VertexID u = it->first;
-    for (typename DIPRODUCTGRAPH::AdjList::iterator it1 =
-        global_Gp->getOutEdge()[u].begin();
-        it1 != global_Gp->getOutEdge()[u].end(); it1++) {
+    for (DIPRODUCTGRAPH::AdjList::iterator it1 = global_Gp->getOutEdge()[u]
+        .begin(); it1 != global_Gp->getOutEdge()[u].end(); it1++) {
       VertexID v = it1->first;
-      out << u << " " << v << " " << it1->second.elabel << endl;
+      out << u << " " << v << " " << it1->second.elabel.first << " "
+          << it1->second.elabel.second << " " << it1->second.elabel.third
+          << endl;
     }
   }
 
@@ -313,6 +469,21 @@ void TestKBQuality::getInducedSubgraph(DIGRAPHBASIC *G,
   }
 
 // insert edge
+  for (unordered_set<VertexID>::iterator itv1 = vs.begin(); itv1 != vs.end();
+      itv1++) {
+    // for each node u
+    VertexID u = *itv1;
+    // for each (u, v)
+    for (DIGRAPHBASIC::AdjList::iterator it2 = G->getOutEdge()[u].begin();
+        it2 != G->getOutEdge()[u].end(); it2++) {
+      VertexID v = it2->first;
+      if (vs.find(v) != vs.end()) {
+        indG->insertEdge(u, v, G->getELabel(u, v));
+      }
+    }
+  }
+
+  return;
   for (unordered_set<VertexID>::iterator itv1 = vs.begin(); itv1 != vs.end();
       itv1++) {
     VertexID u = *itv1;
@@ -345,7 +516,7 @@ void TestKBQuality::comSim(DIKEYS* Q, DIGRAPHBASIC* G,
 // for each node in Q,
 // it has mapped nodes in Gp
   MapIntHset::iterator it1;
-  typename DIKEYS::VLabels::iterator qit;
+  DIKEYS::VLabels::iterator qit;
   bool flag = true;
   for (qit = Q->getVLabel().begin(); qit != Q->getVLabel().end(); qit++) {
     VertexID qv = qit->first;
@@ -361,9 +532,9 @@ void TestKBQuality::comSim(DIKEYS* Q, DIGRAPHBASIC* G,
   } else {
     // Q is simulate to Gp
     for (it1 = simset.begin(); it1 != simset.end(); it1++) {
-      for (unordered_set<int>::iterator it2 = it1->second.begin();
+      for (unordered_set<VertexID>::iterator it2 = it1->second.begin();
           it2 != it1->second.end(); it2++) {
-        int v = *it2;
+        VertexID v = *it2;
         vIndG.insert(v);
       }
     }
@@ -416,10 +587,10 @@ void TestKBQuality::comProductGraph(DIGRAPHBASIC *G, VertexID e1,
 // no need to explicitly construct G1 and G2,
 // as appose to, use only V(G1) and V(G2)
 
-  VertexID vid = 0;
 // insert (e1, e2)
-  GP->insertVertex(vid++, VertexTriple(e1, e2, G->getVLabel(e1)));
-  GP->e = 0;
+  VertexID e1e2 = hashPair(e1, e2);
+  GP->insertVertex(e1e2, VertexTriple(e1, e2, G->getVLabel(e1)));
+  GP->e = e1e2;
 
 // insert node
   for (unordered_set<VertexID>::iterator itv1 = G1v.begin(); itv1 != G1v.end();
@@ -445,38 +616,84 @@ void TestKBQuality::comProductGraph(DIGRAPHBASIC *G, VertexID e1,
       if (u < 0) {
         GP->insertVertex(u, VertexTriple(u, v, G->getVLabel(u)));
       } else {
-        GP->insertVertex(vid++, VertexTriple(u, v, G->getVLabel(u)));
+        GP->insertVertex(hashPair(u, v), VertexTriple(u, v, G->getVLabel(u)));
       }
     }
   }  // end of node
 
-// insert edge
-  for (typename DIPRODUCTGRAPH::VLabels::iterator vit1 =
-      GP->getVLabel().begin(); vit1 != GP->getVLabel().end(); vit1++) {
+  // insert edge
+  for (DIPRODUCTGRAPH::VLabels::iterator vit1 = GP->getVLabel().begin();
+      vit1 != GP->getVLabel().end(); vit1++) {
+    VertexID u1u2 = vit1->first;
     VertexID u1 = vit1->second.first;
     VertexID u2 = vit1->second.second;
+    VertexLabel u1u2l = vit1->second.third;
 
-    for (typename DIPRODUCTGRAPH::VLabels::iterator vit2 =
-        GP->getVLabel().begin(); vit2 != GP->getVLabel().end(); vit2++) {
-      VertexID v1 = vit2->second.first;
-      VertexID v2 = vit2->second.second;
-
-      // not the same nodes
-      if (vit1->first == vit2->first)
-        continue;
-
-      if (!G->isEdge(u1, v1) || !G->isEdge(u2, v2))
-        continue;
-
-      // check edge predicate
-      if (G->getELabel(u1, v1) != G->getELabel(u2, v2))
-        continue;
-
-      // insert edge
-      GP->insertEdge(vit1->first, vit2->first,
-                     EdgeTriple(G->getELabel(u1, v1), (NODEP), (NOTC)));
+    if (u1u2l < 0) {
+      continue;
     }
+
+    // for each (u1, v1)
+    for (DIGRAPHBASIC::AdjList::iterator git1 = G->getOutEdge()[u1].begin();
+        git1 != G->getOutEdge()[u1].end(); git1++) {
+      VertexID v1 = git1->first;
+
+      // for each (u2, v2)
+      for (DIGRAPHBASIC::AdjList::iterator git2 = G->getOutEdge()[u2].begin();
+          git2 != G->getOutEdge()[u2].end(); git2++) {
+        VertexID v2 = git2->first;
+
+        if (G->getELabel(u1, v1) != G->getELabel(u2, v2)) {
+          continue;
+        }
+        if (G->getVLabel(v1) != G->getVLabel(v2)) {
+          continue;
+        }
+
+        if (v1 < 0) {
+          if (GP->isVertex(v1)) {
+            GP->insertEdge(u1u2, v1,
+                           EdgeTriple(G->getELabel(u1, v1), (NODEP), (NOTC)));
+          }
+        } else {
+          VertexID v1v2 = hashPair(v1, v2);
+          if (GP->isVertex(v1v2)) {
+            GP->insertEdge(u1u2, v1v2,
+                           EdgeTriple(G->getELabel(u1, v1), (NODEP), (NOTC)));
+          }
+        }
+      }  // end v2
+    }  // end v1
   }  // end of edge
+
+  return;
+//// insert edge
+//  for (DIPRODUCTGRAPH::VLabels::iterator vit1 = GP->getVLabel().begin();
+//      vit1 != GP->getVLabel().end(); vit1++) {
+//    VertexID u1 = vit1->second.first;
+//    VertexID u2 = vit1->second.second;
+//
+//    for (DIPRODUCTGRAPH::VLabels::iterator vit2 = GP->getVLabel().begin();
+//        vit2 != GP->getVLabel().end(); vit2++) {
+//      VertexID v1 = vit2->second.first;
+//      VertexID v2 = vit2->second.second;
+//
+//      // not the same nodes
+//      if (vit1->first == vit2->first)
+//        continue;
+//
+//      if (!G->isEdge(u1, v1) || !G->isEdge(u2, v2))
+//        continue;
+//
+//      // check edge predicate
+//      if (G->getELabel(u1, v1) != G->getELabel(u2, v2))
+//        continue;
+//
+//      // insert edge
+//      GP->insertEdge(vit1->first, vit2->first,
+//                     EdgeTriple(G->getELabel(u1, v1), (NODEP), (NOTC)));
+//    }
+//  }  // end of edge
 }
 
 void TestKBQuality::pairing() {
@@ -527,15 +744,24 @@ void TestKBQuality::pairing() {
           comSim(Q, Gp, vGp);
         }  // end of Q
 
+//        cout << "after sim on Q and Gp" << endl;
+
         if (!vGp.empty()) {
 //          cout << "(e1, e2): " << e_1 << ", " << e_2 << endl;
           L.push_back(Pair(e_1, e_2));
+          hash_L.insert(hashPair(e_1, e_2));
+          thetaL++;
+          if (thetaL > DEFAULTHETAL) {
+            cout << "out of L" << endl;
+            exit(0);
+          }
 //          cout << "vGp size: " << vGp.size() << endl;
           // 1. output L
           // for MR
           // 2. union to global product graph
           // for VC
           collectLandGp(Gp, vGp, G);
+//          cout << "after collect L and Gp" << endl;
         }
         // clean Gp and vGp
         Gp->reset();
@@ -543,32 +769,34 @@ void TestKBQuality::pairing() {
 
       }  // end of e_2
     }  // end of e_1
-    cout << "L: " << endl;
+
+    cout << "printing L: " << endl;
     printLChao(m_LOutputStream, G);
+
     // update TC info on Gp
     collectTC(G);
-  }  // end of G
+    // output L and Gp
+    // using file output
+    cout << "printing global Gp: " << endl;
+    printGpChao(m_GpOutputStream);
+    //  global_Gp->printGraph(cout);
 
-// TODO
-// output L and Gp
-// using file output
-  cout << "global Gp: " << endl;
-  printGpChao(m_GpOutputStream);
-//  global_Gp->printGraph(cout);
+    cout << "printing org L: " << endl;
+    printOrgLChao(G);
+  }  // end of G
 
   delete Gp;
 }
 
 void TestKBQuality::collectTC(DIGRAPHBASIC* G) {
-  DIPRODUCTGRAPH::VLabels::iterator it =
-      global_Gp->getVLabel().begin();
+  DIPRODUCTGRAPH::VLabels::iterator it = global_Gp->getVLabel().begin();
   for (; it != global_Gp->getVLabel().end(); it++) {
     VertexID u = it->first;
     VertexID v1 = it->second.first;
     VertexID v2 = it->second.second;
     // no value node
-//    if (u < 0)
-//      continue;
+    if (u < 0)
+      continue;
     GpTCIndx[v1].insert(u);
     GpTCIndx[v2].insert(u);
   }
@@ -587,6 +815,9 @@ void TestKBQuality::collectTC(DIGRAPHBASIC* G) {
     // update tc edge
     for (it2 = it1->second.begin(); it2 != it1->second.end(); it2++) {
       VertexID e1e2 = *it2;
+
+      if (e1e2 == ee)
+        continue;
       if (global_Gp->isEdge(e1e2, ee)) {
         global_Gp->getELabel(e1e2, ee).third = -1;
       } else {
@@ -607,7 +838,7 @@ void TestKBQuality::collectLandGp(DIPRODUCTGRAPH *Gp,
   unordered_set<VertexLabel> ys;
   for (int j = 0; j < q_cnt; j++) {
     DIKEYS *Q = queryDB[j];
-    for (typename DIKEYS::VLabels::iterator it = Q->getVLabel().begin();
+    for (DIKEYS::VLabels::iterator it = Q->getVLabel().begin();
         it != Q->getVLabel().end(); it++) {
       if (it->second.u == 2) {
         ys.insert(it->second.v);
@@ -619,7 +850,11 @@ void TestKBQuality::collectLandGp(DIPRODUCTGRAPH *Gp,
   VertexID e2 = Gp->getVLabel(Gp->e).second;
   VertexID e1e2 = hashPair(e1, e2);
 
-  typename DIPRODUCTGRAPH::VLabels::iterator iter1 = Gp->getVLabel().begin();
+  if (!global_Gp->isVertex(e1e2)) {
+    global_Gp->insertVertex(e1e2, Gp->getVLabel(Gp->e));
+  }
+
+  DIPRODUCTGRAPH::VLabels::iterator iter1 = Gp->getVLabel().begin();
   for (; iter1 != Gp->getVLabel().end(); iter1++) {
     VertexID u = iter1->first;
     VertexID u1 = iter1->second.first;
@@ -654,9 +889,9 @@ void TestKBQuality::collectLandGp(DIPRODUCTGRAPH *Gp,
         global_Gp->insertEdge(upg, e1e2, EdgeTriple(NOEDGELABEL, -1, NOTC));
       }
     }
+//    cout << "dependency" << endl;
 
-    typename DIPRODUCTGRAPH::AdjList::iterator iter2 =
-        Gp->getOutEdge()[u].begin();
+    DIPRODUCTGRAPH::AdjList::iterator iter2 = Gp->getOutEdge()[u].begin();
     for (; iter2 != Gp->getOutEdge()[u].end(); iter2++) {
       VertexID v = iter2->first;
       VertexID v1 = Gp->getVLabel(v).first;
@@ -687,6 +922,9 @@ void TestKBQuality::collectLandGp(DIPRODUCTGRAPH *Gp,
       } else {
         vpg = hashPair(v1, v2);
       }
+
+      if (upg == vpg)
+        continue;
 
       if (!global_Gp->isVertex(vpg)) {
         global_Gp->insertVertex(vpg, Gp->getVLabel(v));
@@ -722,7 +960,7 @@ void TestKBQuality::comSim(DIKEYS* Q, DIPRODUCTGRAPH *Gp,
 // for each node in Q,
 // it has mapped nodes in Gp
   MapIntHset::iterator it1;
-  typename DIKEYS::VLabels::iterator qit;
+  DIKEYS::VLabels::iterator qit;
   bool flag = true;
   for (qit = Q->getVLabel().begin(); qit != Q->getVLabel().end(); qit++) {
     VertexID qv = qit->first;
@@ -738,9 +976,9 @@ void TestKBQuality::comSim(DIKEYS* Q, DIPRODUCTGRAPH *Gp,
   } else {
 // Q is simulate to Gp
     for (it1 = simset.begin(); it1 != simset.end(); it1++) {
-      for (unordered_set<int>::iterator it2 = it1->second.begin();
+      for (unordered_set<VertexID>::iterator it2 = it1->second.begin();
           it2 != it1->second.end(); it2++) {
-        int v = *it2;
+        VertexID v = *it2;
         vGp.insert(v);
       }
     }

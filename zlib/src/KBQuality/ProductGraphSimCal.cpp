@@ -1,13 +1,20 @@
-#include "GraphSimCal.h"
+/*
+ * ProductGraphSimCal.cpp
+ *
+ *  Created on: 2015¦~2¤ë6¤é
+ *      Author: zfan
+ */
+
+#include "ProductGraphSimCal.h"
 #include <list>
 #include "../utility/Pair.h"
 
-GraphSimCal::GraphSimCal() {
+ProductGraphSimCal::ProductGraphSimCal() {
 
 }
 
-bool GraphSimCal::SimCal(DIGRAPHBASIC * datagraph, DIKEYS * querygraph,
-                         MapIntHset & simset) {
+bool ProductGraphSimCal::SimCal(DIPRODUCTGRAPH * datagraph, DIKEYS * querygraph,
+                                MapIntHset & simset) {
   MapIntHset remove;
   bool flag;
   flag = graphSimMain(datagraph, querygraph, simset, remove);
@@ -16,8 +23,9 @@ bool GraphSimCal::SimCal(DIGRAPHBASIC * datagraph, DIKEYS * querygraph,
   return flag;
 }
 
-bool GraphSimCal::graphSimMain(DIGRAPHBASIC * dg, DIKEYS * qg,
-                               MapIntHset & simset, MapIntHset & remove) {
+bool ProductGraphSimCal::graphSimMain(DIPRODUCTGRAPH * dg, DIKEYS * qg,
+                                      MapIntHset & simset,
+                                      MapIntHset & remove) {
   bool flag1 = graphInitialization(dg, qg, simset, remove);
   if (flag1 == false) {
     return false;
@@ -30,9 +38,9 @@ bool GraphSimCal::graphSimMain(DIGRAPHBASIC * dg, DIKEYS * qg,
   return true;
 }
 
-bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
-                                      MapIntHset & simset,
-                                      MapIntHset & remove) {
+bool ProductGraphSimCal::graphInitialization(DIPRODUCTGRAPH * dg, DIKEYS * qg,
+                                             MapIntHset & simset,
+                                             MapIntHset & remove) {
   unordered_set<int> pre_dgraph_vertices;
   unordered_set<int> pre_dgraph_vertices_temp;
   unordered_set<int> hssim;
@@ -40,7 +48,7 @@ bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
 
   //***********pre(V)*****************
   // for each node of G
-  typename DIGRAPHBASIC::VLabels::iterator iter1 = dg->getVLabel().begin();
+  typename DIPRODUCTGRAPH::VLabels::iterator iter1 = dg->getVLabel().begin();
   int vb = -1;
   while (iter1 != dg->getVLabel().end()) {
     vb = iter1->first;
@@ -90,8 +98,9 @@ bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
     for (iter3 = hssim.begin(); iter3 != hssim.end(); iter3++) {
       vn = *iter3;
 
-      for (typename DIGRAPHBASIC::AdjList::iterator iter1 = dg->getOutEdge()[vn]
-          .begin(); iter1 != dg->getOutEdge()[vn].end(); iter1++) {
+      for (typename DIPRODUCTGRAPH::AdjList::iterator iter1 =
+          dg->getOutEdge()[vn].begin(); iter1 != dg->getOutEdge()[vn].end();
+          iter1++) {
         pre_sim_vertices.insert(iter1->first);
       }
 
@@ -116,74 +125,45 @@ bool GraphSimCal::graphInitialization(DIGRAPHBASIC * dg, DIKEYS * qg,
 }
 
 // = , return true
-bool GraphSimCal::checkNodeFeasibility(DIGRAPHBASIC *dg, int g_v, DIKEYS *qg,
-                                       int q_v) {
-  bool flag = false;
-  // not the designated node
+bool ProductGraphSimCal::checkNodeFeasibility(DIPRODUCTGRAPH *dg, int g_v,
+                                              DIKEYS *qg, int q_v) {
   if (g_v != dg->e && q_v != qg->e) {
     int Qtype = qg->getVLabel(q_v).u;
     // q_v = x
     // fix it to only one node
     if (Qtype == 1) {
-      if (qg->getVLabel(q_v).v == dg->getVLabel(g_v))
-        flag = true;
+      if (qg->getVLabel(q_v).v == dg->getVLabel(g_v).third)
+        return true;
       else
-        flag = false;
+        return false;
     }
     // q_v = y, _y, d
     else if (Qtype == 2 || Qtype == 4 || Qtype == 5) {
-      if (qg->getVLabel(q_v).v == dg->getVLabel(g_v))
-        flag = true;
+      if (qg->getVLabel(q_v).v == dg->getVLabel(g_v).third)
+        return true;
       else
-        flag = false;
+        return false;
     }
     // q_v = y*
     else if (Qtype == 3) {
-      if (dg->getVLabel(g_v) < 0)
-        flag = true;
+      if (dg->getVLabel(g_v).third < 0)
+        return true;
       else
-        flag = false;
+        return false;
     } else {
-      flag = false;
+      return false;
     }
   } else {
-    if (g_v == dg->e && q_v == qg->e) {
-      flag = true;
-    } else {
-      flag = false;
-    }
+    if (g_v == dg->e && q_v == qg->e)
+      return true;
+    else
+      return false;
   }
-
-  return flag;
-
-  if (!flag)
-    return false;
-
-  // further check edge label
-  // for each outEdge for q_v
-  for (typename DIKEYS::AdjList::iterator it = qg->getOutEdge()[q_v].begin();
-      it != qg->getOutEdge()[q_v].end(); it++) {
-    EdgeLabel q_v_l = it->second.elabel;
-    bool tmp_flag = false;
-    for (typename DIGRAPHBASIC::AdjList::iterator it1 = dg->getOutEdge()[g_v]
-        .begin(); it1 != dg->getOutEdge()[g_v].end(); it1++) {
-      EdgeLabel g_v_l = it->second.elabel;
-      if (q_v_l == g_v_l) {
-        tmp_flag = true;
-        break;
-      }
-    }
-
-    if (!tmp_flag) {
-      flag = false;
-      break;
-    }
-  }
-  return flag;
 }
 
-bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
-                                     MapIntHset & simset, MapIntHset & remove) {
+bool ProductGraphSimCal::graphSimRefinement(DIPRODUCTGRAPH* dg, DIKEYS *qg,
+                                            MapIntHset & simset,
+                                            MapIntHset & remove) {
   MapIntInt r_m;
   unordered_map<int, unordered_map<int, int> > counter;
   // dg->getVcnt(), vector<int>(qg->getVcnt()));
@@ -216,7 +196,7 @@ bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
           //Update Counter
           int updc = -1;
 //          vector<int>::iterator iter_dpdc;
-          typename DIGRAPHBASIC::AdjList::iterator iter_dpdc;
+          typename DIPRODUCTGRAPH::AdjList::iterator iter_dpdc;
           for (iter_dpdc = dg->getOutEdge()[w].begin();
               iter_dpdc != dg->getOutEdge()[w].end(); iter_dpdc++) {
             updc = iter_dpdc->first;
@@ -227,7 +207,7 @@ bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
           //go on
           int w_n = -1;
 //          vector<int>::iterator iter_wb;
-          typename DIGRAPHBASIC::AdjList::iterator iter_wb;
+          typename DIPRODUCTGRAPH::AdjList::iterator iter_wb;
           for (iter_wb = dg->getOutEdge()[w].begin();
               iter_wb != dg->getOutEdge()[w].end(); iter_wb++) {
             w_n = iter_wb->first;
@@ -246,7 +226,7 @@ bool GraphSimCal::graphSimRefinement(DIGRAPHBASIC *dg, DIKEYS *qg,
   return true;
 }
 
-int GraphSimCal::findNoEmptyRemove(MapIntHset & remove, DIKEYS * qg) {
+int ProductGraphSimCal::findNoEmptyRemove(MapIntHset & remove, DIKEYS * qg) {
 //  vector<QVertex>::iterator iter = qg.vertices.begin();
   typename DIKEYS::VLabels::iterator iter = qg->getVLabel().begin();
   int vq = -1;
@@ -260,12 +240,12 @@ int GraphSimCal::findNoEmptyRemove(MapIntHset & remove, DIKEYS * qg) {
   return -2;
 }
 
-int GraphSimCal::myIntersection(typename DIGRAPHBASIC::AdjList& vec1,
-                                unordered_set<int> & hs2) {
+int ProductGraphSimCal::myIntersection(typename DIPRODUCTGRAPH::AdjList& vec1,
+                                       unordered_set<int> & hs2) {
   set<int> t;
   unordered_set<int> hs1;
 //  vector<int>::iterator iter1;
-  typename DIGRAPHBASIC::AdjList::iterator iter1;
+  typename DIPRODUCTGRAPH::AdjList::iterator iter1;
   unordered_set<int>::iterator iter2;
   unordered_set<int>::iterator iter3;
   set<int>::iterator iter4;
@@ -289,11 +269,11 @@ int GraphSimCal::myIntersection(typename DIGRAPHBASIC::AdjList& vec1,
   return t.size();
 }
 
-void GraphSimCal::counterInitilization(
+void ProductGraphSimCal::counterInitilization(
     unordered_map<int, unordered_map<int, int> > & counter, MapIntHset & simset,
-    DIGRAPHBASIC *dg, DIKEYS * qg) {
+    DIPRODUCTGRAPH *dg, DIKEYS * qg) {
 //  vector<Vertex>::iterator iter1 = dg.vertices.begin();
-  typename DIGRAPHBASIC::VLabels::iterator iter1 = dg->getVLabel().begin();
+  typename DIPRODUCTGRAPH::VLabels::iterator iter1 = dg->getVLabel().begin();
   int vb = -1;
   while (iter1 != dg->getVLabel().end()) {
     vb = iter1->first;
@@ -309,3 +289,4 @@ void GraphSimCal::counterInitilization(
     iter1++;
   }
 }
+

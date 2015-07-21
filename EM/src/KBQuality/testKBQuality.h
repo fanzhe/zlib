@@ -14,8 +14,8 @@
 #include <string>
 #include <sstream>
 #include <queue>
-#include "../utility/DiGraph.h"
-#include "../utility/GlobalDefinition.h"
+#include "DiGraph.h"
+#include "GlobalDefinition.h"
 using namespace std;
 
 /**
@@ -49,11 +49,23 @@ class TestKBQuality {
   int g_cnt, q_cnt;
   DIPRODUCTGRAPH* global_Gp;
   unordered_set<VertexID> E;
+  unordered_set<VertexID> org_E;
   vector<Pair> L;
+  unordered_set<VertexID> hash_L;
   unordered_map<VertexID, unordered_set<VertexID> > GpTCIndx;
+
+  VertexID thetaGd;
+  VertexID thetaOrgGd;
+  VertexID thetaL;
 
   // load graph and query
   ifstream m_InputStream;
+
+  string org_output_Gd_folder;
+  ofstream org_m_GdOutputStream;
+  string org_output_L_folder;
+  ofstream org_m_LOutputStream;
+
   string output_Gd_folder;
   ofstream m_GdOutputStream;
   string output_L_folder;
@@ -63,6 +75,8 @@ class TestKBQuality {
 
   void loadFromInputFile(const char* input_g_name, int _g_cnt,
                          const char* input_q_name, int _q_cnt,
+                         const char* org_output_Gd_folder,
+                         const char* org_output_L_folder,
                          const char* output_Gd_folder,
                          const char* output_L_folder,
                          const char* output_Gp_folder);
@@ -76,7 +90,9 @@ class TestKBQuality {
   bool checkPredicateObjectFeasibility(DIGRAPHBASIC *dg, EdgeLabel p_1,
                                        VertexID o_1, DIKEYS *dq, EdgeLabel p_Q,
                                        VertexID o_Q);
+  void printOrgDGraphChao(ofstream& out, DIGRAPHBASIC* G);
   void printDGraphChao(ofstream& out, DIGRAPHBASIC*);
+  void printOrgLChao(DIGRAPHBASIC* G);
   void printLChao(ofstream& out, DIGRAPHBASIC*);
   void printGpChao(ofstream& out);
   void collectTC(DIGRAPHBASIC* G);
